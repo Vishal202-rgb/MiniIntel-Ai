@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-light-bg text-light-text transition-colors duration-200;
+}
+
+.dark body {
+  @apply bg-dark-bg text-dark-text;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 rounded-full;
+}
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-neutral-700;
+}

@@ -10,6 +10,18 @@ body {
   @apply bg-dark-bg text-dark-text;
 }
 
+@layer utilities {
+  .hover-lift {
+    @apply transition-all duration-200 ease-in-out cursor-pointer hover:-translate-y-1 hover:border-indigo-500/50 hover:shadow-[0_4px_20px_-4px_rgba(99,102,241,0.2)];
+  }
+  .hover-lift:hover .hover-lift-arrow {
+    @apply translate-x-1 text-indigo-400 transition-transform duration-200;
+  }
+  .hover-lift:hover .hover-lift-icon {
+    @apply text-indigo-400 transition-colors duration-200;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

@@ -17,18 +17,20 @@ const cosineSimilarity = (vecA, vecB) => {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
-const searchSimilar = async (query, topK = 5) => {
-  const queryEmbedding = await llmService.generateEmbedding(query);
+const searchSimilar = async (query, topK = 5, reqContext = null) => {
+  const queryEmbedding = await llmService.generateEmbedding(query, { reqContext });
   
   // In-memory cosine similarity fallback
-  const allChunks = await DocumentChunk.find({ embedding: { $exists: true, $ne: [] } });
+  const allChunks = await DocumentChunk.find({ embedding: { $exists: true, $ne: [] } }).populate('documentId', 'originalName filename');
   
-  const chunksWithScores = allChunks.map(chunk => {
-    return {
-      chunk,
-      score: cosineSimilarity(queryEmbedding, chunk.embedding)
-    };
-  });
+  const chunksWithScores = allChunks
+    .filter(chunk => chunk.embedding && chunk.embedding.length === queryEmbedding.length)
+    .map(chunk => {
+      return {
+        chunk,
+        score: cosineSimilarity(queryEmbedding, chunk.embedding)
+      };
+    });
   
   chunksWithScores.sort((a, b) => b.score - a.score);
   

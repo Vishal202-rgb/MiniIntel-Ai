@@ -3,7 +3,8 @@ const reportService = require('../services/reportService');
 
 exports.getReports = async (req, res, next) => {
   try {
-    const reports = await Report.find().sort({ createdAt: -1 });
+    const query = req.user.role === 'admin' ? {} : { generatedBy: req.user._id };
+    const reports = await Report.find(query).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: reports });
   } catch (error) {
     next(error);
@@ -16,7 +17,8 @@ exports.generateReport = async (req, res, next) => {
     if (!type) {
       return res.status(400).json({ success: false, message: 'report type is required' });
     }
-    const report = await reportService.generateReport(data || {}, type);
+    const reqContext = { userId: req.user._id, isComplex: true };
+    const report = await reportService.generateReport(data || {}, type, req.user._id, reqContext);
     res.status(201).json({ success: true, data: report });
   } catch (error) {
     next(error);
@@ -28,6 +30,10 @@ exports.getReportById = async (req, res, next) => {
     const report = await Report.findById(req.params.id);
     if (!report) {
       return res.status(404).json({ success: false, message: 'Report not found' });
+    }
+    // Check ownership if not admin
+    if (req.user.role !== 'admin' && report.generatedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized to view this report' });
     }
     res.status(200).json({ success: true, data: report });
   } catch (error) {

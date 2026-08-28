@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Database, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, Database, FileText, Loader2, CheckCircle, AlertTriangle, ChevronDown } from 'lucide-react';
 import { indexDocument, searchKnowledgeBase } from '../services/apiRag';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 const KnowledgeBase = () => {
   const [documents, setDocuments] = useState([]);
@@ -12,137 +13,224 @@ const KnowledgeBase = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const location = useLocation();
 
   useEffect(() => {
     fetchDocuments();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    if (q) {
+      setSearchQuery(q);
+      executeSearch(q);
+    }
+  }, [location.search]);
+
   const fetchDocuments = async () => {
     try {
-      // Assuming GET /api/documents exists or using fallback
-      const res = await axios.get('/api/documents').catch(() => ({ data: [{ _id: '1', title: 'Example Document.pdf' }] }));
-      setDocuments(res.data);
+      const res = await axios.get('/api/documents');
+      // Filter for documents that are ready to be indexed
+      const eligibleDocs = res.data.filter(doc => doc.status === 'completed' || doc.status === 'extracted');
+      setDocuments(eligibleDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
+      setDocuments([]);
     }
   };
 
   const handleIndex = async () => {
     if (!selectedDocId) return;
     setIndexingStatus('loading');
+    setIndexMessage('');
     try {
       await indexDocument(selectedDocId);
       setIndexingStatus('success');
-      setIndexMessage('Document indexed successfully for AI.');
+      setIndexMessage('Document indexed successfully for AI Semantic Search.');
     } catch (error) {
       setIndexingStatus('error');
-      setIndexMessage('Failed to index document.');
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to index document.';
+      setIndexMessage(errorMsg);
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+  const executeSearch = async (queryToSearch) => {
+    if (!queryToSearch.trim()) return;
     
     setIsSearching(true);
+    setHasSearched(true);
     setSearchResults([]);
     try {
-      const data = await searchKnowledgeBase(searchQuery);
-      setSearchResults(data.results || []);
+      const data = await searchKnowledgeBase(queryToSearch);
+      setSearchResults(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error('Search error:', error);
+      setSearchResults([{
+        isError: true,
+        documentName: 'Error',
+        pageNumber: '-',
+        text: error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to search.'
+      }]);
     } finally {
       setIsSearching(false);
     }
   };
 
-  return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Database className="text-blue-600" />
-        Knowledge Base Management
-      </h1>
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    executeSearch(searchQuery);
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div className="flex items-center gap-3">
+        <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base Management</h1>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
         {/* Indexing Section */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <FileText className="text-gray-600" />
-            Index Document
-          </h2>
-          <p className="text-gray-600 mb-4 text-sm">
-            Select a document to process and index into the vector database for AI semantic search.
+        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <FileText className="text-indigo-500 w-6 h-6" />
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Index Document</h2>
+          </div>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">
+            Select a processed document to generate embeddings and index it into the vector database for AI querying.
           </p>
           
-          <div className="flex gap-2 mb-4">
-            <select 
-              className="flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              value={selectedDocId}
-              onChange={(e) => setSelectedDocId(e.target.value)}
-            >
-              <option value="">-- Select a Document --</option>
-              {documents.map(doc => (
-                <option key={doc._id} value={doc._id}>{doc.title || doc.filename}</option>
-              ))}
-            </select>
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <select 
+                className="w-full appearance-none bg-neutral-50 dark:bg-[#111111] border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+                value={selectedDocId}
+                onChange={(e) => setSelectedDocId(e.target.value)}
+              >
+                <option value="" className="text-neutral-500">-- Select a Document --</option>
+                {documents.map(doc => (
+                  <option key={doc._id} value={doc._id}>{doc.originalName || doc.title || doc.filename}</option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                <ChevronDown size={18} />
+              </div>
+            </div>
+            
             <button 
               onClick={handleIndex}
               disabled={!selectedDocId || indexingStatus === 'loading'}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm shrink-0"
             >
-              {indexingStatus === 'loading' && <Loader2 size={16} className="animate-spin" />}
+              {indexingStatus === 'loading' && <Loader2 size={18} className="animate-spin" />}
               Index for AI
             </button>
           </div>
 
+          {/* Indexing Status Feedback */}
           {indexingStatus === 'success' && (
-            <div className="p-3 bg-green-50 text-green-700 rounded flex items-center gap-2">
-              <CheckCircle size={18} /> {indexMessage}
+            <div className="mt-auto p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300 rounded-lg flex items-start gap-3 shadow-sm">
+              <CheckCircle size={20} className="shrink-0 mt-0.5" />
+              <div className="text-sm font-medium">{indexMessage}</div>
             </div>
           )}
           {indexingStatus === 'error' && (
-            <div className="p-3 bg-red-50 text-red-700 rounded flex items-center gap-2">
-              <AlertCircle size={18} /> {indexMessage}
+            <div className="mt-auto p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-lg flex items-start gap-3 shadow-sm">
+              <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+              <div className="text-sm font-medium">{indexMessage}</div>
             </div>
           )}
         </div>
 
-        {/* Test Search Section */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Search className="text-gray-600" />
-            Test Semantic Search
-          </h2>
+        {/* Semantic Search Section */}
+        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col h-[500px]">
+          <div className="flex items-center gap-3 mb-2 shrink-0">
+            <Search className="text-indigo-500 w-6 h-6" />
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
+          </div>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 shrink-0">
+            Query the vector database directly to see what chunks the AI retrieves for context.
+          </p>
           
-          <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-            <input 
-              type="text"
-              placeholder="Search knowledge base..."
-              className="flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <form onSubmit={handleSearch} className="flex gap-3 mb-6 shrink-0">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <input 
+                type="text"
+                placeholder="e.g., 'coal production and dispatch'"
+                className="w-full bg-neutral-50 dark:bg-[#111111] border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                disabled={isSearching}
+              />
+            </div>
             <button 
               type="submit"
               disabled={!searchQuery.trim() || isSearching}
-              className="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 disabled:opacity-50"
+              className="px-6 py-3 bg-neutral-800 dark:bg-neutral-700 text-white font-medium rounded-lg hover:bg-neutral-900 dark:hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
             >
-              {isSearching ? <Loader2 size={16} className="animate-spin" /> : 'Search'}
+              {isSearching ? <Loader2 size={18} className="animate-spin" /> : 'Search'}
             </button>
           </form>
 
-          <div className="mt-4 border-t pt-4 max-h-64 overflow-y-auto space-y-3">
-            {searchResults.length === 0 && !isSearching && (
-              <p className="text-gray-500 text-sm italic">No results yet. Try searching for something.</p>
-            )}
-            
-            {searchResults.map((result, idx) => (
-              <div key={idx} className="bg-gray-50 p-3 rounded border text-sm">
-                <p className="font-semibold text-blue-700 mb-1">{result.documentName} (Page {result.pageNumber})</p>
-                <p className="text-gray-700 line-clamp-3">{result.text}</p>
-                <div className="mt-2 text-xs text-gray-500">Score: {result.score?.toFixed(3)}</div>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {!hasSearched ? (
+              <div className="h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
+                <Search className="w-10 h-10 mb-2 opacity-20" />
+                <p className="text-sm">Run a query to see semantic search results.</p>
               </div>
-            ))}
+            ) : isSearching ? (
+              <div className="h-full flex flex-col items-center justify-center text-indigo-500">
+                <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                <p className="text-sm">Searching vector space...</p>
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
+                <AlertTriangle className="w-10 h-10 mb-2 opacity-30" />
+                <p className="text-sm font-medium">No results found.</p>
+                <p className="text-xs mt-1 text-center">Try using different keywords or indexing more documents.</p>
+              </div>
+            ) : (
+              searchResults.map((result, idx) => {
+                if (result.isError) {
+                  return (
+                    <div key={idx} className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg">
+                      <p className="text-sm font-medium text-red-700 dark:text-red-300">{result.text}</p>
+                    </div>
+                  );
+                }
+
+                const docName = result.documentName || (result.documentId && (result.documentId.originalName || result.documentId.filename)) || 'Unknown Document';
+                const textContent = result.text || result.content || result.chunk || '';
+                const score = result.score !== undefined ? result.score : result.similarityScore;
+                
+                return (
+                  <div key={idx} className="hover-lift p-4 bg-neutral-50 dark:bg-[#111111] border border-neutral-200 dark:border-neutral-800 rounded-lg group transition-colors">
+                    <div className="flex justify-between items-start mb-2 gap-4">
+                      <h3 className="font-semibold text-indigo-600 dark:text-indigo-400 text-sm line-clamp-1">
+                        {docName}
+                      </h3>
+                      {score !== undefined && (
+                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300">
+                          Match: {Math.round(score * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-4 leading-relaxed mb-2">
+                      {textContent}
+                    </p>
+                    {result.pageNumber && (
+                      <div className="text-xs text-neutral-500 dark:text-neutral-500 flex items-center gap-1">
+                        <FileText size={12} /> Page {result.pageNumber}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,7 @@ const reportRoutes = require('./routes/reports');
 const agentRoutes = require('./routes/agents');
 const auditRoutes = require('./routes/audit');
 const notificationRoutes = require('./routes/notifications');
+const authRoutes = require('./routes/auth');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -39,21 +40,42 @@ app.use(morgan('dev'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/extraction', extractionRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/validation', validationRoutes);
 app.use('/api/rag', ragRoutes);
 app.use('/api/ai-assistant', aiAssistantRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/topics', topicRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api/extraction', extractionRoutes);
 app.use('/api/agents', agentRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', notificationRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Graceful shutdown for nodemon restarts
+process.once('SIGUSR2', function () {
+  server.close(function () {
+    process.kill(process.pid, 'SIGUSR2');
+  });
+});
+
+process.on('SIGINT', function () {
+  server.close(function () {
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', function () {
+  server.close(function () {
+    process.exit(0);
+  });
 });

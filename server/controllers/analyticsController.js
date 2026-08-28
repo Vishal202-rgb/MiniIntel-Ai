@@ -17,3 +17,12 @@ exports.getAnomalies = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getDashboardData = async (req, res, next) => {
+  try {
+    const data = await analyticsService.getDashboardData();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -4,8 +4,17 @@ const api = axios.create({
   baseURL: '/api',
 });
 
+api.interceptors.request.use((config) => {
+  const userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    const { token } = JSON.parse(userInfo);
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const indexDocument = async (documentId) => {
-  const response = await api.post(`/rag/index`, { documentId });
+  const response = await api.post(`/rag/${documentId}/index`);
   return response.data;
 };
 

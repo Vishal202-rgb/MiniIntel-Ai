@@ -19,7 +19,8 @@ const documentSchema = new mongoose.Schema({
   extractedText: { type: String, default: '' },
   error: { type: String, default: '' },
   uploadedAt: { type: Date, default: Date.now },
-  processedAt: Date
+  processedAt: Date,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 });
 
 documentSchema.virtual('id').get(function() {

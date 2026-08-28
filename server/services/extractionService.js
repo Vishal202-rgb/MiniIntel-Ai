@@ -24,7 +24,7 @@ exports.extractFromDocument = async (documentId) => {
 
       const userPrompt = `Extract data from the following text:\n\n${page.content}`;
       
-      const response = await llmService.callLLM(systemPrompt, userPrompt);
+      const response = await llmService.callLLM(systemPrompt, userPrompt, { format: 'json' });
       
       if (response && response.records && Array.isArray(response.records)) {
         for (const record of response.records) {

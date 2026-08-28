@@ -27,7 +27,8 @@ const uploadDocument = async (req, res) => {
       originalName: req.file.originalname,
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
-      fileType: fileType
+      fileType: fileType,
+      userId: req.user._id
     });
 
     await document.save();
@@ -61,6 +62,9 @@ const getDocuments = async (req, res) => {
     if (status) {
       query.status = status;
     }
+    if (req.user.role !== 'admin') {
+      query.userId = req.user._id;
+    }
 
     const documents = await Document.find(query).sort({ uploadedAt: -1 });
     res.json(documents);
@@ -74,6 +78,9 @@ const getDocumentById = async (req, res) => {
     const document = await Document.findById(req.params.id);
     if (!document) {
       return res.status(404).json({ error: 'Document not found' });
+    }
+    if (req.user.role !== 'admin' && document.userId?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized' });
     }
 
     const pages = await DocumentPage.find({ documentId: document._id }).sort({ pageNumber: 1 });
@@ -101,6 +108,9 @@ const deleteDocument = async (req, res) => {
     if (!document) {
       return res.status(404).json({ error: 'Document not found' });
     }
+    if (req.user.role !== 'admin' && document.userId?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
 
     await Document.findByIdAndDelete(req.params.id);
     await DocumentPage.deleteMany({ documentId: req.params.id });
@@ -122,6 +132,9 @@ const retryDocument = async (req, res) => {
     const document = await Document.findById(req.params.id);
     if (!document) {
       return res.status(404).json({ error: 'Document not found' });
+    }
+    if (req.user.role !== 'admin' && document.userId?.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized' });
     }
 
     if (document.status !== 'failed') {

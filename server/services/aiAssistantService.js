@@ -3,7 +3,7 @@ const ragService = require('./ragService');
 const llmService = require('./llmService');
 const ExtractedRecord = require('../models/ExtractedRecord');
 
-const processQuestion = async (question, conversationId) => {
+const processQuestion = async (question, conversationId, reqContext = null) => {
   let conversation;
   
   if (conversationId) {
@@ -23,27 +23,35 @@ const processQuestion = async (question, conversationId) => {
     content: question
   });
   
-  const similarChunks = await ragService.searchSimilar(question, 5);
+  // Fast-path: Skip RAG vector search for simple greetings to save API quota
+  const isGreeting = question.toLowerCase().match(/^(say )?hello|hi\b|how are you|which ai|who are you/);
   
   let contextText = '';
   const sources = [];
-  
-  similarChunks.forEach((chunk, index) => {
-    contextText += `--- Chunk ${index + 1} (Page: ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
-    sources.push({
-      documentId: chunk.documentId,
-      pageNumber: chunk.pageNumber,
-      similarity: chunk.similarityScore
+
+  if (!isGreeting) {
+    const similarChunks = await ragService.searchSimilar(question, 5, reqContext);
+    similarChunks.forEach((chunk, index) => {
+      contextText += `--- Chunk ${index + 1} (Page: ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+      sources.push({
+        documentId: chunk.documentId,
+        pageNumber: chunk.pageNumber,
+        similarity: chunk.similarityScore
+      });
     });
-  });
+  }
   
-  const systemPrompt = `You are a helpful AI assistant for the MineIntel platform. Use the following context to answer the user's question. If you don't know the answer based on the context, say so.\n\nContext:\n${contextText}`;
+  const systemPrompt = `You are a helpful AI assistant for the MineIntel platform. ${
+    isGreeting 
+      ? 'Briefly introduce yourself.' 
+      : 'Use the following context to answer the user\'s question. If you don\'t know the answer based on the context, say so.\n\nContext:\n' + contextText
+  }`;
   
   let answer;
   if (process.env.LLM_API_KEY === 'mock-key-for-testing') {
     answer = "This is a mock response based on the provided context.";
   } else {
-    answer = await llmService.callLLM(systemPrompt, question);
+    answer = await llmService.callLLM(systemPrompt, question, { reqContext });
   }
   
   // Add assistant message

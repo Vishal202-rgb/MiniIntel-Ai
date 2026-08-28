@@ -1,6 +1,10 @@
 export const getNotifications = async () => {
   try {
-    const response = await fetch('/api/notifications');
+    const userInfo = localStorage.getItem('userInfo');
+    const token = userInfo ? JSON.parse(userInfo).token : '';
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    const response = await fetch('/api/notifications', { headers });
     if (!response.ok) {
       throw new Error('Failed to fetch notifications');
     }

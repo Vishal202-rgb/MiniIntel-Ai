@@ -1,25 +1,77 @@
 const Report = require('../models/Report');
+const Document = require('../models/Document');
+const ragService = require('./ragService');
+const llmService = require('./llmService');
+const auditService = require('./auditService');
 
-const generateReport = async (data, type) => {
+const generateReport = async (data, type, userId, reqContext = {}) => {
   try {
-    // Create a dummy PDF/DOCX structure or string for now
-    const content = {
-      summary: `Auto-generated ${type} report`,
-      data: data,
-      generatedAt: new Date().toISOString()
-    };
+    const { documentId, instructions } = data;
+    let contextText = '';
     
+    // Retrieve context from specific document if provided, otherwise generic search
+    let searchQuery = type;
+    if (instructions) searchQuery += ' ' + instructions;
+    
+    // Get relevant chunks using RAG
+    const similarChunks = await ragService.searchSimilar(searchQuery, 10, reqContext);
+    
+    if (documentId) {
+      // Filter chunks to only include this document if requested
+      const filteredChunks = similarChunks.filter(c => c.documentId.toString() === documentId);
+      const chunksToUse = filteredChunks.length > 0 ? filteredChunks : similarChunks;
+      chunksToUse.forEach((chunk, i) => {
+        contextText += `--- Chunk ${i+1} (Page ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+      });
+    } else {
+      similarChunks.forEach((chunk, i) => {
+        contextText += `--- Chunk ${i+1} (Page ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+      });
+    }
+
+    const systemPrompt = `You are an expert mining operations analyst for MineIntel. Generate a highly professional '${type}' report based ONLY on the provided context.
+    
+    Do NOT hallucinate numbers. Preserve units and financial-year labels. Show calculations clearly. Reference the source document/page when available.
+    
+    Output the report in Markdown format with the following sections (if applicable to the type):
+    1. Executive Summary
+    2. Production Performance
+    3. Dispatch Performance
+    4. Target Achievement
+    5. Production-Dispatch Gap
+    6. Key Operational Risks
+    7. Evidence / Source References
+    8. AI Insights
+    9. Recommendations
+    
+    Additional Instructions from User: ${instructions || 'None'}
+    
+    Context:
+    ${contextText}`;
+
+    const reportContent = await llmService.callLLM(systemPrompt, 'Generate the report.', { reqContext });
+
     const reportTitle = `${type} Report - ${new Date().toLocaleDateString()}`;
     
     const report = new Report({
       title: reportTitle,
       type: type,
-      content: content,
+      content: { markdown: reportContent, sources: similarChunks.map(c => c.documentId) },
       status: 'completed',
-      fileUrl: `/reports/dummy-${Date.now()}.pdf`
+      generatedBy: userId
     });
 
     await report.save();
+    
+    // Non-blocking audit log
+    auditService.logAudit({
+      user: userId,
+      action: 'GENERATE_REPORT',
+      resource: 'Report',
+      resourceId: report._id,
+      details: { type, documentId }
+    });
+
     return report;
   } catch (error) {
     throw new Error('Error generating report: ' + error.message);

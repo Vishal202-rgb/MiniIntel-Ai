@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import { Monitor, FileText, CheckCircle, AlertTriangle, FileOutput, Bot, Send, Loader2 } from 'lucide-react';
 import { orchestrate } from '../services/apiAgents';
 
@@ -22,7 +26,8 @@ const CommandCenter = () => {
     setOrchestratorResult(null);
     try {
       const res = await orchestrate(taskInput, { source: 'command-center' });
-      setOrchestratorResult({ success: true, message: res.message || 'Task completed successfully.' });
+      const successMessage = res.data?.message || res.message || 'Task completed successfully.';
+      setOrchestratorResult({ success: true, message: successMessage });
     } catch (err) {
       setOrchestratorResult({ success: false, message: err.message || 'Failed to orchestrate task.' });
     } finally {
@@ -111,10 +116,24 @@ const CommandCenter = () => {
                 <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
               )}
               <div>
-                <h4 className="font-medium mb-1">
+                <h4 className="font-medium mb-2">
                   {orchestratorResult.success ? 'Task Accepted' : 'Orchestration Failed'}
                 </h4>
-                <p className="text-sm opacity-90">{orchestratorResult.message}</p>
+                <div className="prose dark:prose-invert max-w-none prose-sm text-sm opacity-90 prose-p:my-1 prose-headings:my-2 prose-table:my-2">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm, remarkMath]} 
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                      table: ({node, ...props}) => (
+                        <div className="overflow-x-auto my-2">
+                          <table className="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700" {...props} />
+                        </div>
+                      )
+                    }}
+                  >
+                    {orchestratorResult.message}
+                  </ReactMarkdown>
+                </div>
               </div>
             </div>
           )}

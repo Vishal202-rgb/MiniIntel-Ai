@@ -9,12 +9,13 @@ const {
   deleteDocument,
   retryDocument
 } = require('../controllers/documentController');
+const { protect } = require('../middleware/authMiddleware');
 
-router.post('/upload', upload, uploadDocument);
-router.get('/', getDocuments);
-router.get('/:id', getDocumentById);
-router.get('/:id/status', getDocumentStatus);
-router.delete('/:id', deleteDocument);
-router.post('/:id/retry', retryDocument);
+router.post('/upload', protect, upload, uploadDocument);
+router.get('/', protect, getDocuments);
+router.get('/:id', protect, getDocumentById);
+router.get('/:id/status', protect, getDocumentStatus);
+router.delete('/:id', protect, deleteDocument);
+router.post('/:id/retry', protect, retryDocument);
 
 module.exports = router;

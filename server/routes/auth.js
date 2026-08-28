@@ -11,50 +11,78 @@ const generateToken = (id) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ username });
-  
+
+  // ── Safe debug logs (never print actual secrets) ──
+  console.log('[AUTH DEBUG] ADMIN_USERNAME loaded:', !!process.env.ADMIN_USERNAME);
+  console.log('[AUTH DEBUG] ADMIN_PASSWORD loaded:', !!process.env.ADMIN_PASSWORD);
+  console.log('[AUTH DEBUG] JWT_SECRET loaded:', !!process.env.JWT_SECRET);
+  console.log('[AUTH DEBUG] Login attempt for:', username);
+
   const predefinedAdmin = process.env.ADMIN_USERNAME || 'admin';
   const isAdminIdentity = username === predefinedAdmin;
 
-  let isAuthenticated = false;
-
+  // ─── ADMIN authentication path ───────────────────────────────────────
   if (isAdminIdentity) {
-    // STRICT VERIFICATION: Verify admin secret directly from environment variable
-    // This prevents DB tampering (changing admin hash) from allowing unauthorized access
     const expectedAdminPassword = process.env.ADMIN_PASSWORD;
     if (!expectedAdminPassword) {
-      console.error('CRITICAL: ADMIN_PASSWORD environment variable is missing.');
-    } else {
-      isAuthenticated = (password === expectedAdminPassword);
+      console.error('[AUTH] CRITICAL: ADMIN_PASSWORD environment variable is missing.');
+      return res.status(401).json({ message: 'Admin configuration error. Contact system administrator.' });
     }
-  } else {
-    // Normal user verification via database hash
-    if (user && (await user.matchPassword(password))) {
-      isAuthenticated = true;
+
+    if (password !== expectedAdminPassword) {
+      console.log('[AUTH DEBUG] Admin password mismatch');
+      return res.status(401).json({ message: 'Invalid admin credentials' });
     }
+
+    // Admin credentials verified against env vars — now ensure DB record exists
+    let user = await User.findOne({ username: predefinedAdmin });
+
+    if (!user) {
+      // Auto-provision the admin user on first successful login
+      console.log('[AUTH] Auto-provisioning admin user in MongoDB...');
+      user = await User.create({
+        username: predefinedAdmin,
+        password: password,  // Will be hashed by the pre-save hook
+        role: 'admin',
+        status: 'active'
+      });
+      console.log('[AUTH] Admin user created successfully');
+    }
+
+    // Always enforce admin role in DB
+    if (user.role !== 'admin') {
+      user.role = 'admin';
+      await user.save();
+    }
+
+    auditService.logAudit({ user: user._id, action: 'ADMIN_LOGIN', resource: 'Auth' });
+    return res.json({
+      _id: user._id,
+      username: user.username,
+      role: 'admin',
+      token: generateToken(user._id)
+    });
   }
 
-  if (user && isAuthenticated) {
-    
-    // STRICT RBAC: Enforce predefined admin identity
-    let actualRole = user.username === predefinedAdmin ? 'admin' : 'user';
-
-    // Sync database if it was tampered with or out of sync
-    if (user.role !== actualRole) {
-      user.role = actualRole;
+  // ─── NORMAL USER authentication path ─────────────────────────────────
+  const user = await User.findOne({ username });
+  if (user && (await user.matchPassword(password))) {
+    // Force role to 'user' for non-admin identities
+    if (user.role !== 'user') {
+      user.role = 'user';
       await user.save();
     }
 
     auditService.logAudit({ user: user._id, action: 'USER_LOGIN', resource: 'Auth' });
-    res.json({
+    return res.json({
       _id: user._id,
       username: user.username,
-      role: actualRole,
+      role: 'user',
       token: generateToken(user._id)
     });
-  } else {
-    res.status(401).json({ message: 'Invalid username or password' });
   }
+
+  res.status(401).json({ message: 'Invalid username or password' });
 });
 
 router.post('/register', async (req, res) => {

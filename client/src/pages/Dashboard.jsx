@@ -115,10 +115,10 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
-            {localStorage.getItem('userInfo') && JSON.parse(localStorage.getItem('userInfo')).role === 'admin' ? 'Admin Dashboard' : 'User Dashboard'}
+            My Dashboard
           </h1>
           <p className="text-gray-500 dark:text-neutral-400 text-sm mt-0.5">Real-time metrics and document processing status.</p>
         </div>

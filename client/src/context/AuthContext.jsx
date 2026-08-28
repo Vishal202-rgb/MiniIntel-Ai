@@ -18,9 +18,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (username, password) => {
+  const login = async (username, password, requireAdmin = false) => {
     const res = await axios.post('/api/auth/login', { username, password });
     const userData = res.data;
+    
+    if (requireAdmin && userData.role !== 'admin') {
+      throw new Error('Access Denied. You are not an administrator.');
+    }
+
     setUser(userData);
     localStorage.setItem('userInfo', JSON.stringify(userData));
     axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;

@@ -7,7 +7,17 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-      req.user = await User.findById(decoded.id).select('-password');
+      const user = await User.findById(decoded.id).select('-password');
+      
+      if (!user) {
+        return res.status(401).json({ message: 'Not authorized, user not found' });
+      }
+
+      // STRICT RBAC: Re-evaluate role on every single request
+      const predefinedAdmin = process.env.ADMIN_USERNAME || 'admin';
+      user.role = user.username === predefinedAdmin ? 'admin' : 'user';
+      
+      req.user = user;
       next();
     } catch (error) {
       res.status(401).json({ message: 'Not authorized, token failed' });

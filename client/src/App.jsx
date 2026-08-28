@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 import Dashboard from './pages/Dashboard';
 import CommandCenter from './pages/CommandCenter';
 import ExtractionReview from './pages/ExtractionReview';
@@ -19,23 +21,28 @@ import AdminUsers from './pages/AdminUsers';
 import SystemHealth from './pages/SystemHealth';
 
 const DashboardRouter = () => {
-  const { user } = useContext(AuthContext);
-  // We'll reuse Dashboard for both since it will fetch based on user role from backend
-  // But later we can split it if needed. For now it just goes to Dashboard.
-  return <Dashboard />;
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  if (userInfo.role === 'admin') {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+  return <Navigate to="/user-dashboard" replace />;
 };
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            <Route path="/" element={<ProtectedRoute />}>
+        <div className="min-h-screen bg-neutral-50 dark:bg-[#111111] transition-colors duration-200">
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              
+              <Route path="/" element={<ProtectedRoute />}>
               <Route element={<Layout />}>
                 <Route index element={<DashboardRouter />} />
+                <Route path="user-dashboard" element={<Dashboard />} />
+                <Route path="admin-dashboard" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
                 <Route path="command-center" element={<CommandCenter />} />
                 <Route path="extraction" element={<ExtractionReview />} />
                 <Route path="validation" element={<ValidationDashboard />} />
@@ -55,6 +62,7 @@ function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        </div>
       </AuthProvider>
     </ThemeProvider>
   );

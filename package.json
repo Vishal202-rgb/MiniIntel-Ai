@@ -1,0 +1,7 @@
+{
+  "name": "mineintel-ai-monorepo",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  }
+}

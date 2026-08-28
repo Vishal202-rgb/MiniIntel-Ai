@@ -45,7 +45,7 @@ const MessageBubble = ({ message }) => {
               components={{
                 table: ({node, ...props}) => (
                   <div className="overflow-x-auto my-4">
-                    <table className="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700" {...props} />
+                    <table className="min-w-full divide-y divide-neutral-300 dark:divide-gray-200 dark:divide-neutral-700" {...props} />
                   </div>
                 )
               }}

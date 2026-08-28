@@ -70,23 +70,23 @@ const ReportGenerator = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto text-neutral-200">
+    <div className="p-6 max-w-7xl mx-auto text-gray-800 dark:text-neutral-200">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Report Generator</h1>
-        <p className="text-neutral-400">Generate evidence-based mining reports from your knowledge base.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Report Generator</h1>
+        <p className="text-gray-600 dark:text-neutral-400">Generate evidence-based mining reports from your knowledge base.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Controls */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#1A1A1A] border border-neutral-800 p-6 rounded-xl space-y-4">
+          <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 p-6 rounded-xl space-y-4">
             
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-2">Source Document (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Source Document (Optional)</label>
               <select 
                 value={selectedDoc} 
                 onChange={e => setSelectedDoc(e.target.value)}
-                className="w-full bg-[#111] border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="">All Indexed Documents</option>
                 {documents.map(d => (
@@ -96,11 +96,11 @@ const ReportGenerator = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-2">Report Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Report Type</label>
               <select 
                 value={reportType} 
                 onChange={e => setReportType(e.target.value)}
-                className="w-full bg-[#111] border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
               >
                 <option>Executive Summary</option>
                 <option>Production Analysis</option>
@@ -111,12 +111,12 @@ const ReportGenerator = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-2">Additional Instructions</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Additional Instructions</label>
               <textarea 
                 value={instructions}
                 onChange={e => setInstructions(e.target.value)}
                 placeholder="E.g. Focus specifically on FY 2023 dispatch delays..."
-                className="w-full bg-[#111] border border-neutral-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-indigo-500 h-24 resize-none"
+                className="w-full bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-neutral-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 h-24 resize-none"
               />
             </div>
 
@@ -140,30 +140,30 @@ const ReportGenerator = () => {
         {/* Preview */}
         <div className="lg:col-span-2">
           {report ? (
-            <div className="bg-[#1A1A1A] border border-neutral-800 rounded-xl overflow-hidden flex flex-col h-[800px]">
-              <div className="border-b border-neutral-800 p-4 flex items-center justify-between bg-[#151515]">
-                <h3 className="font-bold text-white truncate pr-4">{report.title}</h3>
+            <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden flex flex-col h-[800px]">
+              <div className="border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between bg-gray-50 dark:bg-[#151515]">
+                <h3 className="font-bold text-gray-900 dark:text-white truncate pr-4">{report.title}</h3>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={copyToClipboard} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors" title="Copy">
+                  <button onClick={copyToClipboard} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Copy">
                     {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                   </button>
-                  <button onClick={downloadJson} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors" title="Download JSON">
+                  <button onClick={downloadJson} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Download JSON">
                     <Download className="w-4 h-4" />
                   </button>
-                  <button onClick={handleGenerate} className="p-2 hover:bg-neutral-800 rounded-lg text-neutral-400 hover:text-white transition-colors" title="Regenerate">
+                  <button onClick={handleGenerate} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Regenerate">
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               <div className="p-6 overflow-y-auto grow custom-scrollbar">
-                <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-indigo-400 prose-a:text-indigo-400">
+                <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-indigo-700 dark:prose-headings:text-indigo-400 prose-a:text-indigo-600 dark:prose-a:text-indigo-400">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm, remarkMath]} 
                     rehypePlugins={[rehypeKatex]}
                     components={{
                       table: ({node, ...props}) => (
-                        <div className="overflow-x-auto my-4 border border-neutral-800 rounded-lg">
-                          <table className="min-w-full divide-y divide-neutral-800 m-0" {...props} />
+                        <div className="overflow-x-auto my-4 border border-gray-200 dark:border-neutral-800 rounded-lg">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-800 m-0" {...props} />
                         </div>
                       )
                     }}
@@ -174,7 +174,7 @@ const ReportGenerator = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-[#1A1A1A] border border-neutral-800 border-dashed rounded-xl h-[500px] flex items-center justify-center text-neutral-500 flex-col gap-4">
+            <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 border-dashed rounded-xl h-[500px] flex items-center justify-center text-gray-500 dark:text-neutral-500 flex-col gap-4">
               <FileText className="w-12 h-12 opacity-20" />
               <p>Select parameters and generate to view the report preview.</p>
             </div>

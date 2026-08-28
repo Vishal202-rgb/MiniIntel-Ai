@@ -11,7 +11,7 @@ const Header = ({ toggleMobileMenu }) => {
         {/* Mobile-only hamburger */}
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           aria-label="Toggle Menu"
         >
           <Menu className="w-5 h-5" />
@@ -28,7 +28,7 @@ const Header = ({ toggleMobileMenu }) => {
 
       <button
         onClick={toggleTheme}
-        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         aria-label="Toggle Theme"
       >
         {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

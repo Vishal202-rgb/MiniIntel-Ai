@@ -104,21 +104,39 @@ exports.callLLM = async (systemPrompt, userPrompt, options = {}) => {
     
     if (options.format === 'json') {
       try {
-        content = content.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-        // If content is empty after stripping, throw to trigger fallback
-        if (!content) throw new Error('Empty JSON response');
+        // Strip markdown formatting if present
+        let cleanContent = content.replace(/```json\s*/ig, '').replace(/```\s*/g, '').trim();
         
-        // Attempt to find JSON object if there's surrounding text
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          content = jsonMatch[0];
+        // Find the first { or [ and the last } or ]
+        const firstBrace = cleanContent.indexOf('{');
+        const firstBracket = cleanContent.indexOf('[');
+        const lastBrace = cleanContent.lastIndexOf('}');
+        const lastBracket = cleanContent.lastIndexOf(']');
+        
+        let startIndex = -1;
+        let endIndex = -1;
+        
+        // Determine whether the JSON is an object or an array
+        if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+          startIndex = firstBrace;
+          endIndex = lastBrace;
+        } else if (firstBracket !== -1) {
+          startIndex = firstBracket;
+          endIndex = lastBracket;
         }
         
-        return JSON.parse(content);
+        if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+          cleanContent = cleanContent.substring(startIndex, endIndex + 1);
+        }
+        
+        if (!cleanContent) throw new Error('Empty JSON response');
+        
+        return JSON.parse(cleanContent);
       } catch (parseError) {
         console.warn('Failed to parse LLM JSON response:', parseError.message);
+        console.warn('Raw LLM Response:', content);
         // Fallback for agentOrchestrator classification
-        return { action: 'rag', parameters: null, message: content };
+        return { action: 'rag', parameters: null, message: content, error: parseError.message };
       }
     }
     

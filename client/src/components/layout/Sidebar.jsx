@@ -41,7 +41,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
             aria-label="Toggle Sidebar"
           >
             {!isCollapsed && <span className="font-semibold text-xs tracking-wider uppercase">Menu</span>}
-            <div className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <div className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors">
               {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
             </div>
           </button>
@@ -76,7 +76,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
 
               {/* Tooltip for collapsed state (desktop only) */}
               {isCollapsed && (
-                <div className="hidden md:block absolute left-full ml-2 px-3 py-1.5 bg-neutral-900 text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                <div className="hidden md:block absolute left-full ml-2 px-3 py-1.5 bg-neutral-900 text-gray-900 dark:text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
                   {item.label}
                 </div>
               )}

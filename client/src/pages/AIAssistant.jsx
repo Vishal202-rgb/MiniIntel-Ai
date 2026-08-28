@@ -103,7 +103,7 @@ const AIAssistant = () => {
             </button>
           ))}
           {conversations.length === 0 && (
-            <div className="text-center p-4 text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="text-center p-4 text-sm text-gray-500 dark:text-neutral-400">
               No conversations yet.
             </div>
           )}
@@ -148,7 +148,7 @@ const AIAssistant = () => {
             </button>
           </form>
           <div className="max-w-4xl mx-auto text-center mt-2">
-            <span className="text-[11px] text-neutral-500 dark:text-neutral-500">AI can make mistakes. Verify important information.</span>
+            <span className="text-[11px] text-gray-500 dark:text-neutral-500">AI can make mistakes. Verify important information.</span>
           </div>
         </div>
       </div>

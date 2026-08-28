@@ -99,7 +99,7 @@ const KnowledgeBase = () => {
             <FileText className="text-indigo-500 w-6 h-6" />
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Index Document</h2>
           </div>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">
+          <p className="text-gray-500 dark:text-neutral-400 text-sm mb-6">
             Select a processed document to generate embeddings and index it into the vector database for AI querying.
           </p>
           
@@ -110,12 +110,12 @@ const KnowledgeBase = () => {
                 value={selectedDocId}
                 onChange={(e) => setSelectedDocId(e.target.value)}
               >
-                <option value="" className="text-neutral-500">-- Select a Document --</option>
+                <option value="" className="text-gray-500 dark:text-neutral-500">-- Select a Document --</option>
                 {documents.map(doc => (
                   <option key={doc._id} value={doc._id}>{doc.originalName || doc.title || doc.filename}</option>
                 ))}
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600 dark:text-neutral-400">
                 <ChevronDown size={18} />
               </div>
             </div>
@@ -151,13 +151,13 @@ const KnowledgeBase = () => {
             <Search className="text-indigo-500 w-6 h-6" />
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
           </div>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6 shrink-0">
+          <p className="text-gray-500 dark:text-neutral-400 text-sm mb-6 shrink-0">
             Query the vector database directly to see what chunks the AI retrieves for context.
           </p>
           
           <form onSubmit={handleSearch} className="flex gap-3 mb-6 shrink-0">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 dark:text-neutral-400" />
               <input 
                 type="text"
                 placeholder="e.g., 'coal production and dispatch'"
@@ -170,7 +170,7 @@ const KnowledgeBase = () => {
             <button 
               type="submit"
               disabled={!searchQuery.trim() || isSearching}
-              className="px-6 py-3 bg-neutral-800 dark:bg-neutral-700 text-white font-medium rounded-lg hover:bg-neutral-900 dark:hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
+              className="px-6 py-3 bg-neutral-800 dark:bg-neutral-700 text-gray-900 dark:text-white font-medium rounded-lg hover:bg-neutral-900 dark:hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
             >
               {isSearching ? <Loader2 size={18} className="animate-spin" /> : 'Search'}
             </button>
@@ -178,7 +178,7 @@ const KnowledgeBase = () => {
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {!hasSearched ? (
-              <div className="h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
+              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-neutral-500">
                 <Search className="w-10 h-10 mb-2 opacity-20" />
                 <p className="text-sm">Run a query to see semantic search results.</p>
               </div>
@@ -188,7 +188,7 @@ const KnowledgeBase = () => {
                 <p className="text-sm">Searching vector space...</p>
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500">
+              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-neutral-500">
                 <AlertTriangle className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm font-medium">No results found.</p>
                 <p className="text-xs mt-1 text-center">Try using different keywords or indexing more documents.</p>
@@ -223,7 +223,7 @@ const KnowledgeBase = () => {
                       {textContent}
                     </p>
                     {result.pageNumber && (
-                      <div className="text-xs text-neutral-500 dark:text-neutral-500 flex items-center gap-1">
+                      <div className="text-xs text-gray-500 dark:text-neutral-500 flex items-center gap-1">
                         <FileText size={12} /> Page {result.pageNumber}
                       </div>
                     )}

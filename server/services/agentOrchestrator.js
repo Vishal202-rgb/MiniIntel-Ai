@@ -21,13 +21,14 @@ const orchestrateTask = async (task, context) => {
     if (lowerTask.includes('analyze') || lowerTask.includes('production') || lowerTask.includes('trends')) {
       action = 'analyze';
       reqContext.maxCalls = 5; // Complex task
-    } else if (lowerTask.includes('extract') || lowerTask.includes('parse')) {
+    } else if ((lowerTask.includes('extract') || lowerTask.includes('parse')) && (context.documentId)) {
       action = 'extract';
       reqContext.maxCalls = 4; // Normal query
-    } else if (lowerTask.includes('validate') || lowerTask.includes('conflict')) {
+    } else if ((lowerTask.includes('validate') || lowerTask.includes('conflict')) && (context.recordId || context.documentId)) {
       action = 'validate';
       reqContext.maxCalls = 4; // Normal query
-    } else if (lowerTask.includes('report') || lowerTask.includes('generate')) {
+    } else if ((lowerTask.includes('report') || lowerTask.includes('generate')) && context.data) {
+      // Only jump to report generator if we actually have data/document context explicitly sent for report generation
       action = 'report';
       reqContext.maxCalls = 5; // Complex task
     } else if (lowerTask.match(/^(say )?hello|hi\b|how are you|which ai|who are you/)) {
@@ -62,10 +63,22 @@ Return ONLY a JSON object with:
     // Step 2: Route to the appropriate agent/service
     switch (action) {
       case 'extract':
-        result = await extractionService.processDocument(context.documentId || parameters?.documentId);
+        const extDocId = context.documentId || parameters?.documentId;
+        if (!extDocId) {
+          const fallbackExt = await aiAssistantService.processQuestion(task, context.conversationId, reqContext);
+          result = { message: fallbackExt.answer, conversationId: fallbackExt.conversationId };
+        } else {
+          result = await extractionService.extractFromDocument(extDocId); // fixed from processDocument
+        }
         break;
       case 'validate':
-        result = await validationService.validateRecord(context.recordId || parameters?.recordId);
+        const valDocId = context.documentId || parameters?.documentId || context.recordId;
+        if (!valDocId) {
+          const fallbackVal = await aiAssistantService.processQuestion(task, context.conversationId, reqContext);
+          result = { message: fallbackVal.answer, conversationId: fallbackVal.conversationId };
+        } else {
+          result = await validationService.validateDocument(valDocId); // fixed from validateRecord
+        }
         break;
       case 'analyze':
         // The user wants an analysis of production data. We can use the RAG / AI Assistant to provide a contextual answer based on the DB.
@@ -86,7 +99,14 @@ Return ONLY a JSON object with:
         };
         break;
       case 'report':
-        result = await reportService.generateReport(parameters || context.data, context.type || 'custom');
+        const reportData = parameters || context.data || {};
+        if (!reportData.documentId && !context.data) {
+          // If no document context was supplied, it's just a general question about a report.
+          const fallbackRep = await aiAssistantService.processQuestion(task, context.conversationId, reqContext);
+          result = { message: fallbackRep.answer, conversationId: fallbackRep.conversationId };
+        } else {
+          result = await reportService.generateReport(reportData, context.type || 'custom');
+        }
         break;
       default:
         // Fallback if LLM returns something unexpected
@@ -97,23 +117,30 @@ Return ONLY a JSON object with:
         };
     }
 
-    // Log the orchestration action
-    const auditLog = new AuditLog({
+    const auditLogData = {
       action: `Orchestrated Task: ${action} - ${task.substring(0, 50)}`,
-      entity: 'Task',
-      user: context.user || 'system'
-    });
+      resource: 'Task',
+      status: 'SUCCESS'
+    };
+    if (context.user && context.user.match(/^[0-9a-fA-F]{24}$/)) {
+      auditLogData.user = context.user;
+    }
+    const auditLog = new AuditLog(auditLogData);
     await auditLog.save();
 
     return result;
   } catch (error) {
-    const auditLog = new AuditLog({
+    const auditLogData = {
       action: `Failed Task: ${task.substring(0, 50)}`,
-      entity: 'Task',
-      user: context.user || 'system',
+      resource: 'Task',
+      status: 'FAILED',
       details: error.message
-    });
-    await auditLog.save();
+    };
+    if (context.user && context.user.match(/^[0-9a-fA-F]{24}$/)) {
+      auditLogData.user = context.user;
+    }
+    const auditLog = new AuditLog(auditLogData);
+    await auditLog.save().catch(e => console.error('Failed to save audit log:', e));
     
     throw new Error(`Orchestration error for task: ` + error.message);
   }

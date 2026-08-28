@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import apiExtraction from '../services/apiExtraction';
+import apiValidation from '../services/apiValidation';
 import axios from 'axios';
 import RecordTable from '../components/extraction/RecordTable';
 import RecordEditor from '../components/extraction/RecordEditor';
-import { FileText, Play } from 'lucide-react';
+import { FileText, Play, AlertCircle, CheckCircle } from 'lucide-react';
 
 // Fallback to fetch documents
 const getDocuments = async () => {
@@ -21,6 +22,7 @@ const ExtractionReview = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     loadDocuments();
@@ -29,6 +31,7 @@ const ExtractionReview = () => {
   useEffect(() => {
     if (selectedDocument) {
       loadRecords(selectedDocument);
+      setMessage(null);
     } else {
       setRecords([]);
     }
@@ -46,6 +49,8 @@ const ExtractionReview = () => {
       setRecords(data || []);
     } catch (error) {
       console.error(error);
+      const errMsg = error.response?.data?.details || error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to load records.';
+      setMessage({ type: 'error', text: `Failed to load records: ${errMsg}` });
     } finally {
       setLoading(false);
     }
@@ -54,11 +59,19 @@ const ExtractionReview = () => {
   const handleExtract = async () => {
     if (!selectedDocument) return;
     setLoading(true);
+    setMessage(null);
     try {
-      await apiExtraction.extractData(selectedDocument);
+      const res = await apiExtraction.extractData(selectedDocument);
+      // Automatically trigger validation after extraction
+      await apiValidation.validateDocument(selectedDocument);
       await loadRecords(selectedDocument);
+      
+      const count = res.count !== undefined ? res.count : (res.records?.length || 0);
+      setMessage({ type: 'success', text: `Data extracted successfully. Found ${count} records.` });
     } catch (error) {
       console.error(error);
+      const errMsg = error.response?.data?.details || error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to extract data.';
+      setMessage({ type: 'error', text: `Failed to extract data: ${errMsg}` });
     } finally {
       setLoading(false);
     }
@@ -118,7 +131,9 @@ const ExtractionReview = () => {
           >
             <option value="">-- Select a Document --</option>
             {documents.map(doc => (
-              <option key={doc.id || doc._id} value={doc.id || doc._id}>{doc.title || doc.name || doc.id || doc._id}</option>
+              <option key={doc.id || doc._id} value={doc.id || doc._id}>
+                {doc.originalName || doc.filename || doc.title || doc.name || doc.id || doc._id}
+              </option>
             ))}
           </select>
         </div>
@@ -129,10 +144,17 @@ const ExtractionReview = () => {
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50 transition-colors"
           >
             <Play className="w-4 h-4" />
-            Extract Data
+            {loading ? 'Extracting...' : 'Extract Data'}
           </button>
         </div>
       </div>
+
+      {message && (
+        <div className={`mb-6 p-4 rounded flex items-center gap-2 ${message.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+          {message.type === 'error' ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+          <span>{message.text}</span>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         {loading ? (

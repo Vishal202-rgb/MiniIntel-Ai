@@ -20,7 +20,7 @@ const Modal = ({ isOpen, onClose, children, title, maxWidth = 'max-w-4xl' }) => 
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
+            className="p-2 text-gray-500 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

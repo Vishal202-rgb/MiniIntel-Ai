@@ -31,7 +31,7 @@ const ConflictResolver = ({ issue, onResolve, onCancel }) => {
         <form onSubmit={handleSubmit} className="p-4">
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Document</label>
-            <input type="text" value={issue.document || ''} disabled className="w-full border dark:border-gray-700 rounded p-2 bg-gray-100 dark:bg-gray-900 text-gray-500" />
+            <input type="text" value={issue.document || (issue.documentId && (issue.documentId.filename || issue.documentId.title)) || ''} disabled className="w-full border dark:border-gray-700 rounded p-2 bg-gray-100 dark:bg-gray-900 text-gray-500" />
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field</label>

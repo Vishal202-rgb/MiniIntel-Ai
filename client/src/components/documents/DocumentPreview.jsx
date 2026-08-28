@@ -56,7 +56,7 @@ const DocumentPreview = ({ document: docData, isOpen, onClose, onRetry }) => {
 
       <div className="p-6 min-h-[400px]">
         {doc.status === 'pending' || doc.status === 'processing' ? (
-          <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-neutral-500">
             <RefreshCw className="w-8 h-8 animate-spin mb-4 text-blue-500" />
             <p>Document is processing. Please wait...</p>
           </div>
@@ -81,7 +81,7 @@ const DocumentPreview = ({ document: docData, isOpen, onClose, onRetry }) => {
                   <button
                     onClick={handlePrev}
                     disabled={currentPage === 0}
-                    className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
                   >
                     <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   </button>
@@ -91,7 +91,7 @@ const DocumentPreview = ({ document: docData, isOpen, onClose, onRetry }) => {
                   <button
                     onClick={handleNext}
                     disabled={currentPage === totalPages - 1}
-                    className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50"
+                    className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 disabled:opacity-50"
                   >
                     <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   </button>
@@ -104,12 +104,12 @@ const DocumentPreview = ({ document: docData, isOpen, onClose, onRetry }) => {
                 {pages[currentPage]?.content || 'No text extracted for this page.'}
               </pre>
             </div>
-            <div className="mt-2 text-right text-xs text-neutral-500">
+            <div className="mt-2 text-right text-xs text-gray-500 dark:text-neutral-500">
               Word count: {pages[currentPage]?.wordCount || 0}
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-64 text-neutral-500">
+          <div className="flex items-center justify-center h-64 text-gray-500 dark:text-neutral-500">
             No content available.
           </div>
         )}

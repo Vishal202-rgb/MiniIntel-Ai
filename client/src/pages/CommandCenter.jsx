@@ -52,7 +52,7 @@ const CommandCenter = () => {
                 <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">{stat.label}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">{stat.label}</p>
                 <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stat.value}</p>
               </div>
             </div>
@@ -66,7 +66,7 @@ const CommandCenter = () => {
           <Bot className="w-6 h-6 text-indigo-500" />
           <div>
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Multi-Agent Orchestrator</h2>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
               Command the system's agents to perform complex, multi-step tasks across the knowledge base.
             </p>
           </div>
@@ -126,7 +126,7 @@ const CommandCenter = () => {
                     components={{
                       table: ({node, ...props}) => (
                         <div className="overflow-x-auto my-2">
-                          <table className="min-w-full divide-y divide-neutral-300 dark:divide-neutral-700" {...props} />
+                          <table className="min-w-full divide-y divide-neutral-300 dark:divide-gray-200 dark:divide-neutral-700" {...props} />
                         </div>
                       )
                     }}

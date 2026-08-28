@@ -42,7 +42,7 @@ const UploadProgress = ({ uploads, onDismiss }) => {
           {(upload.status === 'success' || upload.status === 'error') && (
             <button
               onClick={() => onDismiss(upload.id)}
-              className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+              className="p-1 text-gray-600 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-gray-800 dark:text-neutral-200"
             >
               <X className="w-5 h-5" />
             </button>

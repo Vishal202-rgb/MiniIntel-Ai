@@ -26,18 +26,8 @@ exports.orchestrateTask = async (req, res, next) => {
         throw error;
       });
 
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => resolve({ isTimeout: true, message: 'Task Accepted / Processing' }), 15000);
-    });
-
     try {
-      const result = await Promise.race([orchestrationPromise, timeoutPromise]);
-      
-      if (result && result.isTimeout) {
-        // Leave the orchestration running in the background
-        return res.status(202).json({ success: true, message: result.message, data: result });
-      }
-      
+      const result = await orchestrationPromise;
       return res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);

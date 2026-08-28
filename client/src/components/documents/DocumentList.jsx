@@ -5,18 +5,20 @@ import EmptyState from '../common/EmptyState';
 const DocumentList = ({ documents, loading, onPreview, onDelete }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex flex-col gap-3">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="bg-white dark:bg-dark-card border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 animate-pulse">
-            <div className="flex gap-3 mb-4">
-              <div className="w-12 h-12 bg-neutral-200 dark:bg-neutral-700 rounded-lg"></div>
-              <div className="flex-1 space-y-2 py-1">
-                <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4"></div>
-                <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
+          <div key={n} className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl p-4 animate-pulse flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-gray-200 dark:bg-neutral-700 rounded-lg shrink-0"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-neutral-700 rounded w-48"></div>
+                <div className="h-3 bg-gray-200 dark:bg-neutral-700 rounded w-32"></div>
               </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-between">
-              <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-20"></div>
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-20 bg-gray-200 dark:bg-neutral-700 rounded-full"></div>
+              <div className="h-8 w-20 bg-gray-200 dark:bg-neutral-700 rounded-lg"></div>
+              <div className="h-8 w-8 bg-gray-200 dark:bg-neutral-700 rounded-lg"></div>
             </div>
           </div>
         ))}
@@ -29,7 +31,7 @@ const DocumentList = ({ documents, loading, onPreview, onDelete }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="flex flex-col gap-3">
       {documents.map((doc) => (
         <DocumentCard
           key={doc.id || doc._id}

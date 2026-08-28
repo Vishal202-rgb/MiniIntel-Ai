@@ -40,7 +40,7 @@ const AnalyticsDashboard = () => {
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-indigo-500">
           <Loader2 className="w-10 h-10 animate-spin" />
-          <p className="text-neutral-500 font-medium">Loading analytics...</p>
+          <p className="text-gray-500 dark:text-neutral-500 font-medium">Loading analytics...</p>
         </div>
       </div>
     );
@@ -99,7 +99,7 @@ const AnalyticsDashboard = () => {
         <TrendingUp className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Analytics Dashboard</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Production metrics, dispatch tracking, and AI insights.</p>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">Production metrics, dispatch tracking, and AI insights.</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ const AnalyticsDashboard = () => {
               <stat.icon className={`w-6 h-6 ${stat.color}`} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs md:text-sm font-medium text-neutral-500 dark:text-neutral-400 truncate">{stat.label}</p>
+              <p className="text-xs md:text-sm font-medium text-gray-500 dark:text-neutral-400 truncate">{stat.label}</p>
               <p className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-white truncate">{stat.value}</p>
             </div>
           </div>
@@ -161,7 +161,7 @@ const AnalyticsDashboard = () => {
         <div className="bg-white dark:bg-[#1A1A1A] p-5 md:p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover-lift lg:col-span-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Production-Dispatch Gap Analysis</h2>
-            <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-neutral-400">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-amber-500"></span> Gap (MT)
               </div>

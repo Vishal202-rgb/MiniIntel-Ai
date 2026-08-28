@@ -8,13 +8,13 @@ api.interceptors.request.use((config) => {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
     const { token } = JSON.parse(userInfo);
-    config.headers.Authorization = Bearer ;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
 export const validateDocument = async (documentId) => {
-  const response = await api.post(`/documents/${documentId}/validate`);
+  const response = await api.post(`/validation/${documentId}/validate`);
   return response.data;
 };
 
@@ -29,7 +29,7 @@ export const getValidationSummary = async () => {
 };
 
 export const resolveIssue = async (id, data) => {
-  const response = await api.post(`/validation/issues/${id}/resolve`, data);
+  const response = await api.put(`/validation/${id}/resolve`, data);
   return response.data;
 };
 

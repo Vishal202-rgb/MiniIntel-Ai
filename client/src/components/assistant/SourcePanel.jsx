@@ -12,7 +12,7 @@ const SourcePanel = ({ sources }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center w-full px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-[#222222] transition-colors"
       >
-        {isOpen ? <ChevronDown size={16} className="mr-1.5 text-neutral-500" /> : <ChevronRight size={16} className="mr-1.5 text-neutral-500" />}
+        {isOpen ? <ChevronDown size={16} className="mr-1.5 text-gray-500 dark:text-neutral-500" /> : <ChevronRight size={16} className="mr-1.5 text-gray-500 dark:text-neutral-500" />}
         <span className="flex-1 text-left">Sources ({sources.length})</span>
       </button>
       
@@ -26,7 +26,7 @@ const SourcePanel = ({ sources }) => {
                   <span className="font-medium text-neutral-800 dark:text-neutral-200 leading-snug">
                     {source.documentName || source.documentId?.originalName || 'Unknown Document'}
                   </span>
-                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500 dark:text-neutral-400">
                     {source.pageNumber && <span>Page {source.pageNumber}</span>}
                     {source.similarity && (
                       <>

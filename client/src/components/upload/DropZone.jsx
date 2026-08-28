@@ -40,7 +40,7 @@ const DropZone = ({ onUpload }) => {
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-1">
           Drag & drop files here, or click to browse
         </p>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="text-sm text-gray-500 dark:text-neutral-400">
           Supports PDF, DOCX, XLSX, CSV, JPG, PNG (Max 50MB)
         </p>
       </div>

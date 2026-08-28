@@ -37,7 +37,7 @@ const Login = () => {
       <div className="w-full max-w-md bg-white dark:bg-[#1A1A1A] rounded-2xl shadow-lg border border-neutral-200 dark:border-neutral-800 p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">MineIntel AI</h1>
-          <p className="text-neutral-500 dark:text-neutral-400">Sign in to your account</p>
+          <p className="text-gray-500 dark:text-neutral-400">Sign in to your account</p>
         </div>
         
         {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm border border-red-100 dark:bg-red-900/20 dark:border-red-900/30">{error}</div>}
@@ -46,7 +46,7 @@ const Login = () => {
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Username</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-neutral-400 w-5 h-5" />
               <input 
                 type="text" 
                 className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-transparent focus:ring-2 focus:ring-blue-500 dark:text-white outline-none transition-shadow"
@@ -57,7 +57,7 @@ const Login = () => {
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 dark:text-neutral-400 w-5 h-5" />
               <input 
                 type="password" 
                 className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-transparent focus:ring-2 focus:ring-blue-500 dark:text-white outline-none transition-shadow"
@@ -76,7 +76,7 @@ const Login = () => {
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <span className="text-neutral-500">
+          <span className="text-gray-500 dark:text-neutral-500">
             {isRegistering ? 'Already have an account?' : 'Need an account?'}
           </span>
           <button 

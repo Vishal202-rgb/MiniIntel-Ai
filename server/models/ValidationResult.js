@@ -38,6 +38,12 @@ const ValidationResultSchema = new mongoose.Schema({
   resolution: {
     type: String
   },
+  correctedValue: {
+    type: String
+  },
+  notes: {
+    type: String
+  },
   resolvedAt: {
     type: Date
   }

@@ -3,6 +3,7 @@ import apiValidation from '../services/apiValidation';
 import ConflictResolver from '../components/validation/ConflictResolver';
 import { ShieldAlert, CheckCircle, AlertTriangle, AlertCircle, Play } from 'lucide-react';
 import useDocuments from '../hooks/useDocuments';
+import BackButton from '../components/common/BackButton';
 
 const ValidationDashboard = () => {
   const [summary, setSummary] = useState(null);
@@ -78,6 +79,7 @@ const ValidationDashboard = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto dark:text-gray-100">
+      <BackButton fallback="/" />
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ShieldAlert className="w-6 h-6 text-indigo-500" />

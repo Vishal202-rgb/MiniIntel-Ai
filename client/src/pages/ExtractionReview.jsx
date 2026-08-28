@@ -5,6 +5,7 @@ import axios from 'axios';
 import RecordTable from '../components/extraction/RecordTable';
 import RecordEditor from '../components/extraction/RecordEditor';
 import { FileText, Play, AlertCircle, CheckCircle } from 'lucide-react';
+import BackButton from '../components/common/BackButton';
 
 // Fallback to fetch documents
 const getDocuments = async () => {
@@ -116,6 +117,7 @@ const ExtractionReview = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto dark:text-gray-100">
+      <BackButton fallback="/" />
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <FileText className="w-6 h-6 text-blue-500" />
         Data Extraction & Review

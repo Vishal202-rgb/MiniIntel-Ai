@@ -76,7 +76,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
 
               {/* Tooltip for collapsed state (desktop only) */}
               {isCollapsed && (
-                <div className="hidden md:block absolute left-full ml-2 px-3 py-1.5 bg-neutral-900 text-gray-900 dark:text-white text-sm rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                <div className="hidden md:block absolute left-full ml-4 px-2 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-[13px] font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-neutral-700">
                   {item.label}
                 </div>
               )}
@@ -93,6 +93,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
               <span className={`truncate transition-opacity duration-200 ${isCollapsed ? 'md:hidden opacity-100' : 'opacity-100'}`}>
                 Logout
               </span>
+              {/* Tooltip for collapsed state (desktop only) */}
+              {isCollapsed && (
+                <div className="hidden md:block absolute left-full ml-4 px-2 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-[13px] font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-neutral-700">
+                  Logout
+                </div>
+              )}
             </button>
           </div>
         </nav>

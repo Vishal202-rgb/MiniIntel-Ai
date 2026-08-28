@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import api from '../services/api';
+import BackButton from '../components/common/BackButton';
 
 const ReportGenerator = () => {
   const [documents, setDocuments] = useState([]);
@@ -71,6 +72,7 @@ const ReportGenerator = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto text-gray-800 dark:text-neutral-200">
+      <BackButton fallback="/" />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Report Generator</h1>
         <p className="text-gray-600 dark:text-neutral-400">Generate evidence-based mining reports from your knowledge base.</p>

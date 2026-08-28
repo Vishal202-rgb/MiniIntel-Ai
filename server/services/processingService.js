@@ -48,7 +48,10 @@ const processDocument = async (documentId) => {
       await job.save();
     };
 
-    const filePath = path.join(__dirname, '..', 'uploads', document.filename);
+    // Environment-aware path
+    const baseDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '..');
+    const filePath = path.join(baseDir, 'uploads', document.filename);
+    
     let extractedPages = [];
 
     await updateProgress(0, 20); // Reading file

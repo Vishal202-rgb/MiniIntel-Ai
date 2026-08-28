@@ -116,7 +116,8 @@ const deleteDocument = async (req, res) => {
     await DocumentPage.deleteMany({ documentId: req.params.id });
     await ProcessingJob.deleteMany({ documentId: req.params.id });
 
-    const filePath = path.join(__dirname, '..', 'uploads', document.filename);
+    const baseDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '..');
+    const filePath = path.join(baseDir, 'uploads', document.filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }

@@ -25,10 +25,16 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+// Environment-aware uploads directory
+const baseDir = process.env.VERCEL ? '/tmp' : __dirname;
+const uploadsDir = path.join(baseDir, 'uploads');
+
+if (!process.env.VERCEL) {
+  // Only aggressively create the uploads directory on startup in local dev
+  // In Vercel, the read-only fs causes a crash, and we lazily create it in /tmp on upload
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
 }
 
 // Connect to Database
@@ -40,7 +46,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Static folder for uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 app.use('/api/auth', authRoutes);

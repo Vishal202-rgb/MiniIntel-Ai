@@ -2,9 +2,27 @@ const multer = require('multer');
 const path = require('path');
 const uuid = require('uuid');
 
+const fs = require('fs');
+
+const getUploadDir = () => {
+  // Use /tmp/uploads for Vercel, else local uploads folder
+  const baseDir = process.env.VERCEL ? '/tmp' : path.join(__dirname, '..');
+  const uploadDir = path.join(baseDir, 'uploads');
+  
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  return uploadDir;
+};
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '..', 'uploads'));
+    try {
+      const dir = getUploadDir();
+      cb(null, dir);
+    } catch (error) {
+      cb(error);
+    }
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${uuid.v4()}${path.extname(file.originalname)}`);

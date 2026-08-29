@@ -77,6 +77,33 @@ const ValidationDashboard = () => {
     }
   };
 
+  const getDocumentDisplayName = (issue) => {
+    // 1. Check if populated object has originalName or title
+    if (issue.documentId && typeof issue.documentId === 'object') {
+      if (issue.documentId.originalName) return issue.documentId.originalName;
+      if (issue.documentId.title) return issue.documentId.title;
+    }
+    
+    // 2. Look up in the context documents array
+    const docIdStr = typeof issue.documentId === 'object' ? issue.documentId._id : issue.documentId;
+    if (docIdStr && documents) {
+      const foundDoc = documents.find(d => d._id === docIdStr || d.id === docIdStr);
+      if (foundDoc?.originalName) return foundDoc.originalName;
+      if (foundDoc?.title) return foundDoc.title;
+    }
+
+    // 3. Fallback checks for 'document' or 'filename' fields
+    const fallbackName = issue.document || (issue.documentId && issue.documentId.filename);
+    if (fallbackName) {
+      // Check if it's a raw timestamp-UUID format (e.g. 1787928884020-fa3e420c...)
+      const isRawFormat = /^\d{13}-/.test(fallbackName);
+      if (!isRawFormat) return fallbackName;
+    }
+
+    // 4. Default clean fallback
+    return 'Mining Document';
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto dark:text-gray-100">
       <BackButton fallback="/" />
@@ -93,9 +120,15 @@ const ValidationDashboard = () => {
             className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 block p-2"
           >
             <option value="" disabled>Select a document</option>
-            {documents?.map(doc => (
-              <option key={doc._id} value={doc._id}>{doc.originalName || doc.title}</option>
-            ))}
+            {documents?.map(doc => {
+              let cleanName = doc.originalName || doc.title;
+              if (!cleanName && doc.filename && !/^\d{13}-/.test(doc.filename)) {
+                cleanName = doc.filename;
+              }
+              return (
+                <option key={doc._id} value={doc._id}>{cleanName || 'Mining Document'}</option>
+              );
+            })}
           </select>
           <button
             onClick={handleRunValidation}
@@ -175,7 +208,7 @@ const ValidationDashboard = () => {
                   ) : issues.map((issue) => (
                         <tr key={issue._id || issue.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
                           <td className="px-4 py-3 font-medium">
-                            {issue.document || (issue.documentId && (issue.documentId.filename || issue.documentId.title)) || 'Unknown'}
+                            {getDocumentDisplayName(issue)}
                           </td>
                           <td className="px-4 py-3">{issue.field || 'N/A'}</td>
                           <td className="px-4 py-3">{issue.issueType || issue.type}</td>

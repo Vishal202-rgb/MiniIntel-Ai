@@ -34,6 +34,33 @@ router.put('/users/:id/role', protect, admin, async (req, res) => {
   }
 });
 
+router.delete('/users/:id', protect, admin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Prevent admin from deleting themselves
+    if (user._id.toString() === req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Cannot delete your own admin account' });
+    }
+
+    // Prevent deleting the predefined admin identity just in case
+    const predefinedAdmin = process.env.ADMIN_USERNAME || 'admin';
+    if (user.username === predefinedAdmin || user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Cannot delete an administrator account' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    auditService.logAudit({ user: req.user._id, action: 'DELETE_USER', resource: 'User', resourceId: user._id, details: { deletedUsername: user.username } });
+    
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 router.get('/stats', protect, admin, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();

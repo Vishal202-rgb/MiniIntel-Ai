@@ -22,11 +22,13 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
       const filteredChunks = similarChunks.filter(c => c.documentId.toString() === documentId);
       const chunksToUse = filteredChunks.length > 0 ? filteredChunks : similarChunks;
       chunksToUse.forEach((chunk, i) => {
-        contextText += `--- Chunk ${i+1} (Page ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+        const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
+        contextText += `--- Source Reference ${i+1} [${pageLabel}] ---\n${chunk.content}\n\n`;
       });
     } else {
       similarChunks.forEach((chunk, i) => {
-        contextText += `--- Chunk ${i+1} (Page ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+        const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
+        contextText += `--- Source Reference ${i+1} [${pageLabel}] ---\n${chunk.content}\n\n`;
       });
     }
 
@@ -42,6 +44,11 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     const systemPrompt = `You are an expert mining operations analyst for MineIntel. Generate a highly professional '${type}' report based ONLY on the provided context.
     
     Do NOT hallucinate numbers. Preserve units and financial-year labels. Show calculations clearly. Reference the source document/page when available.
+    
+    CRITICAL CITATION RULES:
+    - NEVER guess or infer a page number.
+    - If a source says [Page N/A] or does not have a page number, you MUST NOT write "Page 1". Simply cite the document name or reference number.
+    - Only cite the page number if it is explicitly provided in the bracketed source reference (e.g., [Page 2]).
     
     Output the report in Markdown format with the following sections (if applicable to the type):
     1. Executive Summary

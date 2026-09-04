@@ -40,19 +40,32 @@ const processQuestion = async (question, conversationId, reqContext = null) => {
     // Determine if question needs analytical reasoning
     isAnalytical = requiresAnalysis(question);
     
+    let miningTask = null;
+    let ragTask = null;
+
     if (isAnalytical) {
-      const { summaryText, evidenceText, combinedSources } = await miningIntelligenceService.analyzeDataAndFindAnomalies(reqContext);
-      contextText += summaryText + '\n' + evidenceText + '\n';
-      sources = combinedSources;
+      miningTask = miningIntelligenceService.analyzeDataAndFindAnomalies(reqContext);
     }
 
     // Always do standard semantic search for additional context
-    const similarChunks = await ragService.searchSimilar(question, 3, reqContext);
-    
-    if (similarChunks.length > 0) {
+    ragTask = ragService.searchSimilar(question, 3, reqContext);
+
+    // Wait for both concurrently
+    const [miningRes, similarChunks] = await Promise.all([
+      miningTask,
+      ragTask
+    ]);
+
+    if (isAnalytical && miningRes) {
+      contextText += miningRes.summaryText + '\n' + miningRes.evidenceText + '\n';
+      sources.push(...miningRes.combinedSources);
+    }
+
+    if (similarChunks && similarChunks.length > 0) {
       contextText += "=== GENERAL KNOWLEDGE BASE ===\n";
       similarChunks.forEach((chunk, index) => {
-        contextText += `--- Chunk ${index + 1} (Page: ${chunk.pageNumber}) ---\n${chunk.content}\n\n`;
+        const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
+        contextText += `--- Source Reference ${index + 1} [${pageLabel}] ---\n${chunk.content}\n\n`;
         sources.push({
           documentId: chunk.documentId,
           pageNumber: chunk.pageNumber,
@@ -73,11 +86,17 @@ const processQuestion = async (question, conversationId, reqContext = null) => {
     systemPrompt += `\n\nProvide a Management-Ready Insight structure for your response if discussing anomalies:
 1. Finding: What changed? (Use deterministic numbers from context)
 2. Impact: Why does it matter?
-3. Evidence: What source supports the finding? (Cite the document name and page)
+3. Evidence: What source supports the finding? (Cite the document name and EXACT page number from the Source Metadata/Reference.)
 4. Explanation: What reason is recorded in the available documents? (Do not invent reasons. If no supporting evidence was found, say "No supporting evidence was found in the available documents.")
 `;
   }
-  
+
+  systemPrompt += `\nCRITICAL CITATION RULES:
+- NEVER guess or infer a page number.
+- If a source says [Page N/A] or does not have a page number, you MUST NOT write "Page 1". Simply cite the document name or reference number.
+- Only cite the page number if it is explicitly provided in the bracketed source reference (e.g., [Page 2]).
+`;
+
   let answer;
   if (process.env.LLM_API_KEY === 'mock-key-for-testing') {
     answer = "This is a mock response based on the provided context.";

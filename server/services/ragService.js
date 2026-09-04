@@ -17,11 +17,22 @@ const cosineSimilarity = (vecA, vecB) => {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
+let cachedChunks = null;
+let lastCacheTime = 0;
+const CACHE_TTL = 30000; // 30 seconds cache for hackathon speed
+
 const searchSimilar = async (query, topK = 5, reqContext = null) => {
   const queryEmbedding = await llmService.generateEmbedding(query, { reqContext });
   
-  // In-memory cosine similarity fallback
-  const allChunks = await DocumentChunk.find({ embedding: { $exists: true, $ne: [] } }).populate('documentId', 'originalName filename');
+  // In-memory cosine similarity fallback - Optimized with Cache & lean()
+  if (!cachedChunks || Date.now() - lastCacheTime > CACHE_TTL) {
+    cachedChunks = await DocumentChunk.find({ embedding: { $exists: true, $ne: [] } })
+      .populate('documentId', 'originalName filename')
+      .lean();
+    lastCacheTime = Date.now();
+  }
+  
+  const allChunks = cachedChunks;
   
   const chunksWithScores = allChunks
     .filter(chunk => chunk.embedding && chunk.embedding.length === queryEmbedding.length)
@@ -35,7 +46,7 @@ const searchSimilar = async (query, topK = 5, reqContext = null) => {
   chunksWithScores.sort((a, b) => b.score - a.score);
   
   return chunksWithScores.slice(0, topK).map(item => ({
-    ...item.chunk.toObject(),
+    ...(typeof item.chunk.toObject === 'function' ? item.chunk.toObject() : item.chunk),
     similarityScore: item.score
   }));
 };

@@ -48,6 +48,9 @@ exports.analyzeDataAndFindAnomalies = async (reqContext = null) => {
       const currVal = currRecords.reduce((sum, r) => sum + (parseNumeric(r.value) || 0), 0);
       const unit = currRecords[0].unit || prevRecords[0].unit || '';
       
+      const pageNumbers = [...new Set(currRecords.map(r => r.pageNumber).filter(p => p != null))].join(', ');
+      const pageStr = pageNumbers ? `Page(s) ${pageNumbers}` : 'Page N/A';
+      
       if (prevVal === 0) continue; // Avoid division by zero
       
       const absChange = currVal - prevVal;
@@ -56,7 +59,8 @@ exports.analyzeDataAndFindAnomalies = async (reqContext = null) => {
       summaryText += `- Metric: ${metricName.toUpperCase()}\n`;
       summaryText += `  Period: ${prevPeriod} -> ${currPeriod}\n`;
       summaryText += `  Values: ${prevVal} -> ${currVal} ${unit}\n`;
-      summaryText += `  Change: ${absChange.toFixed(2)} (${pctChange.toFixed(2)}%)\n\n`;
+      summaryText += `  Change: ${absChange.toFixed(2)} (${pctChange.toFixed(2)}%)\n`;
+      summaryText += `  Source Metadata: ${pageStr}\n\n`;
 
       // Anomaly detection logic
       let reasonFlagged = null;
@@ -94,10 +98,15 @@ exports.analyzeDataAndFindAnomalies = async (reqContext = null) => {
        if (targetVal > 0) {
          const variance = prodVal - targetVal;
          const pctVariance = (variance / targetVal) * 100;
+         
+         const pageNumbers = [...new Set(prodGroup[period].map(r => r.pageNumber).filter(p => p != null))].join(', ');
+         const pageStr = pageNumbers ? `Page(s) ${pageNumbers}` : 'Page N/A';
+         
          summaryText += `- Metric: TARGET VARIANCE\n`;
          summaryText += `  Period: ${period}\n`;
          summaryText += `  Target: ${targetVal} | Actual: ${prodVal}\n`;
-         summaryText += `  Variance: ${variance.toFixed(2)} (${pctVariance.toFixed(2)}%)\n\n`;
+         summaryText += `  Variance: ${variance.toFixed(2)} (${pctVariance.toFixed(2)}%)\n`;
+         summaryText += `  Source Metadata: ${pageStr}\n\n`;
          
          if (pctVariance <= -10) {
             anomalies.push({
@@ -125,10 +134,15 @@ exports.analyzeDataAndFindAnomalies = async (reqContext = null) => {
   let evidenceText = "=== RAG EVIDENCE FOR ANOMALIES ===\n\n";
   let combinedSources = [];
 
-  for (const anom of anomalies) {
+  const evidencePromises = anomalies.map(async (anom) => {
     const query = `Why did ${anom.metric} ${anom.percentage < 0 ? 'decrease' : 'increase'} or vary in ${anom.period}? Explanations like equipment downtime, weather, constraints, maintenance.`;
     const similarChunks = await ragService.searchSimilar(query, 3, reqContext);
-    
+    return { anom, similarChunks };
+  });
+
+  const evidenceResults = await Promise.all(evidencePromises);
+
+  for (const { anom, similarChunks } of evidenceResults) {
     evidenceText += `Anomaly: ${anom.reason} in ${anom.period}\n`;
     
     if (similarChunks && similarChunks.length > 0) {

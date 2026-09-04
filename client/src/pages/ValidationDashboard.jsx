@@ -22,14 +22,11 @@ const ValidationDashboard = () => {
     }
   }, [documents, selectedDocument]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = async (docId) => {
+    if (!docId) return;
     setLoading(true);
     try {
-      const summaryData = await apiValidation.getValidationSummary();
+      const summaryData = await apiValidation.getValidationSummary(docId);
       setSummary(summaryData);
       setIssues(summaryData.issues || []);
     } catch (error) {
@@ -41,6 +38,12 @@ const ValidationDashboard = () => {
     }
   };
 
+  useEffect(() => {
+    if (selectedDocument) {
+      loadData(selectedDocument);
+    }
+  }, [selectedDocument]);
+
   const handleRunValidation = async () => {
     if (!selectedDocument) return;
     setRunningValidation(true);
@@ -48,7 +51,7 @@ const ValidationDashboard = () => {
     try {
       await apiValidation.validateDocument(selectedDocument);
       setValidationMessage({ type: 'success', text: 'Validation completed successfully.' });
-      loadData();
+      loadData(selectedDocument);
     } catch (error) {
       console.error(error);
       setValidationMessage({ type: 'error', text: 'Unable to run validation. Please try again.' });
@@ -61,7 +64,7 @@ const ValidationDashboard = () => {
     try {
       await apiValidation.resolveIssue(resolvingIssue.id || resolvingIssue._id, data);
       setResolvingIssue(null);
-      loadData(); // Reload to refresh list and summary
+      loadData(selectedDocument); // Reload to refresh list and summary
     } catch (error) {
       console.error(error);
     }

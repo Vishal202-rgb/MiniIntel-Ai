@@ -3,6 +3,7 @@ const Document = require('../models/Document');
 const ragService = require('./ragService');
 const llmService = require('./llmService');
 const auditService = require('./auditService');
+const miningIntelligenceService = require('./miningIntelligenceService');
 
 const generateReport = async (data, type, userId, reqContext = {}) => {
   try {
@@ -29,6 +30,15 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
       });
     }
 
+    // INJECT MINING INTELLIGENCE (HISTORICAL COMPARISON & ANOMALY DETECTION)
+    try {
+      const { summaryText, evidenceText } = await miningIntelligenceService.analyzeDataAndFindAnomalies(reqContext);
+      contextText += '\n\n=== MINING INTELLIGENCE (ANOMALIES & EVIDENCE) ===\n';
+      contextText += summaryText + '\n' + evidenceText + '\n';
+    } catch (err) {
+      console.error('Failed to inject mining intelligence into report context:', err);
+    }
+
     const systemPrompt = `You are an expert mining operations analyst for MineIntel. Generate a highly professional '${type}' report based ONLY on the provided context.
     
     Do NOT hallucinate numbers. Preserve units and financial-year labels. Show calculations clearly. Reference the source document/page when available.
@@ -41,7 +51,7 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     5. Production-Dispatch Gap
     6. Key Operational Risks
     7. Evidence / Source References
-    8. AI Insights
+    8. AI Insights (Include a Management-Ready Insight here for any anomalies: Finding, Impact, Evidence, Explanation)
     9. Recommendations
     
     Additional Instructions from User: ${instructions || 'None'}

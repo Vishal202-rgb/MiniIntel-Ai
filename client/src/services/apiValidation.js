@@ -23,8 +23,9 @@ export const getValidationResults = async (documentId) => {
   return response.data;
 };
 
-export const getValidationSummary = async () => {
-  const response = await api.get(`/validation/summary`);
+export const getValidationSummary = async (documentId) => {
+  const url = documentId ? `/validation/summary?documentId=${documentId}` : `/validation/summary`;
+  const response = await api.get(url);
   return response.data;
 };
 

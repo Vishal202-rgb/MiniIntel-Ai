@@ -18,6 +18,8 @@ const DropZone = ({ onUpload }) => {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+      'application/vnd.ms-powerpoint': ['.ppt'],
       'text/csv': ['.csv'],
       'image/jpeg': ['.jpeg', '.jpg'],
       'image/png': ['.png']
@@ -41,7 +43,7 @@ const DropZone = ({ onUpload }) => {
           Drag & drop files here, or click to browse
         </p>
         <p className="text-sm text-gray-500 dark:text-neutral-400">
-          Supports PDF, DOCX, XLSX, CSV, JPG, PNG (Max 50MB)
+          Supports PDF, DOCX, XLSX, PPTX, CSV, JPG, PNG (Max 50MB)
         </p>
       </div>
       {fileRejections.length > 0 && (

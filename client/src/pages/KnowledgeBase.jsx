@@ -106,7 +106,7 @@ const KnowledgeBase = () => {
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
               <select 
-                className="w-full appearance-none bg-neutral-50 dark:bg-[#111111] border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+                className="w-full appearance-none bg-gray-50/50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors cursor-pointer"
                 value={selectedDocId}
                 onChange={(e) => setSelectedDocId(e.target.value)}
               >
@@ -115,7 +115,7 @@ const KnowledgeBase = () => {
                   <option key={doc._id} value={doc._id}>{doc.originalName || doc.title || doc.filename}</option>
                 ))}
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600 dark:text-neutral-400">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-neutral-400">
                 <ChevronDown size={18} />
               </div>
             </div>
@@ -132,13 +132,13 @@ const KnowledgeBase = () => {
 
           {/* Indexing Status Feedback */}
           {indexingStatus === 'success' && (
-            <div className="mt-auto p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300 rounded-lg flex items-start gap-3 shadow-sm">
+            <div className="mt-auto p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400 rounded-lg flex items-start gap-3 shadow-sm">
               <CheckCircle size={20} className="shrink-0 mt-0.5" />
               <div className="text-sm font-medium">{indexMessage}</div>
             </div>
           )}
           {indexingStatus === 'error' && (
-            <div className="mt-auto p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-lg flex items-start gap-3 shadow-sm">
+            <div className="mt-auto p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 rounded-lg flex items-start gap-3 shadow-sm">
               <AlertTriangle size={20} className="shrink-0 mt-0.5" />
               <div className="text-sm font-medium">{indexMessage}</div>
             </div>
@@ -146,10 +146,12 @@ const KnowledgeBase = () => {
         </div>
 
         {/* Semantic Search Section */}
-        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col h-[500px]">
+        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col h-[500px]">
           <div className="flex items-center gap-3 mb-2 shrink-0">
-            <Search className="text-indigo-500 w-6 h-6" />
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
+              <Search className="text-indigo-600 dark:text-indigo-400 w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
           </div>
           <p className="text-gray-500 dark:text-neutral-400 text-sm mb-6 shrink-0">
             Query the vector database directly to see what chunks the AI retrieves for context.
@@ -157,11 +159,11 @@ const KnowledgeBase = () => {
           
           <form onSubmit={handleSearch} className="flex gap-3 mb-6 shrink-0">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 dark:text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-neutral-400" />
               <input 
                 type="text"
                 placeholder="e.g., 'coal production and dispatch'"
-                className="w-full bg-neutral-50 dark:bg-[#111111] border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+                className="w-full bg-gray-50/50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={isSearching}
@@ -170,7 +172,7 @@ const KnowledgeBase = () => {
             <button 
               type="submit"
               disabled={!searchQuery.trim() || isSearching}
-              className="px-6 py-3 bg-neutral-800 dark:bg-neutral-700 text-gray-900 dark:text-white font-medium rounded-lg hover:bg-neutral-900 dark:hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
+              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
             >
               {isSearching ? <Loader2 size={18} className="animate-spin" /> : 'Search'}
             </button>

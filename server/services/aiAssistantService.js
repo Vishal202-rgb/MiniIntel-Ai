@@ -6,7 +6,7 @@ const miningIntelligenceService = require('./miningIntelligenceService');
 
 function requiresAnalysis(question) {
   const q = question.toLowerCase();
-  return q.includes('trend') || q.includes('compar') || q.includes('variance') || q.includes('anomal') || q.includes('decreas') || q.includes('increas') || q.includes('why') || q.includes('chang');
+  return q.includes('trend') || q.includes('compar') || q.includes('variance') || q.includes('anomal') || q.includes('decreas') || q.includes('increas') || q.includes('why') || q.includes('chang') || q.includes('entity') || q.includes('topic') || q.includes('similar');
 }
 
 const processQuestion = async (question, conversationId, reqContext = null) => {
@@ -65,7 +65,8 @@ const processQuestion = async (question, conversationId, reqContext = null) => {
       contextText += "=== GENERAL KNOWLEDGE BASE ===\n";
       similarChunks.forEach((chunk, index) => {
         const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
-        contextText += `--- Source Reference ${index + 1} [${pageLabel}] ---\n${chunk.content}\n\n`;
+        const docName = chunk.documentId ? (chunk.documentId.originalName || chunk.documentId.filename) : 'Unknown Document';
+        contextText += `--- Source Reference ${index + 1} — ${docName} [${pageLabel}] ---\n${chunk.content}\n\n`;
         sources.push({
           documentId: chunk.documentId,
           pageNumber: chunk.pageNumber,
@@ -95,6 +96,10 @@ const processQuestion = async (question, conversationId, reqContext = null) => {
 - NEVER guess or infer a page number.
 - If a source says [Page N/A] or does not have a page number, you MUST NOT write "Page 1". Simply cite the document name or reference number.
 - Only cite the page number if it is explicitly provided in the bracketed source reference (e.g., [Page 2]).
+
+INSUFFICIENT EVIDENCE RULE:
+- If the provided context contains NO relevant information to answer the question, you MUST respond: "**Insufficient Evidence**: The available documents do not contain enough information to answer this question with confidence. Please upload relevant documents or refine your query."
+- NEVER invent numeric values, evidence, or citations. If evidence is not found, say so clearly.
 `;
 
   let answer;

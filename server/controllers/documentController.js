@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const Document = require('../models/Document');
 const DocumentPage = require('../models/DocumentPage');
 const ProcessingJob = require('../models/ProcessingJob');
@@ -9,15 +10,34 @@ const getFileType = (mimetype) => {
   if (mimetype === 'application/pdf') return 'pdf';
   if (mimetype.includes('wordprocessingml.document')) return 'docx';
   if (mimetype.includes('spreadsheetml.sheet') || mimetype === 'application/vnd.ms-excel') return 'xlsx';
+  if (mimetype.includes('presentationml.presentation') || mimetype === 'application/vnd.ms-powerpoint') return 'pptx';
   if (mimetype === 'text/csv') return 'csv';
   if (mimetype.startsWith('image/')) return 'image';
   return 'pdf'; // fallback
+};
+
+const getFileHash = (filePath) => {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(filePath);
+    stream.on('error', err => reject(err));
+    stream.on('data', chunk => hash.update(chunk));
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
 };
 
 const uploadDocument = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const fileHash = await getFileHash(req.file.path);
+    const existingDoc = await Document.findOne({ hash: fileHash });
+    
+    if (existingDoc) {
+      fs.unlinkSync(req.file.path);
+      return res.status(409).json({ error: 'Duplicate document detected (checksum matched).' });
     }
 
     const fileType = getFileType(req.file.mimetype);
@@ -28,6 +48,7 @@ const uploadDocument = async (req, res) => {
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
       fileType: fileType,
+      hash: fileHash,
       userId: req.user._id
     });
 
@@ -44,6 +65,9 @@ const uploadDocument = async (req, res) => {
 
     res.status(201).json(document);
   } catch (error) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     res.status(500).json({ error: error.message });
   }
 };

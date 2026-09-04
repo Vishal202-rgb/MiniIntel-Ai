@@ -96,6 +96,7 @@ app.use('/api/agents', agentRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/intelligence', require('./routes/intelligence'));
 
 // Global Error Handler
 app.use(errorHandler);
@@ -130,3 +131,7 @@ module.exports = app;
 // Trigger nodemon restart 2
 
 // Trigger nodemon restart 3
+
+// Trigger nodemon restart 4
+
+// Trigger nodemon restart 5

@@ -372,6 +372,7 @@ const AdminDashboard = () => {
                 <tr>
                   <th className="px-6 py-4 font-semibold">Filename</th>
                   <th className="px-6 py-4 font-semibold">Type</th>
+                  <th className="px-6 py-4 font-semibold">Category</th>
                   <th className="px-6 py-4 font-semibold">Status</th>
                   <th className="px-6 py-4 font-semibold">Uploaded</th>
                 </tr>
@@ -381,6 +382,7 @@ const AdminDashboard = () => {
                   <tr key={doc._id} className="hover:bg-purple-50/50 dark:hover:bg-neutral-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-900 dark:text-neutral-200 truncate max-w-[250px]">{doc.originalName || doc.filename}</td>
                     <td className="px-6 py-4 uppercase text-xs text-neutral-500 dark:text-neutral-400 font-medium">{doc.fileType || '—'}</td>
+                    <td className="px-6 py-4">{doc.category || '—'}</td>
                     <td className="px-6 py-4"><StatusBadge status={doc.status} /></td>
                     <td className="px-6 py-4 text-neutral-500 dark:text-neutral-400 whitespace-nowrap">{formatDate(doc.uploadedAt)}</td>
                   </tr>

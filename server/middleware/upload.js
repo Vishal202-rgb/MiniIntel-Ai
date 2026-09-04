@@ -34,6 +34,8 @@ const fileFilter = (req, file, cb) => {
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.ms-powerpoint',
     'text/csv',
     'application/vnd.ms-excel',
     'image/jpeg',
@@ -43,7 +45,7 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF, DOCX, XLSX, CSV, JPEG, and PNG are allowed.'), false);
+    cb(new Error('Invalid file type. Only PDF, DOCX, XLSX, PPTX, CSV, JPEG, and PNG are allowed.'), false);
   }
 };
 

@@ -15,6 +15,15 @@ const TopicSchema = new mongoose.Schema({
   },
   keywords: [{
     type: String
+  }],
+  trendData: [{
+    period: { type: String },
+    count: { type: Number, default: 0 },
+    avgWeight: { type: Number, default: 1.0 }
+  }],
+  relatedTopics: [{
+    topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic' },
+    strength: { type: Number, default: 0 }
   }]
 }, { timestamps: true });
 

@@ -175,3 +175,25 @@ exports.generateEmbedding = async (textOrArray, options = {}) => {
     throw error;
   }
 };
+
+exports.classifyDocument = async (text, options = {}) => {
+  const systemPrompt = `You are a Document Classifier. Classify the provided text into exactly ONE of the following categories:
+- Production Report
+- Safety Manual
+- Logistics Return
+- Compliance Notice
+- Financial Statement
+- Other
+
+Return ONLY a JSON object: {"category": "The Category"}`;
+  
+  const userPrompt = `Document text:\n${text.substring(0, 3000)}`;
+  
+  try {
+    const res = await exports.callLLM(systemPrompt, userPrompt, { format: 'json', reqContext: { isComplex: false }, ...options });
+    return res.category || 'Uncategorized';
+  } catch (err) {
+    console.warn("Classification failed:", err.message);
+    return 'Uncategorized';
+  }
+};

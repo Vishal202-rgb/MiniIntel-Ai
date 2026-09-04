@@ -19,6 +19,7 @@ import ReportGenerator from './pages/ReportGenerator';
 import AuditTrail from './pages/AuditTrail';
 import AdminUsers from './pages/AdminUsers';
 import SystemHealth from './pages/SystemHealth';
+import IntelligenceDashboard from './pages/IntelligenceDashboard';
 
 const DashboardRouter = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
@@ -50,6 +51,7 @@ function App() {
                 <Route path="ai-assistant" element={<AIAssistant />} />
                 <Route path="reports" element={<ReportGenerator />} />
                 <Route path="analytics" element={<AnalyticsDashboard />} />
+                <Route path="intelligence" element={<IntelligenceDashboard />} />
                 <Route path="topics" element={<TopicsExplorer />} />
                 <Route path="audit" element={<AuditTrail />} />
                 

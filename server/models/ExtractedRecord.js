@@ -53,6 +53,12 @@ const ExtractedRecordSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
+  linkedEvidence: [{
+    documentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
+    pageNumber: { type: Number },
+    snippet: { type: String },
+    similarity: { type: Number }
+  }],
   reviewedAt: {
     type: Date
   },

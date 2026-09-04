@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity } from 'lucide-react';
+import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity, Sparkles } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { to: '/knowledge-base', icon: Database, label: 'Knowledge Base' },
   { to: '/ai-assistant', icon: MessageSquare, label: 'AI Assistant' },
   { to: '/analytics', icon: BarChart2, label: 'Analytics' },
+  { to: '/intelligence', icon: Sparkles, label: 'Intelligence' },
   { to: '/topics', icon: Hash, label: 'Topics' },
   { to: '/reports', icon: FileOutput, label: 'Reports' },
   { to: '/audit', icon: ScrollText, label: 'Audit Trail' },

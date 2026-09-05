@@ -10,29 +10,28 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     const { documentId, instructions } = data;
     let contextText = '';
     
-    // Retrieve context from specific document if provided, otherwise generic search
     let searchQuery = type;
     if (instructions) searchQuery += ' ' + instructions;
     
-    // Get relevant chunks using RAG
     const similarChunks = await ragService.searchSimilar(searchQuery, 10, reqContext);
     
     if (documentId) {
-      // Filter chunks to only include this document if requested
       const filteredChunks = similarChunks.filter(c => c.documentId.toString() === documentId);
       const chunksToUse = filteredChunks.length > 0 ? filteredChunks : similarChunks;
       chunksToUse.forEach((chunk, i) => {
         const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
-        contextText += `--- Source Reference ${i+1} [${pageLabel}] ---\n${chunk.content}\n\n`;
+        const docName = chunk.documentId?.originalName || chunk.documentId?.filename || 'Document';
+        contextText += `--- Source Reference ${i+1} — ${docName} [${pageLabel}] ---\n${chunk.content}\n\n`;
       });
     } else {
       similarChunks.forEach((chunk, i) => {
         const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
-        contextText += `--- Source Reference ${i+1} [${pageLabel}] ---\n${chunk.content}\n\n`;
+        const docName = chunk.documentId?.originalName || chunk.documentId?.filename || 'Document';
+        contextText += `--- Source Reference ${i+1} — ${docName} [${pageLabel}] ---\n${chunk.content}\n\n`;
       });
     }
 
-    // INJECT MINING INTELLIGENCE (HISTORICAL COMPARISON & ANOMALY DETECTION)
+    // INJECT MINING INTELLIGENCE
     try {
       const { summaryText, evidenceText } = await miningIntelligenceService.analyzeDataAndFindAnomalies(reqContext);
       contextText += '\n\n=== MINING INTELLIGENCE (ANOMALIES & EVIDENCE) ===\n';
@@ -58,8 +57,10 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     5. Production-Dispatch Gap
     6. Key Operational Risks
     7. Evidence / Source References
-    8. AI Insights (Include a Management-Ready Insight here for any anomalies: Finding, Impact, Evidence, Explanation)
+    8. AI Insights
     9. Recommendations
+    
+    At the end, add a section called "## Evidence Appendix" that lists every source reference used, with the document name, page number, and a brief excerpt of the cited text.
     
     Additional Instructions from User: ${instructions || 'None'}
     
@@ -68,25 +69,49 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
 
     const reportContent = await llmService.callLLM(systemPrompt, 'Generate the report.', { reqContext });
 
+    // Compute evidence coverage
+    const citedSources = similarChunks.filter(c => c.similarityScore > 0.3);
+    const evidenceCoverage = {
+      total: similarChunks.length,
+      cited: citedSources.length,
+      percentage: similarChunks.length > 0 ? Math.round((citedSources.length / similarChunks.length) * 100) : 0
+    };
+
+    // Compute confidence score from avg similarity
+    const avgSimilarity = similarChunks.length > 0
+      ? similarChunks.reduce((sum, c) => sum + (c.similarityScore || 0), 0) / similarChunks.length
+      : 0;
+    const confidenceScore = Math.round(avgSimilarity * 100) / 100;
+
     const reportTitle = `${type} Report - ${new Date().toLocaleDateString()}`;
     
     const report = new Report({
       title: reportTitle,
       type: type,
-      content: { markdown: reportContent, sources: similarChunks.map(c => c.documentId) },
-      status: 'completed',
-      generatedBy: userId
+      content: {
+        markdown: reportContent,
+        sources: similarChunks.map(c => ({
+          documentId: c.documentId?._id || c.documentId,
+          documentName: c.documentId?.originalName || c.documentId?.filename || 'Document',
+          pageNumber: c.pageNumber,
+          similarity: c.similarityScore,
+          excerpt: (c.content || '').substring(0, 150)
+        }))
+      },
+      status: 'draft',
+      generatedBy: userId,
+      confidenceScore,
+      evidenceCoverage
     });
 
     await report.save();
     
-    // Non-blocking audit log
     auditService.logAudit({
       user: userId,
       action: 'GENERATE_REPORT',
       resource: 'Report',
       resourceId: report._id,
-      details: { type, documentId }
+      details: { type, documentId, confidenceScore, evidenceCoverage }
     });
 
     return report;
@@ -95,6 +120,62 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
   }
 };
 
+// Export report content in different formats
+const exportReport = async (reportId, format = 'json') => {
+  const report = await Report.findById(reportId).populate('generatedBy', 'username').lean();
+  if (!report) throw new Error('Report not found');
+
+  const markdown = report.content?.markdown || '';
+  const sources = report.content?.sources || [];
+
+  switch (format) {
+    case 'json':
+      return {
+        contentType: 'application/json',
+        filename: `${report.title.replace(/\s+/g, '_')}.json`,
+        data: JSON.stringify({
+          title: report.title,
+          type: report.type,
+          status: report.status,
+          generatedBy: report.generatedBy?.username,
+          generatedAt: report.createdAt,
+          confidenceScore: report.confidenceScore,
+          evidenceCoverage: report.evidenceCoverage,
+          content: markdown,
+          sources
+        }, null, 2)
+      };
+
+    case 'csv': {
+      // Export sources as CSV
+      const header = 'Document,Page,Similarity,Excerpt\n';
+      const rows = sources.map(s =>
+        `"${s.documentName || ''}","${s.pageNumber || 'N/A'}","${s.similarity || ''}","${(s.excerpt || '').replace(/"/g, '""')}"`
+      ).join('\n');
+      return {
+        contentType: 'text/csv',
+        filename: `${report.title.replace(/\s+/g, '_')}_sources.csv`,
+        data: header + rows
+      };
+    }
+
+    case 'md':
+    case 'docx': {
+      // Return plain markdown (client can render or convert)
+      const fullMd = `# ${report.title}\n\n**Type:** ${report.type}  \n**Status:** ${report.status}  \n**Generated:** ${report.createdAt}  \n**Confidence:** ${Math.round((report.confidenceScore || 0) * 100)}%  \n**Evidence Coverage:** ${report.evidenceCoverage?.percentage || 0}%\n\n---\n\n${markdown}`;
+      return {
+        contentType: 'text/markdown',
+        filename: `${report.title.replace(/\s+/g, '_')}.md`,
+        data: fullMd
+      };
+    }
+
+    default:
+      throw new Error(`Unsupported export format: ${format}`);
+  }
+};
+
 module.exports = {
-  generateReport
+  generateReport,
+  exportReport
 };

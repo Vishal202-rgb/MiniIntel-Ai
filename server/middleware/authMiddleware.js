@@ -35,4 +35,12 @@ const admin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, admin };
+const reviewer = (req, res, next) => {
+  if (req.user && (req.user.role === 'reviewer' || req.user.role === 'admin')) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as a reviewer' });
+  }
+};
+
+module.exports = { protect, admin, reviewer };

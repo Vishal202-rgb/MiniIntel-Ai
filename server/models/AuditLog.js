@@ -7,6 +7,8 @@ const AuditLogSchema = new mongoose.Schema({
   resourceId: { type: mongoose.Schema.Types.ObjectId },
   status: { type: String, enum: ['SUCCESS', 'FAILED', 'PROCESSING'], default: 'SUCCESS' },
   details: { type: mongoose.Schema.Types.Mixed },
+  ipAddress: { type: String, default: '' },
+  userAgent: { type: String, default: '' },
   timestamp: { type: Date, default: Date.now }
 });
 

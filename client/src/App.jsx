@@ -21,6 +21,8 @@ import AdminUsers from './pages/AdminUsers';
 import SystemHealth from './pages/SystemHealth';
 import IntelligenceDashboard from './pages/IntelligenceDashboard';
 
+import { LanguageProvider } from './context/LanguageContext';
+
 const DashboardRouter = () => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   if (userInfo.role === 'admin') {
@@ -32,9 +34,10 @@ const DashboardRouter = () => {
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <div className="min-h-screen bg-neutral-50 dark:bg-[#111111] transition-colors duration-200">
-          <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-neutral-50 dark:bg-[#111111] transition-colors duration-200">
+            <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/admin/login" element={<AdminLogin />} />
@@ -65,7 +68,8 @@ function App() {
           </Routes>
         </BrowserRouter>
         </div>
-      </AuthProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

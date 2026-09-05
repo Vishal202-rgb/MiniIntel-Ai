@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity, Sparkles, Globe } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -21,6 +22,7 @@ const navItems = [
 
 const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) => {
   const { user, logout } = useContext(AuthContext);
+  const { lang, toggleLanguage, t } = useLanguage();
 
   const visibleItems = navItems.filter(item => {
     if (item.adminOnly && user?.role !== 'admin') return false;
@@ -72,18 +74,29 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
               <item.icon className={`shrink-0 ${isCollapsed ? 'md:w-6 md:h-6 w-5 h-5' : 'w-5 h-5'}`} />
               
               <span className={`truncate transition-opacity duration-200 ${isCollapsed ? 'md:hidden opacity-100' : 'opacity-100'}`}>
-                {item.label}
+                {t(item.label.toLowerCase().replace(/ /g, '')) || item.label}
               </span>
 
               {/* Tooltip for collapsed state (desktop only) */}
               {isCollapsed && (
                 <div className="hidden md:block absolute left-full ml-4 px-2 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-[13px] font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-neutral-700">
-                  {item.label}
+                  {t(item.label.toLowerCase().replace(/ /g, '')) || item.label}
                 </div>
               )}
             </NavLink>
           ))}
-          <div className="mt-8 border-t border-neutral-200 dark:border-neutral-800 pt-4">
+          <div className="mt-4 border-t border-neutral-200 dark:border-neutral-800 pt-4 space-y-1.5">
+            <button
+              onClick={toggleLanguage}
+              className={`w-full flex items-center rounded-xl transition-all duration-200 group relative hover:bg-neutral-100 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400 font-medium ${
+                isCollapsed ? 'md:justify-center p-3 gap-3 md:gap-0' : 'gap-3 px-4 py-2.5'
+              }`}
+            >
+              <Globe className={`shrink-0 ${isCollapsed ? 'md:w-6 md:h-6 w-5 h-5' : 'w-5 h-5'}`} />
+              <span className={`truncate transition-opacity duration-200 ${isCollapsed ? 'md:hidden opacity-100' : 'opacity-100'}`}>
+                {lang === 'en' ? 'हिन्दी (Hindi)' : 'English'}
+              </span>
+            </button>
             <button
               onClick={logout}
               className={`w-full flex items-center rounded-xl transition-all duration-200 group relative hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 font-medium ${
@@ -92,12 +105,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
             >
               <LogOut className={`shrink-0 ${isCollapsed ? 'md:w-6 md:h-6 w-5 h-5' : 'w-5 h-5'}`} />
               <span className={`truncate transition-opacity duration-200 ${isCollapsed ? 'md:hidden opacity-100' : 'opacity-100'}`}>
-                Logout
+                {t('logout')}
               </span>
-              {/* Tooltip for collapsed state (desktop only) */}
               {isCollapsed && (
                 <div className="hidden md:block absolute left-full ml-4 px-2 py-1.5 bg-neutral-900 dark:bg-neutral-800 text-white text-[13px] font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-neutral-700">
-                  Logout
+                  {t('logout')}
                 </div>
               )}
             </button>

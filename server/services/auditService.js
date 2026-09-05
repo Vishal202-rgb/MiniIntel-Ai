@@ -32,7 +32,17 @@ const getAuditLogs = async (query = {}, options = { limit: 100, skip: 0 }) => {
   }
 };
 
+const logFromReq = async (req, auditData) => {
+  return logAudit({
+    ...auditData,
+    user: req.user?._id,
+    ipAddress: req.ip || req.connection?.remoteAddress || '',
+    userAgent: req.headers?.['user-agent'] || ''
+  });
+};
+
 module.exports = {
   logAudit,
+  logFromReq,
   getAuditLogs
 };

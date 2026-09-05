@@ -30,6 +30,13 @@ const documentSchema = new mongoose.Schema({
     documentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
     score: { type: Number }
   }],
+  retentionDate: { type: Date },
+  classification: { type: String, enum: ['public', 'internal', 'confidential', 'restricted'], default: 'internal' },
+  gisMetadata: {
+    latitude: { type: Number },
+    longitude: { type: Number },
+    region: { type: String }
+  },
   uploadedAt: { type: Date, default: Date.now },
   processedAt: Date,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

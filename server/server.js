@@ -97,6 +97,7 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/intelligence', require('./routes/intelligence'));
+app.use('/api/integration', require('./routes/integration'));
 
 // Global Error Handler
 app.use(errorHandler);

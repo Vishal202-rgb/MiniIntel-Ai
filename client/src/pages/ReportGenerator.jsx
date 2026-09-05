@@ -143,21 +143,57 @@ const ReportGenerator = () => {
         <div className="lg:col-span-2">
           {report ? (
             <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden flex flex-col h-[800px]">
-              <div className="border-b border-gray-200 dark:border-neutral-800 p-4 flex items-center justify-between bg-gray-50 dark:bg-[#151515]">
-                <h3 className="font-bold text-gray-900 dark:text-white truncate pr-4">{report.title}</h3>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={copyToClipboard} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Copy">
-                    {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+              <div className="border-b border-gray-200 dark:border-neutral-800 p-4 flex flex-col md:flex-row md:items-center justify-between bg-gray-50 dark:bg-[#151515] gap-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-xs">{report.title}</h3>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    report.status === 'draft' ? 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-300' :
+                    report.status === 'review' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                    report.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                  }`}>
+                    {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                  </span>
+                  {(report.confidenceScore || report.evidenceCoverage) && (
+                    <div className="flex items-center gap-2 text-xs border-l border-neutral-300 dark:border-neutral-700 pl-3">
+                      <span className="text-indigo-600 dark:text-indigo-400 font-medium">Confidence: {Math.round((report.confidenceScore || 0) * 100)}%</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">Coverage: {report.evidenceCoverage?.percentage || 0}%</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  {report.status === 'draft' && (
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const res = await api.put(`/reports/${report._id}/submit`);
+                          setReport(res.data.data);
+                        } catch (e) { alert(e.message); }
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      Submit for Review
+                    </button>
+                  )}
+                  
+                  <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700 mx-1 hidden md:block"></div>
+
+                  <a href={`/api/reports/${report._id}/export?format=docx`} target="_blank" rel="noreferrer" className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
+                    <Download className="w-3.5 h-3.5" /> DOCX
+                  </a>
+                  <a href={`/api/reports/${report._id}/export?format=csv`} target="_blank" rel="noreferrer" className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
+                    <Download className="w-3.5 h-3.5" /> CSV
+                  </a>
+                  <button onClick={downloadJson} className="p-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors" title="Download JSON">
+                    <span className="text-xs font-bold">JSON</span>
                   </button>
-                  <button onClick={downloadJson} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Download JSON">
-                    <Download className="w-4 h-4" />
-                  </button>
-                  <button onClick={handleGenerate} className="p-2 hover:bg-gray-50 dark:hover:bg-neutral-800 rounded-lg text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:text-white transition-colors" title="Regenerate">
-                    <RefreshCw className="w-4 h-4" />
+                  <button onClick={copyToClipboard} className="p-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors" title="Copy Text">
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-              <div className="p-6 overflow-y-auto grow custom-scrollbar">
+              <div className="p-6 overflow-y-auto grow custom-scrollbar relative">
                 <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-indigo-700 dark:prose-headings:text-indigo-400 prose-a:text-indigo-600 dark:prose-a:text-indigo-400">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm, remarkMath]} 

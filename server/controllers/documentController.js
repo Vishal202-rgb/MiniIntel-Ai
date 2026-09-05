@@ -72,9 +72,56 @@ const uploadDocument = async (req, res) => {
   }
 };
 
+const uploadBatch = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+
+    const results = [];
+    for (const file of req.files) {
+      try {
+        const fileHash = await getFileHash(file.path);
+        const existingDoc = await Document.findOne({ hash: fileHash });
+        
+        if (existingDoc) {
+          fs.unlinkSync(file.path);
+          results.push({ filename: file.originalname, status: 'failed', error: 'Duplicate document' });
+          continue;
+        }
+
+        const fileType = getFileType(file.mimetype);
+        const document = new Document({
+          filename: file.filename,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          fileSize: file.size,
+          fileType: fileType,
+          hash: fileHash,
+          userId: req.user._id
+        });
+        await document.save();
+
+        const job = new ProcessingJob({ documentId: document._id, status: 'queued' });
+        await job.save();
+
+        processDocument(document._id);
+        results.push({ filename: file.originalname, status: 'success', document });
+      } catch (err) {
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        results.push({ filename: file.originalname, status: 'failed', error: err.message });
+      }
+    }
+
+    res.status(201).json({ results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getDocuments = async (req, res) => {
   try {
-    const { search, type, status } = req.query;
+    const { search, type, status, category, classification, dateFrom, dateTo } = req.query;
     const query = {};
 
     if (search) {
@@ -85,6 +132,17 @@ const getDocuments = async (req, res) => {
     }
     if (status) {
       query.status = status;
+    }
+    if (category) {
+      query.category = category;
+    }
+    if (classification) {
+      query.classification = classification;
+    }
+    if (dateFrom || dateTo) {
+      query.uploadedAt = {};
+      if (dateFrom) query.uploadedAt.$gte = new Date(dateFrom);
+      if (dateTo) query.uploadedAt.$lte = new Date(dateTo);
     }
     if (req.user.role !== 'admin') {
       query.userId = req.user._id;
@@ -193,5 +251,6 @@ module.exports = {
   getDocumentById,
   getDocumentStatus,
   deleteDocument,
-  retryDocument
+  retryDocument,
+  uploadBatch
 };

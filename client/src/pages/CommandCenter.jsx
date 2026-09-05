@@ -119,7 +119,7 @@ const CommandCenter = () => {
                 <h4 className="font-medium mb-2">
                   {orchestratorResult.success ? 'Task Accepted' : 'Orchestration Failed'}
                 </h4>
-                <div className="prose dark:prose-invert max-w-none prose-sm text-sm opacity-90 prose-p:my-1 prose-headings:my-2 prose-table:my-2">
+                <div className="prose dark:prose-invert max-w-none prose-sm text-sm opacity-90 prose-p:my-1 prose-headings:my-2 prose-table:my-2 prose-code:before:content-none prose-code:after:content-none">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm, remarkMath]} 
                     rehypePlugins={[rehypeKatex]}

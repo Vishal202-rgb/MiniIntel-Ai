@@ -70,6 +70,34 @@ const ReportGenerator = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleExport = async (format) => {
+    if (!report) return;
+    try {
+      const res = await api.get(`/reports/${report._id}/export?format=${format}`, {
+        responseType: 'blob' // Important for binary files like DOCX
+      });
+      
+      const contentDisposition = res.headers['content-disposition'];
+      let filename = `${report.title.replace(/\s+/g, '_')}.${format}`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) filename = match[1];
+      }
+      
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed', err);
+      alert('Failed to export report. Please try again.');
+    }
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto text-gray-800 dark:text-neutral-200">
       <BackButton fallback="/" />
@@ -143,10 +171,13 @@ const ReportGenerator = () => {
         <div className="lg:col-span-2">
           {report ? (
             <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden flex flex-col h-[800px]">
-              <div className="border-b border-gray-200 dark:border-neutral-800 p-4 flex flex-col md:flex-row md:items-center justify-between bg-gray-50 dark:bg-[#151515] gap-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-xs">{report.title}</h3>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+              <div className="border-b border-gray-200 dark:border-neutral-800 p-4 flex flex-col gap-4 bg-gray-50 dark:bg-[#151515]">
+                {/* Row 1: Title and Status */}
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-snug break-words">
+                    {report.title}
+                  </h3>
+                  <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold mt-1 ${
                     report.status === 'draft' ? 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-300' :
                     report.status === 'review' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                     report.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
@@ -154,55 +185,85 @@ const ReportGenerator = () => {
                   }`}>
                     {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
                   </span>
-                  {(report.confidenceScore || report.evidenceCoverage) && (
-                    <div className="flex items-center gap-2 text-xs border-l border-neutral-300 dark:border-neutral-700 pl-3">
-                      <span className="text-indigo-600 dark:text-indigo-400 font-medium">Confidence: {Math.round((report.confidenceScore || 0) * 100)}%</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-medium">Coverage: {report.evidenceCoverage?.percentage || 0}%</span>
-                    </div>
-                  )}
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  {report.status === 'draft' && (
-                    <button 
-                      onClick={async () => {
-                        try {
-                          const res = await api.put(`/reports/${report._id}/submit`);
-                          setReport(res.data.data);
-                        } catch (e) { alert(e.message); }
-                      }}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Submit for Review
-                    </button>
-                  )}
-                  
-                  <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700 mx-1 hidden md:block"></div>
+                {/* Row 2: Metrics and Action Buttons */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  {/* Left side of Row 2: Metrics */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {report.status === 'draft' && (
+                      <button 
+                        onClick={async () => {
+                          try {
+                            const res = await api.put(`/reports/${report._id}/submit`);
+                            setReport(res.data.data);
+                          } catch (e) { alert(e.message); }
+                        }}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap shrink-0"
+                      >
+                        Submit for Review
+                      </button>
+                    )}
+                    
+                    {(report.confidenceScore || report.evidenceCoverage) && (
+                      <div className="flex flex-wrap items-center gap-3 text-sm shrink-0 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 px-3 py-1.5 rounded-lg">
+                        <span className="text-indigo-600 dark:text-indigo-400 font-medium whitespace-nowrap">Confidence: {Math.round((report.confidenceScore || 0) * 100)}%</span>
+                        <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-700 hidden sm:block"></div>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">Coverage: {report.evidenceCoverage?.percentage || 0}%</span>
+                      </div>
+                    )}
+                  </div>
 
-                  <a href={`/api/reports/${report._id}/export?format=docx`} target="_blank" rel="noreferrer" className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
-                    <Download className="w-3.5 h-3.5" /> DOCX
-                  </a>
-                  <a href={`/api/reports/${report._id}/export?format=csv`} target="_blank" rel="noreferrer" className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1">
-                    <Download className="w-3.5 h-3.5" /> CSV
-                  </a>
-                  <button onClick={downloadJson} className="p-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors" title="Download JSON">
-                    <span className="text-xs font-bold">JSON</span>
-                  </button>
-                  <button onClick={copyToClipboard} className="p-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors" title="Copy Text">
-                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                  </button>
+                  {/* Right side of Row 2: Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={() => handleExport('docx')} className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                      <Download className="w-4 h-4" /> DOCX
+                    </button>
+                    <button onClick={() => handleExport('csv')} className="px-3 py-1.5 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-sm font-medium rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                      <Download className="w-4 h-4" /> CSV
+                    </button>
+                    <button onClick={downloadJson} className="px-3 py-1.5 flex items-center gap-1 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors shrink-0" title="Download JSON">
+                      <Download className="w-4 h-4" /> <span className="text-sm font-medium">JSON</span>
+                    </button>
+                    <button onClick={copyToClipboard} className="p-2 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-neutral-700 dark:text-neutral-300 transition-colors shrink-0" title="Copy Text">
+                      {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="p-6 overflow-y-auto grow custom-scrollbar relative">
-                <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-indigo-700 dark:prose-headings:text-indigo-400 prose-a:text-indigo-600 dark:prose-a:text-indigo-400">
+                <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-indigo-700 dark:prose-headings:text-indigo-400 prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-code:before:content-none prose-code:after:content-none">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm, remarkMath]} 
                     rehypePlugins={[rehypeKatex]}
                     components={{
                       table: ({node, ...props}) => (
-                        <div className="overflow-x-auto my-4 border border-gray-200 dark:border-neutral-800 rounded-lg">
-                          <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-800 m-0" {...props} />
+                        <div className="overflow-x-auto my-6 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-sm">
+                          <table className="w-full text-left border-collapse m-0" {...props} />
                         </div>
+                      ),
+                      thead: ({node, ...props}) => (
+                        <thead className="bg-gray-50/80 dark:bg-[#1A1A1A] text-gray-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-800" {...props} />
+                      ),
+                      th: ({node, children, ...props}) => {
+                        const text = String(children).toLowerCase();
+                        let widthClass = "px-4 py-3 font-semibold text-sm";
+                        if (text.includes('source') || text.includes('document') || text.includes('file')) widthClass += " w-[30%] min-w-[200px]";
+                        else if (text.includes('page')) widthClass += " w-[12%] min-w-[80px] text-center";
+                        else widthClass += " w-[58%] min-w-[300px]";
+                        return <th className={widthClass} {...props}>{children}</th>;
+                      },
+                      td: ({node, children, ...props}) => {
+                        return (
+                          <td className="px-4 py-3 align-top border-b border-neutral-100 dark:border-neutral-800/60 text-sm leading-relaxed" {...props}>
+                            {typeof children === 'string' ? children.replace(/^["'`]|["'`]$/g, '') : children}
+                          </td>
+                        );
+                      },
+                      code: ({node, inline, children, ...props}) => (
+                        <code className={`${inline ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded-md font-medium text-xs break-words' : 'block bg-gray-50 dark:bg-[#1A1A1A] p-4 rounded-xl overflow-x-auto text-sm border border-neutral-200 dark:border-neutral-800'}`} {...props}>
+                          {children}
+                        </code>
                       )
                     }}
                   >

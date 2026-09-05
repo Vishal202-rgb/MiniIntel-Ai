@@ -20,6 +20,7 @@ import AuditTrail from './pages/AuditTrail';
 import AdminUsers from './pages/AdminUsers';
 import SystemHealth from './pages/SystemHealth';
 import IntelligenceDashboard from './pages/IntelligenceDashboard';
+import AdminPendingReviews from './pages/AdminPendingReviews';
 
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -62,6 +63,7 @@ function App() {
                 <Route element={<ProtectedRoute adminOnly={true} />}>
                   <Route path="admin/users" element={<AdminUsers />} />
                   <Route path="admin/system-health" element={<SystemHealth />} />
+                  <Route path="admin/pending-reviews" element={<AdminPendingReviews />} />
                 </Route>
               </Route>
             </Route>

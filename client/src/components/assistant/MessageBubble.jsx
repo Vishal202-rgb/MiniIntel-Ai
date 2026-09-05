@@ -36,7 +36,7 @@ const MessageBubble = ({ message }) => {
           }`}
         >
           <div className={`prose ${isUser ? 'prose-invert' : 'dark:prose-invert'} max-w-none prose-sm sm:prose-base
-            prose-p:my-1 prose-headings:mb-2 prose-headings:mt-3 prose-ul:my-1 prose-li:my-0.5
+            prose-p:my-1 prose-headings:mb-2 prose-headings:mt-3 prose-ul:my-1 prose-li:my-0.5 prose-code:before:content-none prose-code:after:content-none
             ${isError ? 'prose-p:text-red-700 dark:prose-p:text-red-300' : ''}
           `}>
             <ReactMarkdown 

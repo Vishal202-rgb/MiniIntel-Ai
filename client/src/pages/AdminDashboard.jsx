@@ -2,10 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, FileText, ShieldAlert, Activity, Database, Server, Clock, 
   AlertCircle, FileOutput, Search, RefreshCw, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Trash2, Loader2
+  ChevronDown, ChevronUp, Trash2, Loader2, Eye, Check, X
 } from 'lucide-react';
-import axios from 'axios';
+import axios from '../services/api';
 import { Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // ... (StatCard, RoleBadge, StatusBadge, HealthDot, SectionHeader, formatDate unchanged)
 const StatCard = ({ icon: Icon, label, value, colorClass, loading }) => (
@@ -114,16 +116,16 @@ const AdminDashboard = () => {
     setSuccessMessage('');
     try {
       const results = await Promise.allSettled([
-        axios.get('/api/admin/stats'),
-        axios.get('/api/admin/users'),
-        axios.get('/api/documents'),
-        axios.get('/api/audit?limit=15'),
-        axios.get('/api/admin/system-health')
+        axios.get('/admin/stats'),
+        axios.get('/admin/users'),
+        axios.get('/documents'),
+        axios.get('/audit?limit=15'),
+        axios.get('/admin/system-health')
       ]);
 
       if (results[0].status === 'fulfilled') setStats(results[0].value.data?.data);
       if (results[1].status === 'fulfilled') setUsers(results[1].value.data?.data || []);
-      if (results[2].status === 'fulfilled') setDocuments(results[2].value.data || []);
+      if (results[2].status === 'fulfilled') setDocuments(results[2].value.data?.data || results[2].value.data || []);
       if (results[3].status === 'fulfilled') setAuditLogs(results[3].value.data?.data || []);
       if (results[4].status === 'fulfilled') setSystemHealth(results[4].value.data?.data);
 
@@ -151,13 +153,13 @@ const AdminDashboard = () => {
     setSuccessMessage('');
     
     try {
-      await axios.delete(`/api/admin/users/${userId}`);
+      await axios.delete(`/admin/users/${userId}`);
       setSuccessMessage('User deleted successfully.');
       // Refresh the data to update stats and tables
       const results = await Promise.allSettled([
-        axios.get('/api/admin/stats'),
-        axios.get('/api/admin/users'),
-        axios.get('/api/audit?limit=15')
+        axios.get('/admin/stats'),
+        axios.get('/admin/users'),
+        axios.get('/audit?limit=15')
       ]);
       if (results[0].status === 'fulfilled') setStats(results[0].value.data?.data);
       if (results[1].status === 'fulfilled') setUsers(results[1].value.data?.data || []);

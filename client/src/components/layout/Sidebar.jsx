@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity, Sparkles, Globe } from 'lucide-react';
+import { LayoutDashboard, FileText, Brain, ShieldCheck, Database, MessageSquare, BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, ChevronRight, LogOut, Users, Activity, Sparkles, Globe, FileCheck } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -17,7 +17,8 @@ const navItems = [
   { to: '/reports', icon: FileOutput, label: 'Reports' },
   { to: '/audit', icon: ScrollText, label: 'Audit Trail' },
   { to: '/admin/users', icon: Users, label: 'Users', adminOnly: true },
-  { to: '/admin/system-health', icon: Activity, label: 'System Health', adminOnly: true }
+  { to: '/admin/system-health', icon: Activity, label: 'System Health', adminOnly: true },
+  { to: '/admin/pending-reviews', icon: FileCheck, label: 'Pending Reviews', adminOnly: true }
 ];
 
 const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) => {

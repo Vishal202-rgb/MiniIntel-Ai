@@ -116,18 +116,18 @@ const ExtractionReview = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto dark:text-gray-100">
+    <div className="p-5 max-w-7xl mx-auto dark:text-gray-100">
       <BackButton fallback="/" />
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <FileText className="w-6 h-6 text-blue-500" />
         Data Extraction & Review
       </h1>
       
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow mb-6 flex items-center gap-4">
+      <div className="bg-white dark:bg-dark-card p-4 rounded-lg shadow mb-6 flex items-center gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium mb-1">Select Document</label>
           <select 
-            className="w-full border dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border dark:border-slate-700 bg-slate-50 dark:bg-dark-bg rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={selectedDocument}
             onChange={(e) => setSelectedDocument(e.target.value)}
           >
@@ -158,9 +158,9 @@ const ExtractionReview = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-dark-card rounded-lg shadow overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading records...</div>
+          <div className="p-5 text-center text-gray-500">Loading records...</div>
         ) : (
           <RecordTable 
             records={records}

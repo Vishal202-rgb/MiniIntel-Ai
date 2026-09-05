@@ -36,23 +36,23 @@ const CommandCenter = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-5 max-w-7xl mx-auto space-y-8">
       <div className="flex items-center gap-3">
-        <Monitor className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+        <Monitor className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Command Center</h1>
       </div>
 
       {/* System Stats Summary */}
       <section>
         <h2 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-4">System Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white dark:bg-dark-card p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center gap-4">
+            <div key={idx} className="bg-white dark:bg-dark-card p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-4">
               <div className={`p-4 rounded-lg ${stat.bg}`}>
                 <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-neutral-400">{stat.label}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-slate-400">{stat.label}</p>
                 <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stat.value}</p>
               </div>
             </div>
@@ -61,18 +61,18 @@ const CommandCenter = () => {
       </section>
 
       {/* Multi-Agent Orchestrator Section */}
-      <section className="bg-white dark:bg-dark-card rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 flex items-center gap-3">
-          <Bot className="w-6 h-6 text-indigo-500" />
+      <section className="bg-white dark:bg-dark-card rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-neutral-50 dark:bg-dark-bg/50 flex items-center gap-3">
+          <Bot className="w-6 h-6 text-blue-500" />
           <div>
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Multi-Agent Orchestrator</h2>
-            <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
               Command the system's agents to perform complex, multi-step tasks across the knowledge base.
             </p>
           </div>
         </div>
         
-        <div className="p-6">
+        <div className="p-5">
           <form onSubmit={handleOrchestrate} className="space-y-4">
             <div>
               <label htmlFor="taskInput" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
@@ -85,13 +85,13 @@ const CommandCenter = () => {
                   value={taskInput}
                   onChange={(e) => setTaskInput(e.target.value)}
                   placeholder='e.g., "Analyze production metrics from last month and generate a summary report"'
-                  className="flex-1 px-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition-shadow text-base"
+                  className="flex-1 px-4 py-3 bg-white dark:bg-dark-bg border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-shadow text-base"
                   disabled={isOrchestrating}
                 />
                 <button
                   type="submit"
                   disabled={!taskInput.trim() || isOrchestrating}
-                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
                 >
                   {isOrchestrating ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

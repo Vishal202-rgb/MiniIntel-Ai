@@ -5,11 +5,11 @@ const UploadProgress = ({ uploads, onDismiss }) => {
   if (!uploads || uploads.length === 0) return null;
 
   return (
-    <div className="w-full space-y-3 mb-8">
+    <div className="w-full space-y-3 mb-5">
       {uploads.map((upload) => (
         <div
           key={upload.id}
-          className="flex items-center gap-4 bg-white dark:bg-dark-card border border-neutral-200 dark:border-neutral-700 p-4 rounded-xl shadow-sm"
+          className="flex items-center gap-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 p-4 rounded-lg shadow-sm"
         >
           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <FileUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -42,7 +42,7 @@ const UploadProgress = ({ uploads, onDismiss }) => {
           {(upload.status === 'success' || upload.status === 'error') && (
             <button
               onClick={() => onDismiss(upload.id)}
-              className="p-1 text-gray-600 dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-gray-800 dark:text-neutral-200"
+              className="p-1 text-gray-600 dark:text-slate-400 hover:text-neutral-600 dark:hover:text-gray-800 dark:text-neutral-200"
             >
               <X className="w-5 h-5" />
             </button>

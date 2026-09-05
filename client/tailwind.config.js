@@ -5,14 +5,27 @@ export default {
     extend: {
       colors: {
         light: {
-          bg: '#F5F5F5',
+          bg: '#F8FAFC',
           card: '#FFFFFF',
-          text: '#171717'
+          text: '#0F172A'
         },
         dark: {
-          bg: '#111111',
-          card: '#1A1A1A',
-          text: '#F5F5F5'
+          bg: '#181A1F', 
+          card: '#22252A',
+          text: '#F1F5F9'
+        },
+        primary: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
         }
       }
     }

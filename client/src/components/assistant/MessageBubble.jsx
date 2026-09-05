@@ -17,7 +17,7 @@ const MessageBubble = ({ message }) => {
         {/* Avatar */}
         <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
           isUser 
-            ? 'bg-neutral-800 dark:bg-neutral-700 text-white' 
+            ? 'bg-dark-card dark:bg-neutral-700 text-white' 
             : isError 
               ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
               : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
@@ -27,12 +27,12 @@ const MessageBubble = ({ message }) => {
 
         {/* Bubble */}
         <div
-          className={`rounded-2xl p-4 shadow-sm text-[15px] leading-relaxed ${
+          className={`rounded-lg p-4 shadow-sm text-[15px] leading-relaxed ${
             isUser 
               ? 'bg-blue-600 text-white rounded-tr-sm' 
               : isError
                 ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-tl-sm'
-                : 'bg-neutral-50 dark:bg-[#222222] border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-tl-sm'
+                : 'bg-neutral-50 dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-200 rounded-tl-sm'
           }`}
         >
           <div className={`prose ${isUser ? 'prose-invert' : 'dark:prose-invert'} max-w-none prose-sm sm:prose-base

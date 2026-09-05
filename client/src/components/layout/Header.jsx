@@ -6,12 +6,12 @@ const Header = ({ toggleMobileMenu }) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="fixed top-0 w-full z-40 h-16 bg-white border-b border-neutral-200 dark:bg-[#1A1A1A] dark:border-neutral-800 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
+    <header className="fixed top-0 w-full z-40 h-16 bg-white border-b border-slate-200 dark:bg-dark-card dark:border-slate-700 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
       <div className="flex items-center gap-4">
         {/* Mobile-only hamburger */}
         <button
           onClick={toggleMobileMenu}
-          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          className="md:hidden p-2 -ml-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-dark-card text-neutral-600 dark:text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           aria-label="Toggle Menu"
         >
           <Menu className="w-5 h-5" />
@@ -28,7 +28,7 @@ const Header = ({ toggleMobileMenu }) => {
 
       <button
         onClick={toggleTheme}
-        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-gray-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-dark-card text-neutral-600 dark:text-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         aria-label="Toggle Theme"
       >
         {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

@@ -37,7 +37,7 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          <div className="min-h-screen bg-neutral-50 dark:bg-[#111111] transition-colors duration-200">
+          <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-200">
             <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />

@@ -14,9 +14,9 @@ const ChatArea = ({ messages, loading }) => {
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white dark:bg-[#1A1A1A] space-y-6">
+    <div className="flex-1 overflow-y-auto p-4 md:p-5 bg-white dark:bg-dark-card space-y-6">
       {messages.length === 0 ? (
-        <div className="flex flex-col h-full items-center justify-center text-center text-gray-600 dark:text-neutral-500 max-w-md mx-auto">
+        <div className="flex flex-col h-full items-center justify-center text-center text-gray-600 dark:text-slate-400 max-w-md mx-auto">
           <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
             <Brain className="w-8 h-8 text-blue-600 dark:text-blue-500" />
           </div>
@@ -30,7 +30,7 @@ const ChatArea = ({ messages, loading }) => {
           ))}
           {loading && (
             <div className="flex w-full justify-start">
-              <div className="max-w-[85%] md:max-w-[75%] rounded-2xl p-4 bg-neutral-50 dark:bg-[#222222] border border-neutral-200 dark:border-neutral-800 rounded-bl-sm shadow-sm flex items-center gap-3">
+              <div className="max-w-[85%] md:max-w-[75%] rounded-lg p-4 bg-neutral-50 dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-bl-sm shadow-sm flex items-center gap-3">
                 <Brain className="w-5 h-5 text-blue-600 dark:text-blue-500 animate-pulse" />
                 <div className="flex gap-1 items-center h-4">
                   <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>

@@ -85,37 +85,37 @@ const KnowledgeBase = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-5 max-w-7xl mx-auto space-y-8">
       <div className="flex items-center gap-3">
-        <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+        <Database className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base Management</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Indexing Section */}
-        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col">
+        <div className="bg-white dark:bg-dark-card p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
           <div className="flex items-center gap-3 mb-2">
-            <FileText className="text-indigo-500 w-6 h-6" />
+            <FileText className="text-blue-500 w-6 h-6" />
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Index Document</h2>
           </div>
-          <p className="text-gray-500 dark:text-neutral-400 text-sm mb-6">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
             Select a processed document to generate embeddings and index it into the vector database for AI querying.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
               <select 
-                className="w-full appearance-none bg-gray-50/50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors cursor-pointer"
+                className="w-full appearance-none bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-colors cursor-pointer"
                 value={selectedDocId}
                 onChange={(e) => setSelectedDocId(e.target.value)}
               >
-                <option value="" className="text-gray-500 dark:text-neutral-500">-- Select a Document --</option>
+                <option value="" className="text-gray-500 dark:text-slate-400">-- Select a Document --</option>
                 {documents.map(doc => (
                   <option key={doc._id} value={doc._id}>{doc.originalName || doc.title || doc.filename}</option>
                 ))}
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-neutral-400">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-slate-400">
                 <ChevronDown size={18} />
               </div>
             </div>
@@ -123,7 +123,7 @@ const KnowledgeBase = () => {
             <button 
               onClick={handleIndex}
               disabled={!selectedDocId || indexingStatus === 'loading'}
-              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm shrink-0"
+              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm shrink-0"
             >
               {indexingStatus === 'loading' && <Loader2 size={18} className="animate-spin" />}
               Index for AI
@@ -146,24 +146,24 @@ const KnowledgeBase = () => {
         </div>
 
         {/* Semantic Search Section */}
-        <div className="bg-white dark:bg-[#1A1A1A] p-6 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex flex-col h-[500px]">
+        <div className="bg-white dark:bg-dark-card p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[500px]">
           <div className="flex items-center gap-3 mb-2 shrink-0">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
-              <Search className="text-indigo-600 dark:text-indigo-400 w-5 h-5" />
+            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
+              <Search className="text-blue-600 dark:text-blue-400 w-5 h-5" />
             </div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
           </div>
-          <p className="text-gray-500 dark:text-neutral-400 text-sm mb-6 shrink-0">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6 shrink-0">
             Query the vector database directly to see what chunks the AI retrieves for context.
           </p>
           
           <form onSubmit={handleSearch} className="flex gap-3 mb-6 shrink-0">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-neutral-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-slate-400" />
               <input 
                 type="text"
                 placeholder="e.g., 'coal production and dispatch'"
-                className="w-full bg-gray-50/50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-shadow"
+                className="w-full bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-shadow"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={isSearching}
@@ -172,7 +172,7 @@ const KnowledgeBase = () => {
             <button 
               type="submit"
               disabled={!searchQuery.trim() || isSearching}
-              className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
+              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
             >
               {isSearching ? <Loader2 size={18} className="animate-spin" /> : 'Search'}
             </button>
@@ -180,17 +180,17 @@ const KnowledgeBase = () => {
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {!hasSearched ? (
-              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-neutral-500">
+              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-slate-400">
                 <Search className="w-10 h-10 mb-2 opacity-20" />
                 <p className="text-sm">Run a query to see semantic search results.</p>
               </div>
             ) : isSearching ? (
-              <div className="h-full flex flex-col items-center justify-center text-indigo-500">
+              <div className="h-full flex flex-col items-center justify-center text-blue-500">
                 <Loader2 className="w-8 h-8 animate-spin mb-2" />
                 <p className="text-sm">Searching vector space...</p>
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-neutral-500">
+              <div className="h-full flex flex-col items-center justify-center text-gray-600 dark:text-slate-400">
                 <AlertTriangle className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm font-medium">No results found.</p>
                 <p className="text-xs mt-1 text-center">Try using different keywords or indexing more documents.</p>
@@ -210,13 +210,13 @@ const KnowledgeBase = () => {
                 const score = result.score !== undefined ? result.score : result.similarityScore;
                 
                 return (
-                  <div key={idx} className="hover-lift p-4 bg-neutral-50 dark:bg-[#111111] border border-neutral-200 dark:border-neutral-800 rounded-lg group transition-colors">
+                  <div key={idx} className="hover-lift p-4 bg-neutral-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 rounded-lg group transition-colors">
                     <div className="flex justify-between items-start mb-2 gap-4">
-                      <h3 className="font-semibold text-indigo-600 dark:text-indigo-400 text-sm line-clamp-1">
+                      <h3 className="font-semibold text-blue-600 dark:text-blue-400 text-sm line-clamp-1">
                         {docName}
                       </h3>
                       {score !== undefined && (
-                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300">
+                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                           Match: {Math.round(score * 100)}%
                         </span>
                       )}
@@ -225,7 +225,7 @@ const KnowledgeBase = () => {
                       {textContent}
                     </p>
                     {result.pageNumber && (
-                      <div className="text-xs text-gray-500 dark:text-neutral-500 flex items-center gap-1">
+                      <div className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1">
                         <FileText size={12} /> Page {result.pageNumber}
                       </div>
                     )}

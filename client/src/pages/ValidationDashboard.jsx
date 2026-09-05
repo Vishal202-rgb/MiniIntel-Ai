@@ -108,19 +108,19 @@ const ValidationDashboard = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto dark:text-gray-100">
+    <div className="p-5 max-w-7xl mx-auto dark:text-gray-100">
       <BackButton fallback="/" />
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-indigo-500" />
+          <ShieldAlert className="w-6 h-6 text-blue-500" />
           Validation Dashboard
         </h1>
         
-        <div className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border dark:border-gray-700">
+        <div className="flex items-center gap-3 bg-white dark:bg-dark-card p-2 rounded-lg shadow-sm border dark:border-slate-700">
           <select 
             value={selectedDocument}
             onChange={(e) => setSelectedDocument(e.target.value)}
-            className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 text-sm rounded-md focus:ring-indigo-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 block p-2"
+            className="bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2"
           >
             <option value="" disabled>Select a document</option>
             {documents?.map(doc => {
@@ -136,7 +136,7 @@ const ValidationDashboard = () => {
           <button
             onClick={handleRunValidation}
             disabled={runningValidation || !selectedDocument}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 dark:disabled:bg-indigo-800 text-white text-sm font-medium rounded-md transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 text-white text-sm font-medium rounded-md transition-colors"
           >
             {runningValidation ? (
               <span className="flex items-center gap-2">
@@ -160,24 +160,24 @@ const ValidationDashboard = () => {
       )}
 
       {loading ? (
-        <div className="text-center p-8 text-gray-500">Loading dashboard...</div>
+        <div className="text-center p-5 text-gray-500">Loading dashboard...</div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border-l-4 border-red-500">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+            <div className="bg-white dark:bg-dark-card p-5 rounded-lg shadow border-l-4 border-red-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Issues</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">Total Issues</p>
                   <p className="text-3xl font-bold mt-2">{summary?.totalIssues || 0}</p>
                 </div>
                 <AlertCircle className="w-10 h-10 text-red-100 dark:text-red-900/50" />
               </div>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border-l-4 border-green-500">
+            <div className="bg-white dark:bg-dark-card p-5 rounded-lg shadow border-l-4 border-green-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Quality Score</p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 font-medium">Quality Score</p>
                   <p className="text-3xl font-bold mt-2">{summary?.qualityScore || 100}%</p>
                 </div>
                 <CheckCircle className="w-10 h-10 text-green-100 dark:text-green-900/50" />
@@ -185,13 +185,13 @@ const ValidationDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+          <div className="bg-white dark:bg-dark-card rounded-lg shadow overflow-hidden">
+            <div className="p-4 border-b dark:border-slate-700 bg-slate-50 dark:bg-dark-bg">
               <h2 className="font-semibold text-gray-800 dark:text-gray-200">Validation Issues</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-gray-700 dark:text-gray-200">
-                <thead className="bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 text-xs uppercase text-gray-600 dark:text-gray-400">
+                <thead className="bg-slate-100 dark:bg-dark-card border-b dark:border-slate-700 text-xs uppercase text-gray-600 dark:text-slate-400">
                   <tr>
                     <th className="px-4 py-3">Document</th>
                     <th className="px-4 py-3">Field</th>
@@ -204,12 +204,12 @@ const ValidationDashboard = () => {
                 <tbody>
                   {issues.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan="6" className="px-4 py-5 text-center text-gray-500 dark:text-slate-400">
                         No issues found. Great job!
                       </td>
                     </tr>
                   ) : issues.map((issue) => (
-                        <tr key={issue._id || issue.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                        <tr key={issue._id || issue.id} className="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-gray-800/50">
                           <td className="px-4 py-3 font-medium">
                             {getDocumentDisplayName(issue)}
                           </td>
@@ -228,7 +228,7 @@ const ValidationDashboard = () => {
                             {(issue.status || '').toLowerCase() !== 'resolved' ? (
                               <button
                                 onClick={() => setResolvingIssue(issue)}
-                                className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium text-sm"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
                               >
                                 Resolve
                               </button>

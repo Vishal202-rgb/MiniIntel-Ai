@@ -8,7 +8,7 @@ const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#111111] text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#F5F5F5] dark:bg-dark-bg text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30">
       <Header 
         toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
       />
@@ -20,7 +20,7 @@ const Layout = () => {
       />
       
       <main 
-        className={`transition-all duration-300 ease-in-out mt-16 p-4 md:p-8 min-h-[calc(100vh-4rem)] ${
+        className={`transition-all duration-300 ease-in-out mt-16 p-4 md:p-5 min-h-[calc(100vh-4rem)] ${
           isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
         }`}
       >
@@ -32,7 +32,7 @@ const Layout = () => {
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm z-30 md:hidden transition-opacity"
+          className="fixed inset-0 bg-dark-bg/50 backdrop-blur-sm z-30 md:hidden transition-opacity"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

@@ -29,26 +29,26 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-900">
-      <div className="w-full max-w-md bg-[#1A1A1A] rounded-2xl shadow-2xl border border-neutral-800 p-8 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-dark-bg">
+      <div className="w-full max-w-md bg-dark-card rounded-lg shadow-2xl border border-slate-700 p-5 relative overflow-hidden">
         
         {/* Decorative Top Accent */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-orange-500"></div>
 
         <button 
           onClick={() => navigate('/login')}
-          className="absolute top-6 left-6 text-neutral-500 hover:text-neutral-300 transition-colors"
+          className="absolute top-6 left-6 text-slate-400 hover:text-neutral-300 transition-colors"
           aria-label="Back to User Login"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col items-center text-center mb-8 mt-4">
+        <div className="flex flex-col items-center text-center mb-5 mt-4">
           <div className="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mb-4">
             <ShieldAlert className="w-8 h-8 text-red-500" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Admin Portal</h1>
-          <p className="text-neutral-400 text-sm">Secure access for authorized administrators only.</p>
+          <p className="text-slate-400 text-sm">Secure access for authorized administrators only.</p>
         </div>
         
         {error && (
@@ -62,10 +62,10 @@ const AdminLogin = () => {
           <div>
             <label className="block text-sm font-medium text-neutral-300 mb-1.5">Admin Username</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 w-5 h-5" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input 
                 type="text" 
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-700 rounded-lg bg-neutral-800/50 focus:bg-neutral-800 focus:ring-2 focus:ring-red-500 text-white outline-none transition-all placeholder:text-neutral-600"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-red-500 text-white outline-none transition-all placeholder:text-neutral-600"
                 placeholder="Enter admin identity"
                 value={username} onChange={e => setUsername(e.target.value)} required 
               />
@@ -75,10 +75,10 @@ const AdminLogin = () => {
           <div>
             <label className="block text-sm font-medium text-neutral-300 mb-1.5">Secret Key</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 w-5 h-5" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input 
                 type="password" 
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-700 rounded-lg bg-neutral-800/50 focus:bg-neutral-800 focus:ring-2 focus:ring-red-500 text-white outline-none transition-all placeholder:text-neutral-600"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-red-500 text-white outline-none transition-all placeholder:text-neutral-600"
                 placeholder="••••••••"
                 value={password} onChange={e => setPassword(e.target.value)} required 
               />

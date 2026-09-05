@@ -21,8 +21,8 @@ const RecordEditor = ({ record, onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+      <div className="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+        <div className="flex justify-between items-center p-4 border-b dark:border-slate-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Record</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
             <X className="w-5 h-5" />
@@ -35,7 +35,7 @@ const RecordEditor = ({ record, onSave, onClose }) => {
               type="text" 
               value={record.parameter || ''} 
               disabled 
-              className="w-full border dark:border-gray-700 rounded p-2 bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
+              className="w-full border dark:border-slate-700 rounded p-2 bg-slate-100 dark:bg-dark-bg text-gray-500 dark:text-slate-400"
             />
           </div>
           <div className="mb-4">
@@ -45,7 +45,7 @@ const RecordEditor = ({ record, onSave, onClose }) => {
               name="value"
               value={formData.value} 
               onChange={handleChange}
-              className="w-full border dark:border-gray-700 rounded p-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border dark:border-slate-700 rounded p-2 bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <div className="mb-6">
@@ -55,14 +55,14 @@ const RecordEditor = ({ record, onSave, onClose }) => {
               name="unit"
               value={formData.unit} 
               onChange={handleChange}
-              className="w-full border dark:border-gray-700 rounded p-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full border dark:border-slate-700 rounded p-2 bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <div className="flex justify-end gap-3">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 rounded transition-colors"
             >
               Cancel
             </button>

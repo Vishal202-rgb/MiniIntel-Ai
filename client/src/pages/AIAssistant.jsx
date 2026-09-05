@@ -66,20 +66,20 @@ const AIAssistant = () => {
   };
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-4rem)] border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden bg-white dark:bg-[#1A1A1A] shadow-sm relative">
+    <div className="flex h-full min-h-[calc(100vh-4rem)] border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-dark-card shadow-sm relative">
       {/* Mobile Sidebar Toggle */}
       <div className="md:hidden absolute top-4 left-4 z-20">
         <button 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-md text-neutral-600 dark:text-neutral-300 shadow-md border border-neutral-200 dark:border-neutral-700"
+          className="p-2 bg-neutral-100 dark:bg-dark-card rounded-md text-neutral-600 dark:text-neutral-300 shadow-md border border-slate-200 dark:border-slate-600"
         >
           <MessageSquare size={18} />
         </button>
       </div>
 
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'flex' : 'hidden'} md:flex w-full md:w-64 bg-neutral-50 dark:bg-[#111111] border-r border-neutral-200 dark:border-neutral-800 flex-col absolute md:relative z-10 h-full`}>
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 mt-12 md:mt-0">
+      <div className={`${sidebarOpen ? 'flex' : 'hidden'} md:flex w-full md:w-64 bg-neutral-50 dark:bg-dark-bg border-r border-slate-200 dark:border-slate-700 flex-col absolute md:relative z-10 h-full`}>
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 mt-12 md:mt-0">
           <button
             onClick={handleNewConversation}
             className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
@@ -95,15 +95,15 @@ const AIAssistant = () => {
               className={`w-full flex items-center gap-3 p-3 text-left rounded-lg transition-colors ${
                 currentConvId === conv._id 
                   ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' 
-                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800/50'
+                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-card/50'
               }`}
             >
-              <MessageSquare size={16} className={currentConvId === conv._id ? 'text-blue-600 dark:text-blue-500' : 'text-neutral-500 dark:text-neutral-400'} />
+              <MessageSquare size={16} className={currentConvId === conv._id ? 'text-blue-600 dark:text-blue-500' : 'text-slate-400 dark:text-slate-400'} />
               <span className="truncate text-sm">{conv.title || 'Untitled Conversation'}</span>
             </button>
           ))}
           {conversations.length === 0 && (
-            <div className="text-center p-4 text-sm text-gray-500 dark:text-neutral-400">
+            <div className="text-center p-4 text-sm text-gray-500 dark:text-slate-400">
               No conversations yet.
             </div>
           )}
@@ -111,15 +111,15 @@ const AIAssistant = () => {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-[#1A1A1A] w-full">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 md:hidden flex justify-center items-center">
+      <div className="flex-1 flex flex-col bg-white dark:bg-dark-card w-full">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 md:hidden flex justify-center items-center">
           <span className="font-semibold text-neutral-900 dark:text-white">AI Assistant</span>
         </div>
         
         <ChatArea messages={messages} loading={loading} />
         
         {/* Input Area */}
-        <div className="p-4 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#1A1A1A]">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-neutral-50 dark:bg-dark-card">
           <form onSubmit={handleSend} className="max-w-4xl mx-auto flex gap-2 relative items-end">
             <textarea
               value={input}
@@ -131,14 +131,14 @@ const AIAssistant = () => {
                 }
               }}
               placeholder="Ask a question about your documents... (Shift+Enter for new line)"
-              className="flex-1 p-3 min-h-[52px] max-h-32 resize-none border border-neutral-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-[#111111] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
+              className="flex-1 p-3 min-h-[52px] max-h-32 resize-none border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-bg text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
               disabled={loading}
               rows={1}
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-4 py-3 h-[52px] bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm shrink-0"
+              className="px-4 py-3 h-[52px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm shrink-0"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -148,7 +148,7 @@ const AIAssistant = () => {
             </button>
           </form>
           <div className="max-w-4xl mx-auto text-center mt-2">
-            <span className="text-[11px] text-gray-500 dark:text-neutral-500">AI can make mistakes. Verify important information.</span>
+            <span className="text-[11px] text-gray-500 dark:text-slate-400">AI can make mistakes. Verify important information.</span>
           </div>
         </div>
       </div>

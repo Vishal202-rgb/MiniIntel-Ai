@@ -12,7 +12,7 @@ const StatusBadge = ({ status }) => {
     failed: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
   };
 
-  const currentStyle = statusStyles[status.toLowerCase()] || "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300";
+  const currentStyle = statusStyles[status.toLowerCase()] || "bg-neutral-100 text-neutral-800 dark:bg-dark-card dark:text-neutral-300";
 
   return (
     <span className={`${baseClasses} ${currentStyle}`}>

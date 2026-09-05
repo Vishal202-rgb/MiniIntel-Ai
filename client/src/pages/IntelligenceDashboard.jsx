@@ -23,25 +23,25 @@ const IntelligenceDashboard = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-          <Sparkles className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+          <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Intelligence</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">Advanced document analysis & insights</p>
+          <p className="text-sm text-slate-400 dark:text-slate-400">Advanced document analysis & insights</p>
         </div>
       </div>
 
       {/* Tab Bar */}
-      <div className="flex gap-1 bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-1.5">
+      <div className="flex gap-1 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-1.5">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
               activeTab === tab.id
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-dark-card'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -51,7 +51,7 @@ const IntelligenceDashboard = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
+      <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5">
         {activeTab === 'entities' && <EntityExplorer documents={documents} />}
         {activeTab === 'similarity' && <DocumentSimilarity documents={documents} />}
         {activeTab === 'changes' && <ChangeDetection documents={documents} />}
@@ -90,8 +90,8 @@ const EntityExplorer = ({ documents }) => {
     Equipment: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
     Project: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
     Person: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
-    Organization: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-    Other: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300',
+    Organization: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    Other: 'bg-neutral-100 text-neutral-800 dark:bg-dark-card dark:text-neutral-300',
   };
 
   return (
@@ -100,7 +100,7 @@ const EntityExplorer = ({ documents }) => {
         <select
           value={selectedDoc}
           onChange={e => { setSelectedDoc(e.target.value); loadEntities(e.target.value); }}
-          className="flex-1 px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 outline-none"
+          className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
         >
           <option value="">Select a document...</option>
           {documents.filter(d => d.status === 'completed' || d.status === 'extracted').map(d => (
@@ -111,26 +111,26 @@ const EntityExplorer = ({ documents }) => {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-          <span className="ml-2 text-neutral-500">Extracting entities...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <span className="ml-2 text-slate-400">Extracting entities...</span>
         </div>
       )}
 
       {!loading && entities.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
+          <h3 className="text-sm font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider mb-3">
             {entities.length} entities found in {docName}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {entities.map((entity, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+              <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-dark-card/30 transition-colors">
                 <div className="flex items-center gap-2.5">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeColors[entity.type] || typeColors.Other}`}>
                     {entity.type}
                   </span>
                   <span className="font-medium text-neutral-900 dark:text-white text-sm">{entity.name}</span>
                 </div>
-                <span className="text-xs text-neutral-400">{entity.mentions}×</span>
+                <span className="text-xs text-slate-400">{entity.mentions}×</span>
               </div>
             ))}
           </div>
@@ -138,7 +138,7 @@ const EntityExplorer = ({ documents }) => {
       )}
 
       {!loading && selectedDoc && entities.length === 0 && (
-        <div className="text-center py-12 text-neutral-400">
+        <div className="text-center py-12 text-slate-400">
           <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>No entities found. The document may not contain named entities.</p>
         </div>
@@ -172,7 +172,7 @@ const DocumentSimilarity = ({ documents }) => {
       <select
         value={selectedDoc}
         onChange={e => { setSelectedDoc(e.target.value); loadSimilarity(e.target.value); }}
-        className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 outline-none"
+        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
       >
         <option value="">Select a document to find similar ones...</option>
         {documents.filter(d => d.status === 'completed' || d.status === 'extracted').map(d => (
@@ -182,8 +182,8 @@ const DocumentSimilarity = ({ documents }) => {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-          <span className="ml-2 text-neutral-500">Computing similarity...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <span className="ml-2 text-slate-400">Computing similarity...</span>
         </div>
       )}
 
@@ -193,17 +193,17 @@ const DocumentSimilarity = ({ documents }) => {
             const name = s.doc?.originalName || s.documentId?.originalName || 'Document';
             const scorePercent = Math.round((s.score || 0) * 100);
             return (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div key={i} className="flex items-center gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-600">
                 <div className="flex-1">
                   <p className="font-medium text-neutral-900 dark:text-white">{name}</p>
-                  <p className="text-xs text-neutral-400 mt-0.5">{s.doc?.fileType?.toUpperCase() || ''} • {s.doc?.category || ''}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{s.doc?.fileType?.toUpperCase() || ''} • {s.doc?.category || ''}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{scorePercent}%</div>
-                  <div className="text-xs text-neutral-400">similarity</div>
+                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{scorePercent}%</div>
+                  <div className="text-xs text-slate-400">similarity</div>
                 </div>
                 <div className="w-24 bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-                  <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${scorePercent}%` }} />
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${scorePercent}%` }} />
                 </div>
               </div>
             );
@@ -212,7 +212,7 @@ const DocumentSimilarity = ({ documents }) => {
       )}
 
       {!loading && selectedDoc && similar.length === 0 && (
-        <div className="text-center py-12 text-neutral-400">
+        <div className="text-center py-12 text-slate-400">
           <FileSearch className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>No similar documents found. Upload more documents to enable similarity analysis.</p>
         </div>
@@ -256,7 +256,7 @@ const ChangeDetection = ({ documents }) => {
         <select
           value={docA}
           onChange={e => setDocA(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 outline-none"
+          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
         >
           <option value="">Document A...</option>
           {extractedDocs.map(d => (
@@ -266,7 +266,7 @@ const ChangeDetection = ({ documents }) => {
         <select
           value={docB}
           onChange={e => setDocB(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 outline-none"
+          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
         >
           <option value="">Document B...</option>
           {extractedDocs.map(d => (
@@ -277,7 +277,7 @@ const ChangeDetection = ({ documents }) => {
       <button
         onClick={compare}
         disabled={!docA || !docB || docA === docB || loading}
-        className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitCompareArrows className="w-4 h-4" />}
         Compare Documents
@@ -304,7 +304,7 @@ const ChangeDetection = ({ documents }) => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-neutral-200 dark:border-neutral-700 text-left text-xs uppercase text-neutral-500 dark:text-neutral-400">
+                  <tr className="border-b border-slate-200 dark:border-slate-600 text-left text-xs uppercase text-slate-400 dark:text-slate-400">
                     <th className="px-4 py-3">Change</th>
                     <th className="px-4 py-3">Parameter</th>
                     <th className="px-4 py-3">Mine</th>
@@ -314,12 +314,12 @@ const ChangeDetection = ({ documents }) => {
                 </thead>
                 <tbody>
                   {result.changes.slice(0, 50).map((c, i) => (
-                    <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30">
+                    <tr key={i} className="border-b border-neutral-100 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-dark-card/30">
                       <td className="px-4 py-3">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${changeColors[c.type]}`}>{c.type}</span>
                       </td>
                       <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{c.parameter}</td>
-                      <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">{c.mineName || '—'}</td>
+                      <td className="px-4 py-3 text-slate-400 dark:text-slate-400">{c.mineName || '—'}</td>
                       <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{c.oldValue || '—'}</td>
                       <td className="px-4 py-3 text-neutral-600 dark:text-neutral-300">{c.newValue || '—'}</td>
                     </tr>
@@ -369,15 +369,15 @@ const TopicTrends = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
-        <span className="ml-2 text-neutral-500">Loading topic trends...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <span className="ml-2 text-slate-400">Loading topic trends...</span>
       </div>
     );
   }
 
   if (trends.length === 0) {
     return (
-      <div className="text-center py-12 text-neutral-400">
+      <div className="text-center py-12 text-slate-400">
         <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
         <p>No topic trend data available yet. Process more documents to see trends.</p>
       </div>
@@ -403,12 +403,12 @@ const TopicTrends = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {trends.map((t, i) => (
-          <div key={t.name} className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
+          <div key={t.name} className="p-3 rounded-lg border border-slate-200 dark:border-slate-600">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
               <span className="font-medium text-sm text-neutral-900 dark:text-white truncate">{t.name}</span>
             </div>
-            <p className="text-xs text-neutral-400">{t.trends?.length || 0} periods tracked</p>
+            <p className="text-xs text-slate-400">{t.trends?.length || 0} periods tracked</p>
           </div>
         ))}
       </div>

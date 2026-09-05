@@ -7,17 +7,17 @@ const SourcePanel = ({ sources }) => {
   if (!sources || sources.length === 0) return null;
 
   return (
-    <div className="mt-4 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#1A1A1A] overflow-hidden transition-colors">
+    <div className="mt-4 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-card overflow-hidden transition-colors">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center w-full px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-[#222222] transition-colors"
+        className="flex items-center w-full px-3 py-2 font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-dark-card transition-colors"
       >
-        {isOpen ? <ChevronDown size={16} className="mr-1.5 text-gray-500 dark:text-neutral-500" /> : <ChevronRight size={16} className="mr-1.5 text-gray-500 dark:text-neutral-500" />}
+        {isOpen ? <ChevronDown size={16} className="mr-1.5 text-gray-500 dark:text-slate-400" /> : <ChevronRight size={16} className="mr-1.5 text-gray-500 dark:text-slate-400" />}
         <span className="flex-1 text-left">Sources ({sources.length})</span>
       </button>
       
       {isOpen && (
-        <div className="p-3 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-[#111111]">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-600 bg-neutral-50 dark:bg-dark-bg">
           <ul className="space-y-2.5">
             {sources.map((source, index) => (
               <li key={index} className="flex items-start gap-2">
@@ -26,7 +26,7 @@ const SourcePanel = ({ sources }) => {
                   <span className="font-medium text-neutral-800 dark:text-neutral-200 leading-snug">
                     {source.documentName || source.documentId?.originalName || 'Unknown Document'}
                   </span>
-                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500 dark:text-slate-400">
                     {source.pageNumber && <span>Page {source.pageNumber}</span>}
                     {source.similarity && (
                       <>

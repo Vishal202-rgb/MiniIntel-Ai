@@ -3,7 +3,7 @@ import { FileText, FileSpreadsheet, Image as ImageIcon, File, Eye, Trash2 } from
 import StatusBadge from '../common/StatusBadge';
 
 const getFileIcon = (fileType) => {
-  if (!fileType) return <File className="w-6 h-6 text-gray-600 dark:text-neutral-400" />;
+  if (!fileType) return <File className="w-6 h-6 text-gray-600 dark:text-slate-400" />;
   const type = fileType.toLowerCase();
   if (type.includes('pdf') || type.includes('docx') || type.includes('document')) {
     return <FileText className="w-6 h-6 text-red-500" />;
@@ -14,7 +14,7 @@ const getFileIcon = (fileType) => {
   if (type.includes('image') || type.includes('jpeg') || type.includes('png')) {
     return <ImageIcon className="w-6 h-6 text-blue-500" />;
   }
-  return <File className="w-6 h-6 text-gray-600 dark:text-neutral-400" />;
+  return <File className="w-6 h-6 text-gray-600 dark:text-slate-400" />;
 };
 
 const formatSize = (bytes) => {
@@ -33,10 +33,10 @@ const DocumentCard = ({ document, onPreview, onDelete }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl p-3 md:p-4 hover:shadow-md hover:border-blue-500/30 dark:hover:border-gray-500 transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 group">
+    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-3 md:p-4 hover:shadow-md hover:border-blue-500/30 dark:hover:border-gray-500 transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 group">
       
       <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-        <div className="p-2 bg-gray-50 dark:bg-[#222222] rounded-lg shrink-0">
+        <div className="p-2 bg-slate-50 dark:bg-dark-card rounded-lg shrink-0">
           {getFileIcon(document.fileType)}
         </div>
         
@@ -46,12 +46,12 @@ const DocumentCard = ({ document, onPreview, onDelete }) => {
               {document.originalName}
             </h3>
             {/* Custom Tooltip for filename */}
-            <div className="absolute left-0 bottom-full mb-1 px-2 py-1 bg-neutral-900 dark:bg-neutral-800 text-white text-[11px] font-medium rounded opacity-0 invisible group-hover/title:opacity-100 group-hover/title:visible transition-all whitespace-nowrap z-20 pointer-events-none shadow-xl border border-neutral-700">
+            <div className="absolute left-0 bottom-full mb-1 px-2 py-1 bg-dark-bg dark:bg-dark-card text-white text-[11px] font-medium rounded opacity-0 invisible group-hover/title:opacity-100 group-hover/title:visible transition-all whitespace-nowrap z-20 pointer-events-none shadow-xl border border-slate-600">
               {document.originalName}
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5 text-[11px] md:text-xs text-gray-500 dark:text-neutral-400">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5 text-[11px] md:text-xs text-gray-500 dark:text-slate-400">
             <span className="uppercase font-medium tracking-wide">{document.fileType?.split('/')[1] || document.fileType}</span>
             <span className="text-gray-300 dark:text-neutral-600">•</span>
             <span>{formatSize(document.fileSize)}</span>
@@ -61,7 +61,7 @@ const DocumentCard = ({ document, onPreview, onDelete }) => {
         </div>
       </div>
       
-      <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 shrink-0 mt-1 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100 dark:border-neutral-800">
+      <div className="flex items-center justify-between md:justify-end gap-3 md:gap-4 shrink-0 mt-1 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100 dark:border-slate-700">
         <StatusBadge status={document.status} className="shrink-0" />
         
         <div className="flex items-center gap-2 shrink-0">

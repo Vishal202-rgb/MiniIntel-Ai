@@ -30,12 +30,12 @@ const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) =>
   };
 
   if (!records || records.length === 0) {
-    return <div className="p-8 text-center text-gray-500 dark:text-gray-400">No records found. Select a document and extract data.</div>;
+    return <div className="p-5 text-center text-gray-500 dark:text-slate-400">No records found. Select a document and extract data.</div>;
   }
 
   return (
     <div>
-      <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+      <div className="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-dark-bg">
         <span className="text-sm text-gray-600 dark:text-gray-300">
           {records.length} records found
         </span>
@@ -50,7 +50,7 @@ const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) =>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-gray-700 dark:text-gray-200">
-          <thead className="bg-gray-100 dark:bg-gray-800 border-b dark:border-gray-700 text-xs uppercase text-gray-600 dark:text-gray-400">
+          <thead className="bg-slate-100 dark:bg-dark-card border-b dark:border-slate-700 text-xs uppercase text-gray-600 dark:text-slate-400">
             <tr>
               <th className="px-4 py-3 w-10">
                 <input 
@@ -73,7 +73,7 @@ const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) =>
             {records.map((record) => {
               const id = record.id || record._id;
               return (
-                <tr key={id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <tr key={id} className="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-gray-800/50">
                   <td className="px-4 py-3">
                     <input 
                       type="checkbox" 
@@ -84,7 +84,7 @@ const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) =>
                   </td>
                   <td className="px-4 py-3 font-medium">{record.parameter}</td>
                   <td className="px-4 py-3">{record.value}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{record.unit}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-slate-400">{record.unit}</td>
                   <td className="px-4 py-3">{record.period}</td>
                   <td className="px-4 py-3">{record.mine}</td>
                   <td className="px-4 py-3">

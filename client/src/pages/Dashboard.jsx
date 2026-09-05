@@ -14,9 +14,9 @@ import DocumentPreview from '../components/documents/DocumentPreview';
 import { Link } from 'react-router-dom';
 
 const StatCard = ({ icon: Icon, label, value, trend, trendUp, colorClass }) => (
-  <div className="hover-lift bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
+  <div className="hover-lift bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm">
     <div className="flex items-center justify-between mb-3">
-      <div className={`p-2.5 rounded-xl ${colorClass}`}>
+      <div className={`p-2.5 rounded-lg ${colorClass}`}>
         <Icon className="w-5 h-5" />
       </div>
       {trend && (
@@ -26,7 +26,7 @@ const StatCard = ({ icon: Icon, label, value, trend, trendUp, colorClass }) => (
         </span>
       )}
     </div>
-    <h3 className="text-gray-500 dark:text-neutral-400 text-xs font-medium uppercase tracking-wider">{label}</h3>
+    <h3 className="text-gray-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">{label}</h3>
     <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-1">{value}</p>
   </div>
 );
@@ -120,7 +120,7 @@ const Dashboard = () => {
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
             My Dashboard
           </h1>
-          <p className="text-gray-500 dark:text-neutral-400 text-sm mt-0.5">Real-time metrics and document processing status.</p>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">Real-time metrics and document processing status.</p>
         </div>
       </div>
 
@@ -145,48 +145,48 @@ const Dashboard = () => {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
         
         {/* Left Column (Main Content) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Quick Access Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link to="/extraction" className="hover-lift flex items-center p-4 bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl hover:bg-neutral-50 dark:hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg mr-4">
+            <Link to="/extraction" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mr-4">
                 <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Upload & Extract</h3>
-                <p className="text-sm text-gray-500 dark:text-neutral-400">Process new mining documents</p>
+                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Upload & Extract</h3>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Process new mining documents</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-neutral-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
             </Link>
 
-            <Link to="/knowledge-base" className="hover-lift flex items-center p-4 bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl hover:bg-neutral-50 dark:hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:bg-blue-400 rounded-lg mr-4">
+            <Link to="/knowledge-base" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mr-4">
                 <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Knowledge Base</h3>
-                <p className="text-sm text-gray-500 dark:text-neutral-400">Search indexed records</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Search indexed records</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
             </Link>
 
-            <Link to="/ai-assistant" className="hover-lift flex items-center p-4 bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl hover:bg-neutral-50 dark:hover:bg-gray-50 dark:hover:bg-neutral-800/50 transition-colors group">
+            <Link to="/ai-assistant" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
               <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg mr-4">
                 <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">AI Assistant</h3>
-                <p className="text-sm text-gray-500 dark:text-neutral-400">Ask questions about data</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Ask questions about data</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-neutral-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
             </Link>
           </div>
 
           {/* Upload Section */}
-          <div className="bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm hover:border-blue-500/30 transition-colors">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm hover:border-blue-500/30 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                 <FileUp className="w-4 h-4 text-blue-600 dark:text-blue-500" /> Upload & Analyze
@@ -199,7 +199,7 @@ const Dashboard = () => {
           </div>
 
           {/* Document Management */}
-          <div className="bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Recent Documents</h2>
               <Link to="/command-center" className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
@@ -230,7 +230,7 @@ const Dashboard = () => {
         {/* Right Column (Side Panels) */}
         <div className="lg:col-span-3 space-y-6">
           {/* AI Insights Panel */}
-          <div className="bg-gradient-to-br from-blue-700 to-indigo-800 rounded-xl p-5 shadow-sm text-gray-900 dark:text-white">
+          <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-5 shadow-sm text-white border border-blue-600/50">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Brain className="w-4 h-4 text-blue-200" />
@@ -243,54 +243,54 @@ const Dashboard = () => {
             </div>
             
             <div className="space-y-3">
-              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-gray-200 dark:border-white/10">
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
                 <div className="flex gap-2.5 items-start">
                   <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white">Production Anomaly</p>
+                    <p className="text-xs font-semibold text-white">Production Anomaly</p>
                     <p className="text-[11px] text-blue-100 mt-1 leading-relaxed">Coal extraction at Mine Alpha is 15% below quarterly target based on recent reports.</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-gray-200 dark:border-white/10">
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
                 <div className="flex gap-2.5 items-start">
                   <CheckCircle className="w-4 h-4 text-green-300 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-gray-900 dark:text-white">Validation Clean</p>
+                    <p className="text-xs font-semibold text-white">Validation Clean</p>
                     <p className="text-[11px] text-blue-100 mt-1 leading-relaxed">Last 5 documents parsed with 100% data integrity. No manual review needed.</p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-gray-200 dark:border-white/10">
-              <Link to="/ai-assistant" className="text-[11px] text-blue-200 hover:text-gray-900 dark:text-white font-medium flex items-center justify-center gap-1 transition-colors">
+            <div className="mt-4 pt-3 border-t border-white/10">
+              <Link to="/ai-assistant" className="text-[11px] text-blue-200 hover:text-white font-medium flex items-center justify-center gap-1 transition-colors">
                 Ask AI Assistant <TrendingUp className="w-3.5 h-3.5 rotate-45" />
               </Link>
             </div>
           </div>
 
           {/* Processing Activity */}
-          <div className="bg-white dark:bg-[#1A1A1A] border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-gray-500 dark:text-neutral-500" /> Activity Feed
+              <Activity className="w-4 h-4 text-gray-500 dark:text-slate-400" /> Activity Feed
             </h2>
-            <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px before:h-full before:w-[2px] before:bg-neutral-100 dark:before:bg-neutral-800">
+            <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px before:h-full before:w-[2px] before:bg-neutral-100 dark:before:bg-dark-card">
               {documents?.slice(0, 5).map((doc, idx) => (
                 <div key={idx} className="relative flex items-start gap-3">
-                  <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full border-[3px] border-white dark:border-[#1A1A1A] bg-blue-500 shrink-0 z-10 mt-0.5"></div>
-                  <div className="flex-1 bg-neutral-50 dark:bg-[#222222] p-3 rounded-lg border border-neutral-100 dark:border-neutral-800">
+                  <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full border-[3px] border-white dark:border-dark-card bg-blue-500 shrink-0 z-10 mt-0.5"></div>
+                  <div className="flex-1 bg-neutral-50 dark:bg-dark-card p-3 rounded-lg border border-neutral-100 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium text-[13px] text-neutral-900 dark:text-white truncate max-w-[150px]" title={doc.originalName}>{doc.originalName}</span>
-                      <span className="text-[11px] font-medium text-gray-500 dark:text-neutral-500">{new Date(doc.uploadedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                      <span className="text-[11px] font-medium text-gray-500 dark:text-slate-400">{new Date(doc.uploadedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
-                    <p className="text-[11px] text-gray-500 dark:text-neutral-400 leading-relaxed">
+                    <p className="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
                       {['completed', 'extracted'].includes(doc.status) ? 'Document processed & successfully indexed into Knowledge Base.' : doc.status === 'failed' ? 'Failed to process document.' : 'Processing initiated...'}
                     </p>
                   </div>
                 </div>
               ))}
               {(!documents || documents.length === 0) && (
-                <div className="text-[13px] text-gray-500 dark:text-neutral-500 text-center py-4 relative z-10">No recent activity</div>
+                <div className="text-[13px] text-gray-500 dark:text-slate-400 text-center py-4 relative z-10">No recent activity</div>
               )}
             </div>
           </div>

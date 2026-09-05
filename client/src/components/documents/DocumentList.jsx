@@ -7,7 +7,7 @@ const DocumentList = ({ documents, loading, onPreview, onDelete }) => {
     return (
       <div className="flex flex-col gap-3">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="bg-white dark:bg-dark-card border border-gray-200 dark:border-neutral-800 rounded-xl p-4 animate-pulse flex items-center justify-between">
+          <div key={n} className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-4 animate-pulse flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-gray-200 dark:bg-neutral-700 rounded-lg shrink-0"></div>
               <div className="space-y-2">

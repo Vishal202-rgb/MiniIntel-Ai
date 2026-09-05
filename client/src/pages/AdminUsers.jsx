@@ -32,30 +32,30 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto text-gray-800 dark:text-neutral-200">
-      <div className="flex items-center gap-3 mb-8">
-        <Users className="w-8 h-8 text-indigo-400" />
+    <div className="p-5 max-w-6xl mx-auto text-gray-800 dark:text-neutral-200">
+      <div className="flex items-center gap-3 mb-5">
+        <Users className="w-8 h-8 text-blue-400" />
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">User Management</h1>
-          <p className="text-gray-600 dark:text-neutral-400">Manage system access and roles.</p>
+          <p className="text-gray-600 dark:text-slate-400">Manage system access and roles.</p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-dark-card rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-dark-card rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 flex items-center justify-center text-indigo-400">
+          <div className="p-12 flex items-center justify-center text-blue-400">
             <Loader2 className="w-8 h-8 animate-spin mr-3" />
             <span>Loading users...</span>
           </div>
         ) : error ? (
-          <div className="p-6 bg-red-950/30 text-red-400 flex items-center gap-3">
+          <div className="p-5 bg-red-950/30 text-red-400 flex items-center gap-3">
             <AlertCircle className="w-5 h-5" />
             <p>{error}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-100 dark:bg-[#222] text-gray-600 dark:text-neutral-400 border-b border-gray-200 dark:border-neutral-800">
+              <thead className="bg-slate-100 dark:bg-dark-bg text-gray-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Username</th>
                   <th className="px-6 py-4 font-semibold">Role</th>
@@ -65,19 +65,19 @@ const AdminUsers = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-neutral-800">
                 {users.map(user => (
-                  <tr key={user._id} className="hover:bg-gray-100 dark:hover:bg-[#222] transition-colors">
+                  <tr key={user._id} className="hover:bg-slate-100 dark:hover:bg-[#222] transition-colors">
                     <td className="px-6 py-4 text-gray-900 dark:text-white font-medium">{user.username}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${user.role === 'admin' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-neutral-800 text-neutral-300'}`}>
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${user.role === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'bg-dark-card text-neutral-300'}`}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-neutral-400">{new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4">
                       <select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                        className="bg-gray-50 dark:bg-dark-bg border border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white rounded px-2 py-1 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-xs"
+                        className="bg-slate-50 dark:bg-dark-bg border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded px-2 py-1 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-xs"
                       >
                         <option value="user">User</option>
                         <option value="admin">Admin</option>

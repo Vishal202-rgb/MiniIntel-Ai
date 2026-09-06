@@ -6,7 +6,7 @@ const Header = ({ toggleMobileMenu, isSidebarCollapsed }) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className={`fixed top-0 right-0 z-40 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 transition-all duration-300 ${isSidebarCollapsed ? 'md:left-20' : 'md:left-[250px]'} left-0`}>
+    <header className={`fixed top-0 right-0 z-40 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 transition-all duration-300 ${isSidebarCollapsed ? 'md:left-16' : 'md:left-[240px]'} left-0`}>
       <div className="flex items-center gap-4">
         {/* Mobile-only hamburger */}
         <button

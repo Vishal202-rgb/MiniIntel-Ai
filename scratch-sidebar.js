@@ -1,4 +1,6 @@
-import React, { useContext } from 'react';
+const fs = require('fs');
+
+const code = \import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Brain, ShieldCheck, Database, MessageSquare, 
@@ -46,16 +48,16 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
 
   return (
     <aside 
-      className={`fixed left-0 top-0 h-screen bg-[#1c1f26] border-r border-[#2d3139] flex flex-col transition-all duration-300 ease-in-out z-50
-        ${isCollapsed ? 'md:w-16' : 'md:w-[240px]'} w-[240px]
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}
+      className={\\\ixed left-0 top-0 h-screen bg-[#1c1f26] border-r border-[#2d3139] flex flex-col transition-all duration-300 ease-in-out z-50
+        \ w-[240px]
+        \
+      \\\}
     >
       <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
         
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-4 border-b border-[#2d3139] shrink-0 relative">
-          <div className={`flex items-center gap-2.5 transition-opacity duration-200 ${isCollapsed ? 'md:hidden' : ''}`}>
+        <div className="flex items-center justify-between px-4 pt-4 pb-4 border-b border-[#2d3139] shrink-0">
+          <div className={\\\lex items-center gap-2.5 transition-opacity duration-200 \\\\}>
             <Shield className="w-7 h-7 text-amber-500 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[#f1f5f9] font-bold text-base tracking-tight leading-tight">MineIntel AI</span>
@@ -71,6 +73,15 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
           )}
         </div>
 
+        {/* Toggle Button */}
+        <button 
+          onClick={toggleSidebar}
+          className="absolute -right-3 top-5 hidden md:flex items-center justify-center w-6 h-6 bg-[#1c1f26] border border-[#2d3139] rounded-full text-slate-400 hover:text-amber-500 hover:border-amber-500/50 transition-all shadow-sm z-50"
+          aria-label="Toggle Sidebar"
+        >
+          {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+        </button>
+
         <div className="md:hidden h-2"></div>
 
         {/* Navigation */}
@@ -80,7 +91,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
             if (visibleItems.length === 0) return null;
 
             return (
-              <div key={group.title} className={`mb-4 ${groupIndex !== 0 && !isCollapsed ? 'mt-4' : ''}`}>
+              <div key={group.title} className={\\\mb-4 \\\\}>
                 {!isCollapsed && (
                   <h3 className="px-3 mb-2 text-[10px] font-semibold text-[#64748b] uppercase tracking-widest">
                     {group.title}
@@ -96,17 +107,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                         if (window.innerWidth < 768) closeMobileMenu(); 
                       }}
                       className={({ isActive }) =>
-                        `flex items-center rounded-md transition-all duration-150 group relative h-[40px] ${
-                          isCollapsed ? 'md:justify-center px-0' : 'px-3'
-                        } ${
-                          isActive
-                            ? 'bg-[#ffffff08] text-amber-500 border-l-2 border-amber-500'
-                            : 'text-[#94a3b8] hover:bg-[#ffffff05] hover:text-[#f8fafc] border-l-2 border-transparent'
-                        }`
+                        \\\lex items-center rounded-md transition-all duration-150 group relative h-[40px] \ \\\\
                       }
                     >
-                      <item.icon className={`shrink-0 ${isCollapsed ? 'md:w-5 md:h-5 w-4 h-4' : 'w-4 h-4 mr-3'}`} strokeWidth={2} />
-                      <span className={`truncate transition-opacity duration-200 text-[13px] font-medium ${isCollapsed ? 'md:hidden opacity-100' : 'opacity-100'}`}>
+                      <item.icon className={\\\shrink-0 \\\\} strokeWidth={isActive ? 2.5 : 2} />
+                      <span className={\\\	runcate transition-opacity duration-200 text-[13px] font-medium \\\\}>
                         {item.label}
                       </span>
                       {isCollapsed && (
@@ -121,8 +126,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
             );
           })}
 
-          {/* System Group */}
-          <div className={`mb-4 ${!isCollapsed ? 'mt-4' : ''}`}>
+          {/* System Group separated out for bottom if needed, but keeping it in flow if not */}
+          <div className={\\\mb-4 \\\\}>
              {!isCollapsed && (
                   <h3 className="px-3 mb-2 text-[10px] font-semibold text-[#64748b] uppercase tracking-widest">
                     SYSTEM
@@ -134,17 +139,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                       to="/admin/system-health"
                       onClick={() => { if (window.innerWidth < 768) closeMobileMenu(); }}
                       className={({ isActive }) =>
-                        `flex items-center rounded-md transition-all duration-150 group relative h-[40px] ${
-                          isCollapsed ? 'md:justify-center px-0' : 'px-3'
-                        } ${
-                          isActive
-                            ? 'bg-[#ffffff08] text-amber-500 border-l-2 border-amber-500'
-                            : 'text-[#94a3b8] hover:bg-[#ffffff05] hover:text-[#f8fafc] border-l-2 border-transparent'
-                        }`
+                        \\\lex items-center rounded-md transition-all duration-150 group relative h-[40px] \ \\\\
                       }
                     >
-                      <Activity className={`shrink-0 ${isCollapsed ? 'md:w-5 md:h-5 w-4 h-4' : 'w-4 h-4 mr-3'}`} />
-                      <span className={`truncate transition-opacity duration-200 text-[13px] font-medium ${isCollapsed ? 'md:hidden' : ''}`}>System Health</span>
+                      <Activity className={\\\shrink-0 \\\\} />
+                      <span className={\\\	runcate transition-opacity duration-200 text-[13px] font-medium \\\\}>System Health</span>
                       {isCollapsed && (
                         <div className="hidden md:block absolute left-full ml-2 px-2 py-1.5 bg-[#2d3139] text-[#f1f5f9] text-[12px] font-medium rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-[#3f4552]">
                           System Health
@@ -156,17 +155,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                     to="/help"
                     onClick={(e) => { e.preventDefault(); if (window.innerWidth < 768) closeMobileMenu(); }}
                     className={({ isActive }) =>
-                      `flex items-center rounded-md transition-all duration-150 group relative h-[40px] ${
-                        isCollapsed ? 'md:justify-center px-0' : 'px-3'
-                      } ${
-                        isActive
-                          ? 'bg-[#ffffff08] text-amber-500 border-l-2 border-amber-500'
-                          : 'text-[#94a3b8] hover:bg-[#ffffff05] hover:text-[#f8fafc] border-l-2 border-transparent'
-                      }`
+                      \\\lex items-center rounded-md transition-all duration-150 group relative h-[40px] \ \\\\
                     }
                   >
-                    <HelpCircle className={`shrink-0 ${isCollapsed ? 'md:w-5 md:h-5 w-4 h-4' : 'w-4 h-4 mr-3'}`} />
-                    <span className={`truncate transition-opacity duration-200 text-[13px] font-medium ${isCollapsed ? 'md:hidden' : ''}`}>Help & Support</span>
+                    <HelpCircle className={\\\shrink-0 \\\\} />
+                    <span className={\\\	runcate transition-opacity duration-200 text-[13px] font-medium \\\\}>Help & Support</span>
                     {isCollapsed && (
                       <div className="hidden md:block absolute left-full ml-2 px-2 py-1.5 bg-[#2d3139] text-[#f1f5f9] text-[12px] font-medium rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl border border-[#3f4552]">
                         Help & Support
@@ -205,17 +198,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
               to="/settings"
               onClick={() => { if (window.innerWidth < 768) closeMobileMenu(); }}
               className={({ isActive }) =>
-                `flex items-center rounded-md transition-all duration-150 group relative h-[40px] ${
-                  isCollapsed ? 'md:justify-center px-0' : 'px-3'
-                } ${
-                  isActive
-                    ? 'bg-[#ffffff08] text-amber-500 border-l-2 border-amber-500'
-                    : 'text-[#94a3b8] hover:bg-[#ffffff05] hover:text-[#f8fafc] border-l-2 border-transparent'
-                }`
+                \\\lex items-center rounded-md transition-all duration-150 group relative h-[40px] \ \\\\
               }
             >
-              <Settings className={`shrink-0 ${isCollapsed ? 'md:w-5 md:h-5 w-4 h-4' : 'w-4 h-4 mr-3'}`} />
-              <span className={`truncate transition-opacity duration-200 text-[13px] font-medium ${isCollapsed ? 'md:hidden' : ''}`}>
+              <Settings className={\\\shrink-0 \\\\} />
+              <span className={\\\	runcate transition-opacity duration-200 text-[13px] font-medium \\\\}>
                 Settings
               </span>
               {isCollapsed && (
@@ -227,12 +214,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
             
             <button
               onClick={logout}
-              className={`w-full flex items-center rounded-md transition-all duration-150 group relative h-[40px] text-[#94a3b8] hover:bg-red-500/10 hover:text-red-400 border-l-2 border-transparent ${
-                isCollapsed ? 'md:justify-center px-0' : 'px-3'
-              }`}
+              className={\\\w-full flex items-center rounded-md transition-all duration-150 group relative h-[40px] text-[#94a3b8] hover:bg-red-500/10 hover:text-red-400 border-l-2 border-transparent \\\\}
             >
-              <LogOut className={`shrink-0 ${isCollapsed ? 'md:w-5 md:h-5 w-4 h-4' : 'w-4 h-4 mr-3'}`} />
-              <span className={`truncate transition-opacity duration-200 text-[13px] font-medium ${isCollapsed ? 'md:hidden' : ''}`}>
+              <LogOut className={\\\shrink-0 \\\\} />
+              <span className={\\\	runcate transition-opacity duration-200 text-[13px] font-medium \\\\}>
                 Logout
               </span>
               {isCollapsed && (
@@ -244,17 +229,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
           </div>
         </div>
       </div>
-
-      {/* Toggle Button */}
-      <button 
-        onClick={toggleSidebar}
-        className={`absolute -right-3 top-5 hidden md:flex items-center justify-center w-6 h-6 bg-[#1c1f26] border border-[#2d3139] rounded-full text-slate-400 hover:text-amber-500 hover:border-amber-500/50 transition-all shadow-sm z-50 ${isCollapsed ? 'rotate-180' : ''}`}
-        aria-label="Toggle Sidebar"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-      </button>
     </aside>
   );
 };
 
 export default Sidebar;
+\;
+fs.writeFileSync('client/src/components/layout/Sidebar.jsx', code, 'utf8');

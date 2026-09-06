@@ -22,7 +22,7 @@ const Layout = () => {
       
       <main 
         className={`transition-all duration-300 ease-in-out mt-16 p-4 md:p-6 min-h-[calc(100vh-4rem)] ${
-          isSidebarCollapsed ? 'md:ml-20' : 'md:ml-[250px]'
+          isSidebarCollapsed ? 'md:ml-16' : 'md:ml-[240px]'
         }`}
       >
         <div className="max-w-[1400px] mx-auto">

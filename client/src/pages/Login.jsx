@@ -64,7 +64,7 @@ const Login = () => {
         
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-3 bg-red-900/20 text-red-400 rounded-lg text-sm border border-red-900/30 flex items-start gap-2">
+          <div className="mb-4 p-3 bg-red-900/20 text-red-400 rounded-lg text-sm border border-red-900/30 flex items-start gap-2">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -126,7 +126,7 @@ const Login = () => {
         </form>
 
         {/* Footer Links */}
-        <div className="mt-8 flex flex-col items-center gap-4">
+        <div className="mt-5 flex flex-col items-center gap-4">
           <div className="text-sm">
             <span className="text-slate-400">
               {isRegistering ? 'Already have an account?' : "Don't have an account?"}

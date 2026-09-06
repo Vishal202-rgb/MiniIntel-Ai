@@ -21,6 +21,7 @@ import AdminUsers from './pages/AdminUsers';
 import SystemHealth from './pages/SystemHealth';
 import IntelligenceDashboard from './pages/IntelligenceDashboard';
 import AdminPendingReviews from './pages/AdminPendingReviews';
+import Settings from './pages/Settings';
 
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -58,6 +59,7 @@ function App() {
                 <Route path="intelligence" element={<IntelligenceDashboard />} />
                 <Route path="topics" element={<TopicsExplorer />} />
                 <Route path="audit" element={<AuditTrail />} />
+                <Route path="settings" element={<Settings />} />
                 
                 {/* Admin Specific Screens can be added here if needed */}
                 <Route element={<ProtectedRoute adminOnly={true} />}>

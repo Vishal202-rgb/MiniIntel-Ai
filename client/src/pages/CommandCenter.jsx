@@ -36,7 +36,7 @@ const CommandCenter = () => {
   };
 
   return (
-    <div className="p-5 max-w-7xl mx-auto space-y-8">
+    <div className="p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
         <Monitor className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Command Center</h1>
@@ -105,7 +105,7 @@ const CommandCenter = () => {
           </form>
 
           {orchestratorResult && (
-            <div className={`mt-6 p-4 rounded-lg border flex items-start gap-3 ${
+            <div className={`mt-4 p-4 rounded-lg border flex items-start gap-3 ${
               orchestratorResult.success 
                 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300' 
                 : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-300'

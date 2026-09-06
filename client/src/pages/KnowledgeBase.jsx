@@ -85,7 +85,7 @@ const KnowledgeBase = () => {
   };
 
   return (
-    <div className="p-5 max-w-7xl mx-auto space-y-8">
+    <div className="p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
         <Database className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base Management</h1>
@@ -99,11 +99,11 @@ const KnowledgeBase = () => {
             <FileText className="text-blue-500 w-6 h-6" />
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Index Document</h2>
           </div>
-          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
             Select a processed document to generate embeddings and index it into the vector database for AI querying.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
               <select 
                 className="w-full appearance-none bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-colors cursor-pointer"
@@ -153,11 +153,11 @@ const KnowledgeBase = () => {
             </div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
           </div>
-          <p className="text-gray-500 dark:text-slate-400 text-sm mb-6 shrink-0">
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4 shrink-0">
             Query the vector database directly to see what chunks the AI retrieves for context.
           </p>
           
-          <form onSubmit={handleSearch} className="flex gap-3 mb-6 shrink-0">
+          <form onSubmit={handleSearch} className="flex gap-3 mb-4 shrink-0">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-slate-400" />
               <input 

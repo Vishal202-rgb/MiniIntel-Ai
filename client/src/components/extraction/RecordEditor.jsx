@@ -48,7 +48,7 @@ const RecordEditor = ({ record, onSave, onClose }) => {
               className="w-full border dark:border-slate-700 rounded p-2 bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
             <input 
               type="text" 

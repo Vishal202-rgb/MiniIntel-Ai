@@ -118,12 +118,12 @@ const ExtractionReview = () => {
   return (
     <div className="p-5 max-w-7xl mx-auto dark:text-gray-100">
       <BackButton fallback="/" />
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+      <h1 className="-4">
         <FileText className="w-6 h-6 text-blue-500" />
         Data Extraction & Review
       </h1>
       
-      <div className="bg-white dark:bg-dark-card p-4 rounded-lg shadow mb-6 flex items-center gap-4">
+      <div className="bg-white dark:bg-dark-card p-4 rounded-lg shadow mb-4 flex items-center gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium mb-1">Select Document</label>
           <select 
@@ -139,7 +139,7 @@ const ExtractionReview = () => {
             ))}
           </select>
         </div>
-        <div className="flex items-end h-full mt-6">
+        <div className="flex items-end h-full mt-4">
           <button 
             onClick={handleExtract}
             disabled={!selectedDocument || loading}
@@ -152,7 +152,7 @@ const ExtractionReview = () => {
       </div>
 
       {message && (
-        <div className={`mb-6 p-4 rounded flex items-center gap-2 ${message.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+        <div className={`mb-4 p-4 rounded flex items-center gap-2 ${message.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
           {message.type === 'error' ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
           <span>{message.text}</span>
         </div>

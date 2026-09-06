@@ -148,7 +148,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
         
         {/* Left Column (Main Content) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-7 space-y-4">
           {/* Quick Access Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link to="/extraction" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
@@ -228,7 +228,7 @@ const Dashboard = () => {
         </div>
 
         {/* Right Column (Side Panels) */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4">
           {/* AI Insights Panel */}
           <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-5 shadow-sm text-white border border-blue-600/50">
             <div className="flex items-center justify-between mb-4">

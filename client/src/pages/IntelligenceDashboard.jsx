@@ -20,7 +20,7 @@ const IntelligenceDashboard = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -385,7 +385,7 @@ const TopicTrends = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>

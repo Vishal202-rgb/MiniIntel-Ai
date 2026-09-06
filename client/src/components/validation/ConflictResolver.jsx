@@ -48,7 +48,7 @@ const ConflictResolver = ({ issue, onResolve, onCancel }) => {
               placeholder="Enter correct value..."
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resolution Notes (Optional)</label>
             <textarea 
               value={notes} 

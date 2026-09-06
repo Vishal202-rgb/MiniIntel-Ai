@@ -11,18 +11,16 @@ import remarkGfm from 'remark-gfm';
 
 // ... (StatCard, RoleBadge, StatusBadge, HealthDot, SectionHeader, formatDate unchanged)
 const StatCard = ({ icon: Icon, label, value, colorClass, loading }) => (
-  <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full">
-    <div className="flex items-center justify-between mb-4">
-      <div className={`p-3 rounded-lg ${colorClass}`}>
-        <Icon className="w-6 h-6" />
+  <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
+    <div className="flex items-center justify-between mb-2">
+      <h3 className="text-slate-500 dark:text-slate-400 text-[11px] font-bold tracking-wide uppercase">{label}</h3>
+      <div className={`p-1.5 rounded-md ${colorClass}`}>
+        <Icon className="w-4 h-4" />
       </div>
     </div>
-    <div className="mt-auto">
-      <h3 className="text-gray-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">{label}</h3>
-      <p className="text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-        {loading ? <span className="inline-block w-12 h-8 bg-neutral-200 dark:bg-dark-card rounded animate-pulse" /> : value}
-      </p>
-    </div>
+    <p className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
+      {loading ? <span className="inline-block w-12 h-6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /> : value}
+    </p>
   </div>
 );
 
@@ -223,7 +221,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-5 max-w-[1400px] mx-auto space-y-8">
+    <div className="p-5 max-w-[1400px] mx-auto space-y-5">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -401,7 +399,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* ── Right Column: Health + Activity ── */}
-        <div className="space-y-6">
+        <div className="space-y-4">
 
           {/* System Health */}
           <div className="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">

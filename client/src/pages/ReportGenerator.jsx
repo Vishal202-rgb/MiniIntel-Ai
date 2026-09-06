@@ -102,17 +102,17 @@ const ReportGenerator = () => {
     <div className="p-5 max-w-7xl mx-auto text-gray-800 dark:text-neutral-200">
       <BackButton fallback="/" />
       <div className="mb-5">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Report Generator</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Report Generator</h1>
         <p className="text-gray-600 dark:text-slate-400">Generate evidence-based mining reports from your knowledge base.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Controls */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 p-5 rounded-lg space-y-4">
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 p-4 rounded-lg space-y-3">
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Source Document (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Source Document (Optional)</label>
               <select 
                 value={selectedDoc} 
                 onChange={e => setSelectedDoc(e.target.value)}
@@ -126,7 +126,7 @@ const ReportGenerator = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Report Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Report Type</label>
               <select 
                 value={reportType} 
                 onChange={e => setReportType(e.target.value)}
@@ -141,7 +141,7 @@ const ReportGenerator = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Additional Instructions</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Additional Instructions</label>
               <textarea 
                 value={instructions}
                 onChange={e => setInstructions(e.target.value)}

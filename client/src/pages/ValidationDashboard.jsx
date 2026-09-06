@@ -110,7 +110,7 @@ const ValidationDashboard = () => {
   return (
     <div className="p-5 max-w-7xl mx-auto dark:text-gray-100">
       <BackButton fallback="/" />
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ShieldAlert className="w-6 h-6 text-blue-500" />
           Validation Dashboard
@@ -153,7 +153,7 @@ const ValidationDashboard = () => {
       </div>
 
       {validationMessage && (
-        <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${validationMessage.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-300'}`}>
+        <div className={`mb-4 p-4 rounded-lg flex items-start gap-3 ${validationMessage.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-300'}`}>
           {validationMessage.type === 'success' ? <CheckCircle className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
           <p className="text-sm font-medium">{validationMessage.text}</p>
         </div>

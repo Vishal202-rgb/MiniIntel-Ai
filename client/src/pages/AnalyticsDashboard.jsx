@@ -55,7 +55,7 @@ const AnalyticsDashboard = () => {
           <p className="text-red-600 dark:text-red-300">{error}</p>
           <button 
             onClick={fetchDashboardData}
-            className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
             Retry
           </button>
@@ -94,7 +94,7 @@ const AnalyticsDashboard = () => {
   };
 
   return (
-    <div className="p-4 md:p-5 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3 mb-2">
         <TrendingUp className="w-8 h-8 text-blue-600 dark:text-blue-400" />
         <div>
@@ -123,7 +123,7 @@ const AnalyticsDashboard = () => {
         
         {/* Production vs Dispatch */}
         <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6">Production vs Dispatch (MT)</h2>
+          <h2 className="-4">Production vs Dispatch (MT)</h2>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -141,7 +141,7 @@ const AnalyticsDashboard = () => {
 
         {/* Target Achievement */}
         <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6">Target Achievement</h2>
+          <h2 className="-4">Target Achievement</h2>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -159,7 +159,7 @@ const AnalyticsDashboard = () => {
 
         {/* Production-Dispatch Gap */}
         <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift lg:col-span-2">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Production-Dispatch Gap Analysis</h2>
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
               <div className="flex items-center gap-1.5">
@@ -183,7 +183,7 @@ const AnalyticsDashboard = () => {
 
       {/* AI Insights */}
       <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
+        <h2 className="-4">
           <Lightbulb className="w-5 h-5 text-amber-500" />
           AI-Generated Insights
         </h2>

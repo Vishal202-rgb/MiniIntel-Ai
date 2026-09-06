@@ -33,12 +33,12 @@ const DropZone = ({ onUpload }) => {
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
           isDragActive
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
+            ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/20'
             : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-card hover:bg-neutral-50 dark:hover:bg-dark-bg/50'
         }`}
       >
         <input {...getInputProps()} />
-        <CloudUpload className={`w-8 h-8 mb-3 ${isDragActive ? 'text-blue-500' : 'text-slate-400 dark:text-slate-400'}`} />
+        <CloudUpload className={`w-8 h-8 mb-3 ${isDragActive ? 'text-amber-500' : 'text-slate-400 dark:text-slate-400'}`} />
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-1">
           Drag & drop files here, or click to browse
         </p>

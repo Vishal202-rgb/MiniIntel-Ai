@@ -8,7 +8,7 @@ const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-dark-bg text-neutral-900 dark:text-neutral-100 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-dark-bg text-neutral-900 dark:text-neutral-100 font-sans selection:bg-amber-500/30">
       <Header 
         toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
         isSidebarCollapsed={isSidebarCollapsed}

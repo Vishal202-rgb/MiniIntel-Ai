@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 const RecordEditor = ({ record, onSave, onClose }) => {
   const [formData, setFormData] = useState({
@@ -19,57 +19,66 @@ const RecordEditor = ({ record, onSave, onClose }) => {
     onSave(formData);
   };
 
+  const inputClass = "w-full bg-white dark:bg-[#1c1f26] border border-slate-200 dark:border-[#2d3139] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#f1f5f9] placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-colors";
+  const labelClass = "block text-xs font-semibold text-gray-500 dark:text-[#64748b] uppercase tracking-wider mb-1.5";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white dark:bg-dark-card rounded-lg shadow-xl w-full max-w-md overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Record</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="bg-white dark:bg-dark-card rounded-xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-[#2d3139]">
+        <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-[#2d3139] bg-slate-50/50 dark:bg-[#1c1f26]/50">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">Edit Extracted Record</h3>
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#ffffff0a] rounded transition-colors">
+            <X className="w-4 h-4" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parameter</label>
+        
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className={labelClass}>Parameter</label>
             <input 
               type="text" 
               value={record.parameter || ''} 
               disabled 
-              className="w-full border dark:border-slate-700 rounded p-2 bg-slate-100 dark:bg-dark-bg text-gray-500 dark:text-slate-400"
+              className="w-full bg-slate-50 dark:bg-[#1c1f26]/50 border border-slate-200 dark:border-[#2d3139] rounded-lg px-3 py-2 text-sm text-gray-500 dark:text-[#64748b] cursor-not-allowed"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Value</label>
+          
+          <div>
+            <label className={labelClass}>Value</label>
             <input 
               type="text" 
               name="value"
               value={formData.value} 
               onChange={handleChange}
-              className="w-full border dark:border-slate-700 rounded p-2 bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={inputClass}
+              autoFocus
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
+          
+          <div>
+            <label className={labelClass}>Unit</label>
             <input 
               type="text" 
               name="unit"
               value={formData.unit} 
               onChange={handleChange}
-              className="w-full border dark:border-slate-700 rounded p-2 bg-white dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className={inputClass}
             />
           </div>
-          <div className="flex justify-end gap-3">
+          
+          <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-[#2d3139]">
             <button 
               type="button" 
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-[#94a3b8] hover:text-gray-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#ffffff0a] rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+              className="px-4 py-2 text-sm font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-sm shadow-amber-500/20"
             >
+              <Save className="w-4 h-4" />
               Save Changes
             </button>
           </div>

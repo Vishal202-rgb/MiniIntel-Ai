@@ -38,7 +38,7 @@ const AnalyticsDashboard = () => {
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-blue-500">
+        <div className="flex flex-col items-center gap-4 text-amber-500">
           <Loader2 className="w-10 h-10 animate-spin" />
           <p className="text-gray-500 dark:text-slate-400 font-medium">Loading analytics...</p>
         </div>
@@ -69,8 +69,8 @@ const AnalyticsDashboard = () => {
   const { kpis, productionData, insights } = data;
 
   const kpiCards = [
-    { label: 'Total Documents', value: kpis.totalDocuments, icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-    { label: 'Total Production', value: kpis.totalProduction, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'Total Documents', value: kpis.totalDocuments, icon: FileText, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    { label: 'Total Production', value: kpis.totalProduction, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { label: 'Total Dispatch', value: kpis.totalDispatch, icon: Truck, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
     { label: 'Avg Validation Score', value: kpis.averageValidationScore, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Open Issues', value: kpis.openIssues, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
@@ -96,7 +96,7 @@ const AnalyticsDashboard = () => {
   return (
     <div className="p-4 md:p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3 mb-2">
-        <TrendingUp className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <TrendingUp className="w-8 h-8 text-amber-600 dark:text-amber-400" />
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white">Analytics Dashboard</h1>
           <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Production metrics, dispatch tracking, and AI insights.</p>
@@ -133,7 +133,7 @@ const AnalyticsDashboard = () => {
                   <YAxis stroke="#888" tick={{ fill: '#888' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="production" name="Production" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="production" name="Production" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="dispatch" name="Dispatch" fill="#10b981" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -152,7 +152,7 @@ const AnalyticsDashboard = () => {
                   <Tooltip content={<CustomTooltip />} />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar dataKey="production" name="Actual Production" fill="#64748b" barSize={40} radius={[4, 4, 0, 0]} />
-                  <Line type="monotone" dataKey="target" name="Target" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="target" name="Target" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, fill: '#f59e0b' }} activeDot={{ r: 6 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -199,8 +199,8 @@ const AnalyticsDashboard = () => {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-4">
           {insights.map((insight, idx) => (
-            <div key={idx} className="p-4 bg-neutral-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 rounded-lg group hover:border-blue-500/50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 font-semibold text-sm">
+            <div key={idx} className="p-4 bg-neutral-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 rounded-lg group hover:border-amber-500/50 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3 font-semibold text-sm">
                 0{idx + 1}
               </div>
               <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">

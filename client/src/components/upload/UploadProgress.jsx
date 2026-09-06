@@ -11,8 +11,8 @@ const UploadProgress = ({ uploads, onDismiss }) => {
           key={upload.id}
           className="flex items-center gap-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 p-4 rounded-lg shadow-sm"
         >
-          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <FileUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+            <FileUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex justify-between mb-1">
@@ -30,7 +30,7 @@ const UploadProgress = ({ uploads, onDismiss }) => {
                     ? 'bg-red-500'
                     : upload.status === 'success'
                     ? 'bg-green-500'
-                    : 'bg-blue-600'
+                    : 'bg-amber-600'
                 }`}
                 style={{ width: `${upload.progress}%` }}
               ></div>

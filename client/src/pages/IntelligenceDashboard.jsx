@@ -23,8 +23,8 @@ const IntelligenceDashboard = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <div className="p-2.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+          <Sparkles className="w-6 h-6 text-amber-600 dark:text-amber-400" />
         </div>
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Intelligence</h1>
@@ -40,7 +40,7 @@ const IntelligenceDashboard = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
               activeTab === tab.id
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-amber-600 text-white shadow-sm'
                 : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-dark-card'
             }`}
           >
@@ -85,12 +85,12 @@ const EntityExplorer = ({ documents }) => {
 
   const typeColors = {
     Mine: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-    Subsidiary: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    Subsidiary: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
     Location: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    Equipment: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-    Project: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+    Equipment: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+    Project: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
     Person: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
-    Organization: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    Organization: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
     Other: 'bg-neutral-100 text-neutral-800 dark:bg-dark-card dark:text-neutral-300',
   };
 
@@ -100,7 +100,7 @@ const EntityExplorer = ({ documents }) => {
         <select
           value={selectedDoc}
           onChange={e => { setSelectedDoc(e.target.value); loadEntities(e.target.value); }}
-          className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+          className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500/50 outline-none"
         >
           <option value="">Select a document...</option>
           {documents.filter(d => d.status === 'completed' || d.status === 'extracted').map(d => (
@@ -111,7 +111,7 @@ const EntityExplorer = ({ documents }) => {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
           <span className="ml-2 text-slate-400">Extracting entities...</span>
         </div>
       )}
@@ -172,7 +172,7 @@ const DocumentSimilarity = ({ documents }) => {
       <select
         value={selectedDoc}
         onChange={e => { setSelectedDoc(e.target.value); loadSimilarity(e.target.value); }}
-        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500/50 outline-none"
       >
         <option value="">Select a document to find similar ones...</option>
         {documents.filter(d => d.status === 'completed' || d.status === 'extracted').map(d => (
@@ -182,7 +182,7 @@ const DocumentSimilarity = ({ documents }) => {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
           <span className="ml-2 text-slate-400">Computing similarity...</span>
         </div>
       )}
@@ -199,11 +199,11 @@ const DocumentSimilarity = ({ documents }) => {
                   <p className="text-xs text-slate-400 mt-0.5">{s.doc?.fileType?.toUpperCase() || ''} • {s.doc?.category || ''}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{scorePercent}%</div>
+                  <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{scorePercent}%</div>
                   <div className="text-xs text-slate-400">similarity</div>
                 </div>
                 <div className="w-24 bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${scorePercent}%` }} />
+                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${scorePercent}%` }} />
                 </div>
               </div>
             );
@@ -256,7 +256,7 @@ const ChangeDetection = ({ documents }) => {
         <select
           value={docA}
           onChange={e => setDocA(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500/50 outline-none"
         >
           <option value="">Document A...</option>
           {extractedDocs.map(d => (
@@ -266,7 +266,7 @@ const ChangeDetection = ({ documents }) => {
         <select
           value={docB}
           onChange={e => setDocB(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+          className="px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-neutral-50 dark:bg-dark-card/40 text-neutral-900 dark:text-white focus:ring-2 focus:ring-amber-500/50 outline-none"
         >
           <option value="">Document B...</option>
           {extractedDocs.map(d => (
@@ -277,7 +277,7 @@ const ChangeDetection = ({ documents }) => {
       <button
         onClick={compare}
         disabled={!docA || !docB || docA === docB || loading}
-        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+        className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitCompareArrows className="w-4 h-4" />}
         Compare Documents
@@ -369,7 +369,7 @@ const TopicTrends = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
         <span className="ml-2 text-slate-400">Loading topic trends...</span>
       </div>
     );

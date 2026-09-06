@@ -76,7 +76,7 @@ const ValidationDashboard = () => {
       case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
       case 'medium':
       case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      default: return <ShieldAlert className="w-4 h-4 text-blue-500" />;
+      default: return <ShieldAlert className="w-4 h-4 text-amber-500" />;
     }
   };
 
@@ -112,7 +112,7 @@ const ValidationDashboard = () => {
       <BackButton fallback="/" />
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-blue-500" />
+          <ShieldAlert className="w-6 h-6 text-amber-500" />
           Validation Dashboard
         </h1>
         
@@ -120,7 +120,7 @@ const ValidationDashboard = () => {
           <select 
             value={selectedDocument}
             onChange={(e) => setSelectedDocument(e.target.value)}
-            className="bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 block p-2"
+            className="bg-slate-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 text-gray-800 dark:text-gray-200 text-sm rounded-md focus:ring-amber-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 block p-2"
           >
             <option value="" disabled>Select a document</option>
             {documents?.map(doc => {
@@ -136,7 +136,7 @@ const ValidationDashboard = () => {
           <button
             onClick={handleRunValidation}
             disabled={runningValidation || !selectedDocument}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 text-white text-sm font-medium rounded-md transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 dark:disabled:bg-amber-800 text-white text-sm font-medium rounded-md transition-colors"
           >
             {runningValidation ? (
               <span className="flex items-center gap-2">
@@ -228,7 +228,7 @@ const ValidationDashboard = () => {
                             {(issue.status || '').toLowerCase() !== 'resolved' ? (
                               <button
                                 onClick={() => setResolvingIssue(issue)}
-                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm"
+                                className="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 font-medium text-sm"
                               >
                                 Resolve
                               </button>

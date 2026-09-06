@@ -20,7 +20,7 @@ const MessageBubble = ({ message }) => {
             ? 'bg-dark-card dark:bg-neutral-700 text-white' 
             : isError 
               ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+              : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
         }`}>
           {isUser ? <User size={16} /> : isError ? <AlertTriangle size={16} /> : <Brain size={16} />}
         </div>
@@ -29,7 +29,7 @@ const MessageBubble = ({ message }) => {
         <div
           className={`rounded-lg p-4 shadow-sm text-[15px] leading-relaxed ${
             isUser 
-              ? 'bg-blue-600 text-white rounded-tr-sm' 
+              ? 'bg-amber-600 text-white rounded-tr-sm' 
               : isError
                 ? 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-tl-sm'
                 : 'bg-neutral-50 dark:bg-dark-card border border-slate-200 dark:border-slate-700 text-neutral-800 dark:text-neutral-200 rounded-tl-sm'

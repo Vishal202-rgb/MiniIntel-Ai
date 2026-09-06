@@ -19,7 +19,7 @@ const Header = ({ toggleMobileMenu, isSidebarCollapsed }) => {
         
         {/* Logo only on mobile since Sidebar handles desktop logo */}
         <div className="flex md:hidden items-center gap-2.5">
-          <Shield className="w-6 h-6 text-blue-500 shrink-0" />
+          <Shield className="w-6 h-6 text-amber-500 shrink-0" />
           <h1 className="text-lg font-bold text-neutral-900 dark:text-white tracking-tight">
             MineIntel
           </h1>

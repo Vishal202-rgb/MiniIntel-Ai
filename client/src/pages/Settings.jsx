@@ -86,7 +86,7 @@ const Settings = () => {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
+          <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg">
             <SettingsIcon className="w-6 h-6" />
           </div>
           <div>
@@ -117,7 +117,7 @@ const Settings = () => {
             let baseClasses = "w-full flex items-center gap-3 px-4 py-2.5 font-medium rounded-lg transition-colors text-left ";
             
             if (isActive) {
-              baseClasses += "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400";
+              baseClasses += "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400";
             } else if (isDanger) {
               baseClasses += "mt-4 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 border-t border-slate-200 dark:border-slate-700 pt-4 rounded-t-none";
             } else {
@@ -146,7 +146,7 @@ const Settings = () => {
                 <>
                   <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-white/[0.02]">
                     <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-blue-500" />
+                      <Globe className="w-4 h-4 text-amber-500" />
                       Language & Region
                     </h2>
                   </div>
@@ -161,7 +161,7 @@ const Settings = () => {
                       <select 
                         value={localLang} 
                         onChange={(e) => setLocalLang(e.target.value)}
-                        className="w-full max-w-sm px-4 py-2.5 bg-white dark:bg-dark-bg border border-slate-300 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow cursor-pointer"
+                        className="w-full max-w-sm px-4 py-2.5 bg-white dark:bg-dark-bg border border-slate-300 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow cursor-pointer"
                       >
                         <option value="en">English (US)</option>
                         <option value="hi">हिन्दी (Hindi)</option>
@@ -190,13 +190,13 @@ const Settings = () => {
                 <>
                   <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-white/[0.02]">
                     <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <User className="w-4 h-4 text-blue-500" />
+                      <User className="w-4 h-4 text-amber-500" />
                       Account Profile
                     </h2>
                   </div>
                   <div className="p-6 space-y-5">
                     <div className="flex items-center gap-4 mb-2">
-                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl font-bold uppercase ring-4 ring-white dark:ring-dark-card shadow-sm">
+                      <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400 text-xl font-bold uppercase ring-4 ring-white dark:ring-dark-card shadow-sm">
                         {user?.username?.charAt(0) || 'U'}
                       </div>
                       <div>
@@ -236,7 +236,7 @@ const Settings = () => {
                 <>
                   <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-white/[0.02]">
                     <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-blue-500" />
+                      <Bell className="w-4 h-4 text-amber-500" />
                       Notifications
                     </h2>
                   </div>
@@ -249,7 +249,7 @@ const Settings = () => {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={emailNotif} onChange={(e) => setEmailNotif(e.target.checked)} />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-amber-600"></div>
                       </label>
                     </div>
 
@@ -260,7 +260,7 @@ const Settings = () => {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={pushNotif} onChange={(e) => setPushNotif(e.target.checked)} />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-amber-600"></div>
                       </label>
                     </div>
 
@@ -271,7 +271,7 @@ const Settings = () => {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={reportAlerts} onChange={(e) => setReportAlerts(e.target.checked)} />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 dark:peer-focus:ring-amber-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-amber-600"></div>
                       </label>
                     </div>
 
@@ -283,7 +283,7 @@ const Settings = () => {
                 <>
                   <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-white/[0.02]">
                     <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <Palette className="w-4 h-4 text-blue-500" />
+                      <Palette className="w-4 h-4 text-amber-500" />
                       Appearance
                     </h2>
                   </div>
@@ -298,7 +298,7 @@ const Settings = () => {
                     <div className="grid grid-cols-2 gap-4 max-w-sm">
                       <button 
                         onClick={() => setLocalTheme('light')}
-                        className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${localTheme === 'light' ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-blue-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                        className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${localTheme === 'light' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/10 ring-1 ring-amber-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
                       >
                         <div className="w-full h-12 bg-slate-100 rounded border border-slate-200 mb-3 flex items-center justify-center">
                            <div className="w-16 h-2 bg-slate-300 rounded-full"></div>
@@ -308,7 +308,7 @@ const Settings = () => {
                       
                       <button 
                         onClick={() => setLocalTheme('dark')}
-                        className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${localTheme === 'dark' ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 ring-1 ring-blue-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                        className={`flex flex-col items-center justify-center p-4 border rounded-xl transition-all ${localTheme === 'dark' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/10 ring-1 ring-amber-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
                       >
                         <div className="w-full h-12 bg-slate-900 rounded border border-slate-800 mb-3 flex items-center justify-center">
                            <div className="w-16 h-2 bg-slate-700 rounded-full"></div>
@@ -362,7 +362,7 @@ const Settings = () => {
                 <button 
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   {isSaving ? 'Saving...' : 'Apply Changes'}

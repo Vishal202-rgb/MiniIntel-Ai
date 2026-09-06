@@ -92,7 +92,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                       key={item.to}
                       to={item.to}
                       onClick={(e) => { 
-                        if (item.to === '/help') e.preventDefault();
                         if (window.innerWidth < 768) closeMobileMenu(); 
                       }}
                       className={({ isActive }) =>
@@ -154,7 +153,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                 )}
                 <NavLink
                     to="/help"
-                    onClick={(e) => { e.preventDefault(); if (window.innerWidth < 768) closeMobileMenu(); }}
+                    onClick={(e) => { if (window.innerWidth < 768) closeMobileMenu(); }}
                     className={({ isActive }) =>
                       `flex items-center rounded-md transition-all duration-150 group relative h-[40px] ${
                         isCollapsed ? 'md:justify-center px-0' : 'px-3'

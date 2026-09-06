@@ -87,7 +87,7 @@ const KnowledgeBase = () => {
   return (
     <div className="p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
-        <Database className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <Database className="w-8 h-8 text-amber-600 dark:text-amber-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Knowledge Base Management</h1>
       </div>
 
@@ -96,7 +96,7 @@ const KnowledgeBase = () => {
         {/* Indexing Section */}
         <div className="bg-white dark:bg-dark-card p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
           <div className="flex items-center gap-3 mb-2">
-            <FileText className="text-blue-500 w-6 h-6" />
+            <FileText className="text-amber-500 w-6 h-6" />
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Index Document</h2>
           </div>
           <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">
@@ -106,7 +106,7 @@ const KnowledgeBase = () => {
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
               <select 
-                className="w-full appearance-none bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-colors cursor-pointer"
+                className="w-full appearance-none bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-colors cursor-pointer"
                 value={selectedDocId}
                 onChange={(e) => setSelectedDocId(e.target.value)}
               >
@@ -123,7 +123,7 @@ const KnowledgeBase = () => {
             <button 
               onClick={handleIndex}
               disabled={!selectedDocId || indexingStatus === 'loading'}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm shrink-0"
+              className="px-6 py-3 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 disabled:bg-amber-400 dark:disabled:bg-amber-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors whitespace-nowrap shadow-sm shrink-0"
             >
               {indexingStatus === 'loading' && <Loader2 size={18} className="animate-spin" />}
               Index for AI
@@ -148,8 +148,8 @@ const KnowledgeBase = () => {
         {/* Semantic Search Section */}
         <div className="bg-white dark:bg-dark-card p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col h-[500px]">
           <div className="flex items-center gap-3 mb-2 shrink-0">
-            <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
-              <Search className="text-blue-600 dark:text-blue-400 w-5 h-5" />
+            <div className="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg">
+              <Search className="text-amber-600 dark:text-amber-400 w-5 h-5" />
             </div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Semantic Search</h2>
           </div>
@@ -163,7 +163,7 @@ const KnowledgeBase = () => {
               <input 
                 type="text"
                 placeholder="e.g., 'coal production and dispatch'"
-                className="w-full bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-shadow"
+                className="w-full bg-slate-50/50 dark:bg-dark-card/40 border border-slate-200 dark:border-slate-600 text-neutral-900 dark:text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-shadow"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={isSearching}
@@ -172,7 +172,7 @@ const KnowledgeBase = () => {
             <button 
               type="submit"
               disabled={!searchQuery.trim() || isSearching}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
+              className="px-6 py-3 bg-amber-600 text-white font-medium rounded-lg hover:bg-amber-700 disabled:bg-amber-400 dark:disabled:bg-amber-800 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-sm shrink-0"
             >
               {isSearching ? <Loader2 size={18} className="animate-spin" /> : 'Search'}
             </button>
@@ -185,7 +185,7 @@ const KnowledgeBase = () => {
                 <p className="text-sm">Run a query to see semantic search results.</p>
               </div>
             ) : isSearching ? (
-              <div className="h-full flex flex-col items-center justify-center text-blue-500">
+              <div className="h-full flex flex-col items-center justify-center text-amber-500">
                 <Loader2 className="w-8 h-8 animate-spin mb-2" />
                 <p className="text-sm">Searching vector space...</p>
               </div>
@@ -212,11 +212,11 @@ const KnowledgeBase = () => {
                 return (
                   <div key={idx} className="hover-lift p-4 bg-neutral-50 dark:bg-dark-bg border border-slate-200 dark:border-slate-700 rounded-lg group transition-colors">
                     <div className="flex justify-between items-start mb-2 gap-4">
-                      <h3 className="font-semibold text-blue-600 dark:text-blue-400 text-sm line-clamp-1">
+                      <h3 className="font-semibold text-amber-600 dark:text-amber-400 text-sm line-clamp-1">
                         {docName}
                       </h3>
                       {score !== undefined && (
-                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
+                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
                           Match: {Math.round(score * 100)}%
                         </span>
                       )}

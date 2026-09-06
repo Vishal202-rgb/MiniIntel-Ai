@@ -57,7 +57,7 @@ const DocumentPreview = ({ document: docData, isOpen, onClose, onRetry }) => {
       <div className="p-5 min-h-[400px]">
         {doc.status === 'pending' || doc.status === 'processing' ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-slate-400">
-            <RefreshCw className="w-8 h-8 animate-spin mb-4 text-blue-500" />
+            <RefreshCw className="w-8 h-8 animate-spin mb-4 text-amber-500" />
             <p>Document is processing. Please wait...</p>
           </div>
         ) : doc.status === 'failed' ? (

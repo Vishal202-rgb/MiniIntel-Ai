@@ -4,10 +4,9 @@ import apiValidation from '../services/apiValidation';
 import axios from 'axios';
 import RecordTable from '../components/extraction/RecordTable';
 import RecordEditor from '../components/extraction/RecordEditor';
-import { FileText, Play, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileText, Play, AlertCircle, CheckCircle, Loader2, Database, ChevronDown } from 'lucide-react';
 import BackButton from '../components/common/BackButton';
 
-// Fallback to fetch documents
 const getDocuments = async () => {
   try {
     const res = await axios.get('/api/documents');
@@ -22,6 +21,7 @@ const ExtractionReview = () => {
   const [selectedDocument, setSelectedDocument] = useState('');
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [message, setMessage] = useState(null);
 
@@ -59,22 +59,21 @@ const ExtractionReview = () => {
 
   const handleExtract = async () => {
     if (!selectedDocument) return;
-    setLoading(true);
+    setExtracting(true);
     setMessage(null);
     try {
       const res = await apiExtraction.extractData(selectedDocument);
-      // Automatically trigger validation after extraction
       await apiValidation.validateDocument(selectedDocument);
       await loadRecords(selectedDocument);
       
       const count = res.count !== undefined ? res.count : (res.records?.length || 0);
-      setMessage({ type: 'success', text: `Data extracted successfully. Found ${count} records.` });
+      setMessage({ type: 'success', text: `Extraction complete. Processed ${count} records successfully.` });
     } catch (error) {
       console.error(error);
       const errMsg = error.response?.data?.details || error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to extract data.';
       setMessage({ type: 'error', text: `Failed to extract data: ${errMsg}` });
     } finally {
-      setLoading(false);
+      setExtracting(false);
     }
   };
 
@@ -116,62 +115,94 @@ const ExtractionReview = () => {
   };
 
   return (
-    <div className="p-5 max-w-7xl mx-auto dark:text-gray-100">
-      <BackButton fallback="/" />
-      <h1 className="-4">
-        <FileText className="w-6 h-6 text-blue-500" />
-        Data Extraction & Review
-      </h1>
+    <div className="p-3 md:p-4 max-w-[1400px] mx-auto text-gray-800 dark:text-[#94a3b8]">
       
-      <div className="bg-white dark:bg-dark-card p-4 rounded-lg shadow mb-4 flex items-center gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">Select Document</label>
-          <select 
-            className="w-full border dark:border-slate-700 bg-slate-50 dark:bg-dark-bg rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={selectedDocument}
-            onChange={(e) => setSelectedDocument(e.target.value)}
-          >
-            <option value="">-- Select a Document --</option>
-            {documents.map(doc => (
-              <option key={doc.id || doc._id} value={doc.id || doc._id}>
-                {doc.originalName || doc.filename || doc.title || doc.name || doc.id || doc._id}
-              </option>
-            ))}
-          </select>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/10 text-amber-500 shrink-0">
+          <Database className="w-5 h-5" />
         </div>
-        <div className="flex items-end h-full mt-4">
-          <button 
-            onClick={handleExtract}
-            disabled={!selectedDocument || loading}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50 transition-colors"
-          >
-            <Play className="w-4 h-4" />
-            {loading ? 'Extracting...' : 'Extract Data'}
-          </button>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Data Extraction & Review</h1>
+          <p className="text-xs text-gray-500 dark:text-slate-500">Run AI extraction and review parsed document parameters.</p>
         </div>
       </div>
+      
+      {/* Document Selector Control Panel */}
+      <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[#2d3139] p-4 rounded-lg mb-5 flex flex-col md:flex-row items-end gap-4 shadow-sm">
+        <div className="flex-1 w-full relative">
+          <label className="block text-xs font-semibold text-gray-500 dark:text-[#64748b] uppercase tracking-wider mb-1.5">
+            Select Source Document
+          </label>
+          <div className="relative">
+            <select 
+              className="w-full appearance-none bg-slate-50 dark:bg-[#1c1f26] border border-slate-200 dark:border-[#2d3139] rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-[#f1f5f9] focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-colors pr-10"
+              value={selectedDocument}
+              onChange={(e) => setSelectedDocument(e.target.value)}
+            >
+              <option value="">-- Choose a document from the Knowledge Base --</option>
+              {documents.map(doc => (
+                <option key={doc.id || doc._id} value={doc.id || doc._id}>
+                  {doc.originalName || doc.filename || doc.title || doc.name || doc.id || doc._id}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 pointer-events-none" />
+          </div>
+        </div>
+        
+        <button 
+          onClick={handleExtract}
+          disabled={!selectedDocument || extracting || loading}
+          className="w-full md:w-auto shrink-0 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-[#2d3139] disabled:text-gray-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm shadow-amber-500/20 disabled:shadow-none h-[38px]"
+        >
+          {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
+          {extracting ? 'Extracting...' : 'Extract Data'}
+        </button>
+      </div>
 
+      {/* Notifications */}
       {message && (
-        <div className={`mb-4 p-4 rounded flex items-center gap-2 ${message.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
-          {message.type === 'error' ? <AlertCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+        <div className={`mb-5 p-3 rounded-lg flex items-center gap-2 text-sm font-medium border
+          ${message.type === 'error' 
+            ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/40' 
+            : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40'}
+        `}>
+          {message.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
           <span>{message.text}</span>
         </div>
       )}
 
-      <div className="bg-white dark:bg-dark-card rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="p-5 text-center text-gray-500">Loading records...</div>
-        ) : (
-          <RecordTable 
-            records={records}
-            onEdit={(record) => setEditingRecord(record)}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onBulkApprove={handleBulkApprove}
-          />
-        )}
-      </div>
+      {/* Main Content Area */}
+      {!selectedDocument ? (
+        // Empty State (No Document Selected)
+        <div className="bg-white dark:bg-dark-card border border-dashed border-slate-300 dark:border-[#2d3139] rounded-lg flex items-center justify-center flex-col gap-3 text-center min-h-[400px]">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-[#1c1f26] flex items-center justify-center">
+            <FileText className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Select a document to begin extraction</p>
+            <p className="text-xs text-gray-400 dark:text-slate-600 mt-1">Extracted intelligence will appear here for review.</p>
+          </div>
+        </div>
+      ) : loading ? (
+        // Loading State
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[#2d3139] rounded-lg flex items-center justify-center flex-col gap-3 min-h-[400px]">
+          <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+          <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Loading extracted records...</p>
+        </div>
+      ) : (
+        // Data Table
+        <RecordTable 
+          records={records}
+          onEdit={(record) => setEditingRecord(record)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onBulkApprove={handleBulkApprove}
+        />
+      )}
 
+      {/* Editor Modal */}
       {editingRecord && (
         <RecordEditor 
           record={editingRecord}

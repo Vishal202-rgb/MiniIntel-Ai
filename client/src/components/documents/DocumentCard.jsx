@@ -12,7 +12,7 @@ const getFileIcon = (fileType) => {
     return <FileSpreadsheet className="w-6 h-6 text-green-600" />;
   }
   if (type.includes('image') || type.includes('jpeg') || type.includes('png')) {
-    return <ImageIcon className="w-6 h-6 text-blue-500" />;
+    return <ImageIcon className="w-6 h-6 text-amber-500" />;
   }
   return <File className="w-6 h-6 text-gray-600 dark:text-slate-400" />;
 };
@@ -33,7 +33,7 @@ const DocumentCard = ({ document, onPreview, onDelete }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-3 md:p-4 hover:shadow-md hover:border-blue-500/30 dark:hover:border-gray-500 transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 group">
+    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-3 md:p-4 hover:shadow-md hover:border-amber-500/30 dark:hover:border-gray-500 transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 group">
       
       <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
         <div className="p-2 bg-slate-50 dark:bg-dark-card rounded-lg shrink-0">
@@ -67,7 +67,7 @@ const DocumentCard = ({ document, onPreview, onDelete }) => {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => onPreview(document.id || document._id)}
-            className="flex items-center justify-center gap-1 h-[28px] px-3 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 hover:border-blue-200 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 dark:border-blue-800/30 dark:text-blue-400 rounded-md transition-colors"
+            className="flex items-center justify-center gap-1 h-[28px] px-3 text-xs font-semibold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-100 hover:border-amber-200 dark:bg-amber-900/20 dark:hover:bg-amber-900/40 dark:border-amber-800/30 dark:text-amber-400 rounded-md transition-colors"
           >
             <Eye className="w-3.5 h-3.5" /> View
           </button>

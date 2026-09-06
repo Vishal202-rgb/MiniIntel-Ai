@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit2, Check, X, CheckSquare } from 'lucide-react';
+import { Edit2, Check, X, CheckSquare, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) => {
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -30,81 +30,113 @@ const RecordTable = ({ records, onEdit, onApprove, onReject, onBulkApprove }) =>
   };
 
   if (!records || records.length === 0) {
-    return <div className="p-5 text-center text-gray-500 dark:text-slate-400">No records found. Select a document and extract data.</div>;
+    return (
+      <div className="p-8 text-center text-gray-500 dark:text-slate-400 bg-white dark:bg-dark-card border border-slate-200 dark:border-[#2d3139] rounded-lg">
+        No records extracted yet. Click "Extract Data" to process the selected document.
+      </div>
+    );
   }
 
+  const thClass = "px-4 py-3 font-semibold text-xs uppercase tracking-wider";
+  const tdClass = "px-4 py-3 align-middle text-sm border-b border-slate-100 dark:border-[#2d3139]/60 leading-relaxed";
+
   return (
-    <div>
-      <div className="p-4 border-b dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-dark-bg">
-        <span className="text-sm text-gray-600 dark:text-gray-300">
+    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-[#2d3139] rounded-lg overflow-hidden">
+      <div className="p-3 border-b border-slate-200 dark:border-[#2d3139] flex justify-between items-center bg-slate-50 dark:bg-[#1c1f26]">
+        <span className="text-xs font-semibold text-gray-600 dark:text-[#94a3b8] uppercase tracking-wider">
           {records.length} records found
         </span>
         <button
           onClick={handleBulk}
           disabled={selectedIds.size === 0}
-          className="flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-3 py-1.5 rounded text-sm transition-colors"
+          className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors shadow-sm"
         >
-          <CheckSquare className="w-4 h-4" />
+          <CheckSquare className="w-3.5 h-3.5" />
           Approve Selected ({selectedIds.size})
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-700 dark:text-gray-200">
-          <thead className="bg-slate-100 dark:bg-dark-card border-b dark:border-slate-700 text-xs uppercase text-gray-600 dark:text-slate-400">
+      <div className="overflow-x-auto custom-scrollbar">
+        <table className="w-full text-left text-sm text-gray-800 dark:text-[#f1f5f9] border-collapse m-0">
+          <thead className="bg-slate-50/80 dark:bg-[#1c1f26] text-gray-700 dark:text-[#94a3b8] border-b border-slate-200 dark:border-[#2d3139]">
             <tr>
               <th className="px-4 py-3 w-10">
                 <input 
                   type="checkbox" 
-                  className="rounded border-gray-300"
+                  className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg text-amber-500 focus:ring-amber-500 cursor-pointer"
                   onChange={handleSelectAll}
                   checked={records.length > 0 && selectedIds.size === records.length}
                 />
               </th>
-              <th className="px-4 py-3">Parameter</th>
-              <th className="px-4 py-3">Value</th>
-              <th className="px-4 py-3">Unit</th>
-              <th className="px-4 py-3">Period</th>
-              <th className="px-4 py-3">Mine</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className={thClass}>Parameter</th>
+              <th className={thClass}>Value / Unit</th>
+              <th className={thClass}>Confidence</th>
+              <th className={thClass}>Source / Pg</th>
+              <th className={thClass}>Status</th>
+              <th className={`${thClass} text-right`}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {records.map((record) => {
               const id = record.id || record._id;
+              const conf = record.confidenceScore !== undefined ? (record.confidenceScore * 100).toFixed(0) : null;
+              
               return (
-                <tr key={id} className="border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-gray-800/50">
-                  <td className="px-4 py-3">
+                <tr key={id} className="hover:bg-slate-50 dark:hover:bg-[#ffffff05] transition-colors">
+                  <td className={tdClass}>
                     <input 
                       type="checkbox" 
-                      className="rounded border-gray-300"
+                      className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-dark-bg text-amber-500 focus:ring-amber-500 cursor-pointer"
                       checked={selectedIds.has(id)}
                       onChange={() => handleSelect(id)}
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium">{record.parameter}</td>
-                  <td className="px-4 py-3">{record.value}</td>
-                  <td className="px-4 py-3 text-gray-500 dark:text-slate-400">{record.unit}</td>
-                  <td className="px-4 py-3">{record.period}</td>
-                  <td className="px-4 py-3">{record.mine}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${record.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
-                      ${record.status === 'rejected' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : ''}
-                      ${record.status === 'pending' || !record.status ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : ''}
+                  <td className={`${tdClass} font-medium`}>{record.parameter}</td>
+                  <td className={tdClass}>
+                    <span className="font-semibold text-gray-900 dark:text-white">{record.value}</span>
+                    {record.unit && <span className="text-gray-500 dark:text-slate-400 ml-1.5 text-xs">{record.unit}</span>}
+                  </td>
+                  <td className={tdClass}>
+                    {conf ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shrink-0">
+                          <div 
+                            className={`h-full rounded-full ${conf >= 90 ? 'bg-emerald-500' : conf >= 70 ? 'bg-amber-500' : 'bg-red-500'}`}
+                            style={{ width: `${conf}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] text-gray-600 dark:text-slate-400 font-semibold">{conf}%</span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-gray-500 dark:text-slate-500 font-medium">-</span>
+                    )}
+                  </td>
+                  <td className={tdClass}>
+                    <div className="flex items-center gap-1.5 text-[11px]">
+                      <span className="text-gray-600 dark:text-slate-300 truncate max-w-[120px]" title={record.mine || 'N/A'}>{record.mine || 'N/A'}</span>
+                      <span className="text-gray-400 dark:text-slate-600">|</span>
+                      <span className="text-gray-500 dark:text-slate-400 font-medium">Pg {record.pageNumber || '-'}</span>
+                    </div>
+                  </td>
+                  <td className={tdClass}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 shrink-0
+                      ${record.status === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : ''}
+                      ${record.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : ''}
+                      ${record.status === 'pending' || !record.status ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : ''}
                     `}>
+                      {record.status === 'pending' || !record.status ? <ShieldAlert className="w-3 h-3" /> : null}
+                      {record.status === 'approved' ? <ShieldCheck className="w-3 h-3" /> : null}
                       {record.status || 'pending'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => onApprove(id)} className="p-1.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded" title="Approve">
+                  <td className={`${tdClass} text-right`}>
+                    <div className="flex justify-end gap-1.5">
+                      <button onClick={() => onApprove(id)} className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded transition-colors" title="Approve">
                         <Check className="w-4 h-4" />
                       </button>
-                      <button onClick={() => onReject(id)} className="p-1.5 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded" title="Reject">
+                      <button onClick={() => onReject(id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" title="Reject">
                         <X className="w-4 h-4" />
                       </button>
-                      <button onClick={() => onEdit(record)} className="p-1.5 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded" title="Edit">
+                      <button onClick={() => onEdit(record)} className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded transition-colors" title="Edit">
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>

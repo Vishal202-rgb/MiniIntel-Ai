@@ -128,7 +128,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard 
           icon={FileText} label="Total Documents" value={totalDocs} 
-          trend="+12% this week" trendUp={true} colorClass="bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" 
+          trend="+12% this week" trendUp={true} colorClass="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400" 
         />
         <StatCard 
           icon={CheckCircle} label="Processed" value={processedDocs} 
@@ -152,44 +152,44 @@ const Dashboard = () => {
           {/* Quick Access Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link to="/extraction" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mr-4">
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg mr-4">
                 <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Upload & Extract</h3>
+                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Upload & Extract</h3>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Process new mining documents</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" />
             </Link>
 
             <Link to="/knowledge-base" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg mr-4">
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg mr-4">
                 <Database className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Knowledge Base</h3>
+                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">Knowledge Base</h3>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Search indexed records</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" />
             </Link>
 
             <Link to="/ai-assistant" className="hover-lift flex items-center p-4 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-dark-card/50 transition-colors group">
-              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg mr-4">
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg mr-4">
                 <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">AI Assistant</h3>
+                <h3 className="font-semibold text-neutral-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">AI Assistant</h3>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Ask questions about data</p>
               </div>
-              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+              <ArrowRight className="hover-lift-arrow w-5 h-5 ml-auto text-gray-600 dark:text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" />
             </Link>
           </div>
 
           {/* Upload Section */}
-          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm hover:border-blue-500/30 transition-colors">
+          <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm hover:border-amber-500/30 transition-colors">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                <FileUp className="w-4 h-4 text-blue-600 dark:text-blue-500" /> Upload & Analyze
+                <FileUp className="w-4 h-4 text-amber-600 dark:text-amber-500" /> Upload & Analyze
               </h2>
             </div>
             <DropZone onUpload={handleUpload} />
@@ -202,7 +202,7 @@ const Dashboard = () => {
           <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-5 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Recent Documents</h2>
-              <Link to="/command-center" className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1">
+              <Link to="/command-center" className="text-xs text-amber-600 dark:text-amber-400 font-medium hover:underline flex items-center gap-1">
                 Command Center <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -230,15 +230,15 @@ const Dashboard = () => {
         {/* Right Column (Side Panels) */}
         <div className="lg:col-span-3 space-y-4">
           {/* AI Insights Panel */}
-          <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-5 shadow-sm text-white border border-blue-600/50">
+          <div className="bg-gradient-to-br from-amber-700 to-amber-900 rounded-lg p-5 shadow-sm text-white border border-amber-600/50">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-blue-200" />
+                <Brain className="w-4 h-4 text-amber-200" />
                 <h2 className="text-base font-semibold">AI Insights</h2>
               </div>
               <span className="flex h-1.5 w-1.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
               </span>
             </div>
             
@@ -248,7 +248,7 @@ const Dashboard = () => {
                   <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-semibold text-white">Production Anomaly</p>
-                    <p className="text-[11px] text-blue-100 mt-1 leading-relaxed">Coal extraction at Mine Alpha is 15% below quarterly target based on recent reports.</p>
+                    <p className="text-[11px] text-amber-100 mt-1 leading-relaxed">Coal extraction at Mine Alpha is 15% below quarterly target based on recent reports.</p>
                   </div>
                 </div>
               </div>
@@ -257,13 +257,13 @@ const Dashboard = () => {
                   <CheckCircle className="w-4 h-4 text-green-300 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-semibold text-white">Validation Clean</p>
-                    <p className="text-[11px] text-blue-100 mt-1 leading-relaxed">Last 5 documents parsed with 100% data integrity. No manual review needed.</p>
+                    <p className="text-[11px] text-amber-100 mt-1 leading-relaxed">Last 5 documents parsed with 100% data integrity. No manual review needed.</p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="mt-4 pt-3 border-t border-white/10">
-              <Link to="/ai-assistant" className="text-[11px] text-blue-200 hover:text-white font-medium flex items-center justify-center gap-1 transition-colors">
+              <Link to="/ai-assistant" className="text-[11px] text-amber-200 hover:text-white font-medium flex items-center justify-center gap-1 transition-colors">
                 Ask AI Assistant <TrendingUp className="w-3.5 h-3.5 rotate-45" />
               </Link>
             </div>
@@ -277,7 +277,7 @@ const Dashboard = () => {
             <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[9px] before:-translate-x-px before:h-full before:w-[2px] before:bg-neutral-100 dark:before:bg-dark-card">
               {documents?.slice(0, 5).map((doc, idx) => (
                 <div key={idx} className="relative flex items-start gap-3">
-                  <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full border-[3px] border-white dark:border-dark-card bg-blue-500 shrink-0 z-10 mt-0.5"></div>
+                  <div className="flex items-center justify-center w-[18px] h-[18px] rounded-full border-[3px] border-white dark:border-dark-card bg-amber-500 shrink-0 z-10 mt-0.5"></div>
                   <div className="flex-1 bg-neutral-50 dark:bg-dark-card p-3 rounded-lg border border-neutral-100 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium text-[13px] text-neutral-900 dark:text-white truncate max-w-[150px]" title={doc.originalName}>{doc.originalName}</span>

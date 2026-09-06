@@ -29,7 +29,7 @@ const AuditTrail = () => {
   return (
     <div className="p-5 max-w-7xl mx-auto text-gray-800 dark:text-neutral-200">
       <div className="flex items-center gap-3 mb-5">
-        <ScrollText className="w-8 h-8 text-blue-400" />
+        <ScrollText className="w-8 h-8 text-amber-400" />
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Audit Trail</h1>
           <p className="text-gray-600 dark:text-slate-400">Track and monitor all system and user activities.</p>
@@ -52,14 +52,14 @@ const AuditTrail = () => {
         </div>
         <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 p-5 rounded-lg">
           <h3 className="text-sm font-medium text-gray-600 dark:text-slate-400 mb-1">Active Users</h3>
-          <p className="text-3xl font-bold text-blue-400">{loading ? '-' : stats.activeUsers}</p>
+          <p className="text-3xl font-bold text-amber-400">{loading ? '-' : stats.activeUsers}</p>
         </div>
       </div>
 
       <div className="bg-white dark:bg-dark-card rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         {loading ? (
           <div className="p-12 flex flex-col items-center justify-center text-gray-500 dark:text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-400" />
+            <Loader2 className="w-8 h-8 animate-spin mb-4 text-amber-400" />
             <p>Loading audit logs...</p>
           </div>
         ) : error ? (

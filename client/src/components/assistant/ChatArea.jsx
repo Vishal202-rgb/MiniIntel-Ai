@@ -17,8 +17,8 @@ const ChatArea = ({ messages, loading }) => {
     <div className="flex-1 overflow-y-auto p-4 md:p-5 bg-white dark:bg-dark-card space-y-4">
       {messages.length === 0 ? (
         <div className="flex flex-col h-full items-center justify-center text-center text-gray-600 dark:text-slate-400 max-w-md mx-auto">
-          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
-            <Brain className="w-8 h-8 text-blue-600 dark:text-blue-500" />
+          <div className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4">
+            <Brain className="w-8 h-8 text-amber-600 dark:text-amber-500" />
           </div>
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">How can I help you today?</h3>
           <p className="text-sm">Start a conversation by typing a question below. I can search through your knowledge base and analyze production data.</p>
@@ -31,7 +31,7 @@ const ChatArea = ({ messages, loading }) => {
           {loading && (
             <div className="flex w-full justify-start">
               <div className="max-w-[85%] md:max-w-[75%] rounded-lg p-4 bg-neutral-50 dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-bl-sm shadow-sm flex items-center gap-3">
-                <Brain className="w-5 h-5 text-blue-600 dark:text-blue-500 animate-pulse" />
+                <Brain className="w-5 h-5 text-amber-600 dark:text-amber-500 animate-pulse" />
                 <div className="flex gap-1 items-center h-4">
                   <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                   <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>

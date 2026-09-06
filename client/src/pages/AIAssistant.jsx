@@ -82,7 +82,7 @@ const AIAssistant = () => {
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 mt-12 md:mt-0">
           <button
             onClick={handleNewConversation}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+            className="w-full flex items-center justify-center gap-2 bg-amber-600 text-white py-2.5 px-4 rounded-lg hover:bg-amber-700 transition-colors font-medium shadow-sm"
           >
             <Plus size={18} /> New Chat
           </button>
@@ -94,11 +94,11 @@ const AIAssistant = () => {
               onClick={() => loadConversation(conv._id)}
               className={`w-full flex items-center gap-3 p-3 text-left rounded-lg transition-colors ${
                 currentConvId === conv._id 
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium' 
+                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 font-medium' 
                   : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-dark-card/50'
               }`}
             >
-              <MessageSquare size={16} className={currentConvId === conv._id ? 'text-blue-600 dark:text-blue-500' : 'text-slate-400 dark:text-slate-400'} />
+              <MessageSquare size={16} className={currentConvId === conv._id ? 'text-amber-600 dark:text-amber-500' : 'text-slate-400 dark:text-slate-400'} />
               <span className="truncate text-sm">{conv.title || 'Untitled Conversation'}</span>
             </button>
           ))}
@@ -131,14 +131,14 @@ const AIAssistant = () => {
                 }
               }}
               placeholder="Ask a question about your documents... (Shift+Enter for new line)"
-              className="flex-1 p-3 min-h-[52px] max-h-32 resize-none border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-bg text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-shadow"
+              className="flex-1 p-3 min-h-[52px] max-h-32 resize-none border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-dark-bg text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm transition-shadow"
               disabled={loading}
               rows={1}
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="px-4 py-3 h-[52px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm shrink-0"
+              className="px-4 py-3 h-[52px] bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shadow-sm shrink-0"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

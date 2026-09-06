@@ -20,13 +20,13 @@ const DocumentFilters = ({ onSearchChange, onTypeChange, onStatusChange, search,
           placeholder="Search documents..."
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-neutral-900 dark:text-neutral-100"
+          className="w-full pl-10 pr-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-neutral-900 dark:text-neutral-100"
         />
       </div>
       <select
         value={type || ''}
         onChange={(e) => onTypeChange(e.target.value)}
-        className="px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-neutral-900 dark:text-neutral-100"
+        className="px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-neutral-900 dark:text-neutral-100"
       >
         <option value="">All Types</option>
         <option value="pdf">PDF</option>
@@ -38,7 +38,7 @@ const DocumentFilters = ({ onSearchChange, onTypeChange, onStatusChange, search,
       <select
         value={status || ''}
         onChange={(e) => onStatusChange(e.target.value)}
-        className="px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-neutral-900 dark:text-neutral-100"
+        className="px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-neutral-900 dark:text-neutral-100"
       >
         <option value="">All Status</option>
         <option value="pending">Pending</option>

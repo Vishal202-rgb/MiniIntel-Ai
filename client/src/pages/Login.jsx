@@ -38,7 +38,7 @@ const Login = () => {
       <div className="w-full max-w-md bg-dark-card rounded-lg shadow-2xl border border-slate-700 p-5 relative overflow-hidden">
         
         {/* Decorative Top Accent — Blue for user identity */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-blue-500"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-500"></div>
 
         {/* Back button (visible when registering, navigates back to sign-in) */}
         {isRegistering && (
@@ -53,8 +53,8 @@ const Login = () => {
 
         {/* Branding */}
         <div className="flex flex-col items-center text-center mb-5 mt-4">
-          <div className="w-16 h-16 bg-blue-900/20 rounded-full flex items-center justify-center mb-4 ring-1 ring-blue-800/30">
-            <UserCircle className="w-8 h-8 text-blue-400" />
+          <div className="w-16 h-16 bg-amber-900/20 rounded-full flex items-center justify-center mb-4 ring-1 ring-amber-800/30">
+            <UserCircle className="w-8 h-8 text-amber-400" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-1 tracking-tight">MineIntel AI</h1>
           <p className="text-slate-400 text-sm">
@@ -79,7 +79,7 @@ const Login = () => {
               <input 
                 type="text" 
                 placeholder="Enter your username"
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-blue-500 text-white outline-none transition-all placeholder:text-neutral-600"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-amber-500 text-white outline-none transition-all placeholder:text-neutral-600"
                 value={username} onChange={e => setUsername(e.target.value)} required 
               />
             </div>
@@ -94,7 +94,7 @@ const Login = () => {
                 <input 
                   type="email" 
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-blue-500 text-white outline-none transition-all placeholder:text-neutral-600"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-amber-500 text-white outline-none transition-all placeholder:text-neutral-600"
                   value={email} onChange={e => setEmail(e.target.value)} 
                 />
               </div>
@@ -109,7 +109,7 @@ const Login = () => {
               <input 
                 type="password" 
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-blue-500 text-white outline-none transition-all placeholder:text-neutral-600"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-dark-card/50 focus:bg-dark-card focus:ring-2 focus:ring-amber-500 text-white outline-none transition-all placeholder:text-neutral-600"
                 value={password} onChange={e => setPassword(e.target.value)} required 
               />
             </div>
@@ -119,7 +119,7 @@ const Login = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-blue-900/20"
+            className="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-amber-900/20"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isRegistering ? 'Create Account' : 'Sign In')}
           </button>
@@ -134,7 +134,7 @@ const Login = () => {
             <button 
               type="button"
               onClick={() => { setIsRegistering(!isRegistering); setError(''); }}
-              className="ml-1.5 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              className="ml-1.5 text-amber-400 hover:text-amber-300 font-medium transition-colors"
             >
               {isRegistering ? 'Sign in' : 'Register'}
             </button>

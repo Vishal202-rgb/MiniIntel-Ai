@@ -21,7 +21,7 @@ const SourcePanel = ({ sources }) => {
           <ul className="space-y-2.5">
             {sources.map((source, index) => (
               <li key={index} className="flex items-start gap-2">
-                <FileText size={15} className="mt-0.5 text-blue-500 dark:text-blue-400 shrink-0" />
+                <FileText size={15} className="mt-0.5 text-amber-500 dark:text-amber-400 shrink-0" />
                 <div className="flex flex-col">
                   <span className="font-medium text-neutral-800 dark:text-neutral-200 leading-snug">
                     {source.documentName || source.documentId?.originalName || 'Unknown Document'}

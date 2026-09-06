@@ -99,7 +99,7 @@ const PendingReviews = () => {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="p-12 flex justify-center items-center">
-              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
             </div>
           ) : (
             <table className="w-full text-sm text-left">
@@ -121,7 +121,7 @@ const PendingReviews = () => {
                     <td className="px-6 py-4">{report.generatedBy?.username || 'Unknown'}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1 text-xs">
-                        <span className="text-blue-600 dark:text-blue-400 font-medium">Conf: {Math.round((report.confidenceScore || 0) * 100)}%</span>
+                        <span className="text-amber-600 dark:text-amber-400 font-medium">Conf: {Math.round((report.confidenceScore || 0) * 100)}%</span>
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">Cov: {report.evidenceCoverage?.percentage || 0}%</span>
                       </div>
                     </td>
@@ -130,7 +130,7 @@ const PendingReviews = () => {
                       <div className="flex items-center justify-end gap-2 flex-wrap sm:flex-nowrap">
                         <button 
                           onClick={() => setSelectedReport(report)}
-                          className="px-2 py-1 flex items-center gap-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+                          className="px-2 py-1 flex items-center gap-1 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors border border-transparent hover:border-amber-200 dark:hover:border-amber-800"
                           title="View Report"
                         >
                           <Eye className="w-4 h-4" /> <span className="text-xs font-medium">View</span>
@@ -185,7 +185,7 @@ const PendingReviews = () => {
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="E.g. The evidence coverage is too low..."
-                className="w-full bg-neutral-50 dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full bg-neutral-50 dark:bg-dark-card border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 rows="4"
               />
             </div>
@@ -241,7 +241,7 @@ const PendingReviews = () => {
               </div>
             </div>
             <div className="p-5 overflow-y-auto grow custom-scrollbar">
-              <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-blue-700 dark:prose-headings:text-blue-400 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:before:content-none prose-code:after:content-none">
+              <div className="prose dark:prose-invert max-w-none prose-sm md:prose-base prose-headings:text-amber-700 dark:prose-headings:text-amber-400 prose-a:text-amber-600 dark:prose-a:text-amber-400 prose-code:before:content-none prose-code:after:content-none">
                 <ReactMarkdown 
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -269,7 +269,7 @@ const PendingReviews = () => {
                       );
                     },
                     code: ({node, inline, children, ...props}) => (
-                      <code className={`${inline ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded-md font-medium text-xs break-words' : 'block bg-slate-50 dark:bg-dark-card p-4 rounded-lg overflow-x-auto text-sm border border-slate-200 dark:border-slate-700'}`} {...props}>
+                      <code className={`${inline ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded-md font-medium text-xs break-words' : 'block bg-slate-50 dark:bg-dark-card p-4 rounded-lg overflow-x-auto text-sm border border-slate-200 dark:border-slate-700'}`} {...props}>
                         {children}
                       </code>
                     )

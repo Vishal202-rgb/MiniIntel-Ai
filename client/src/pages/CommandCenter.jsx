@@ -12,10 +12,10 @@ const CommandCenter = () => {
   const [orchestratorResult, setOrchestratorResult] = useState(null);
 
   const stats = [
-    { label: 'Docs Processed', value: '1,248', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+    { label: 'Docs Processed', value: '1,248', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
     { label: 'Validation Score', value: '98.5%', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
     { label: 'Open Issues', value: '12', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { label: 'Reports Generated', value: '342', icon: FileOutput, color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20' }
+    { label: 'Reports Generated', value: '342', icon: FileOutput, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' }
   ];
 
   const handleOrchestrate = async (e) => {
@@ -38,7 +38,7 @@ const CommandCenter = () => {
   return (
     <div className="p-5 max-w-7xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
-        <Monitor className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <Monitor className="w-8 h-8 text-amber-600 dark:text-amber-400" />
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Command Center</h1>
       </div>
 
@@ -63,7 +63,7 @@ const CommandCenter = () => {
       {/* Multi-Agent Orchestrator Section */}
       <section className="bg-white dark:bg-dark-card rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="p-5 border-b border-slate-200 dark:border-slate-700 bg-neutral-50 dark:bg-dark-bg/50 flex items-center gap-3">
-          <Bot className="w-6 h-6 text-blue-500" />
+          <Bot className="w-6 h-6 text-amber-500" />
           <div>
             <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Multi-Agent Orchestrator</h2>
             <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
@@ -85,13 +85,13 @@ const CommandCenter = () => {
                   value={taskInput}
                   onChange={(e) => setTaskInput(e.target.value)}
                   placeholder='e.g., "Analyze production metrics from last month and generate a summary report"'
-                  className="flex-1 px-4 py-3 bg-white dark:bg-dark-bg border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white transition-shadow text-base"
+                  className="flex-1 px-4 py-3 bg-white dark:bg-dark-bg border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white transition-shadow text-base"
                   disabled={isOrchestrating}
                 />
                 <button
                   type="submit"
                   disabled={!taskInput.trim() || isOrchestrating}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-800 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                  className="px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 dark:disabled:bg-amber-800 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
                 >
                   {isOrchestrating ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

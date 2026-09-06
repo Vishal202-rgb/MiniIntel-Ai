@@ -119,71 +119,81 @@ const AnalyticsDashboard = () => {
       </div>
 
       {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        
-        {/* Production vs Dispatch */}
-        <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-          <h2 className="-4">Production vs Dispatch (MT)</h2>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
-                <YAxis stroke="#888" tick={{ fill: '#888' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="production" name="Production" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="dispatch" name="Dispatch" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Target Achievement */}
-        <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-          <h2 className="-4">Target Achievement</h2>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
-                <YAxis stroke="#888" tick={{ fill: '#888' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="production" name="Actual Production" fill="#8b5cf6" barSize={40} radius={[4, 4, 0, 0]} />
-                <Line type="monotone" dataKey="target" name="Target" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: '#f43f5e' }} activeDot={{ r: 6 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Production-Dispatch Gap */}
-        <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift lg:col-span-2">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Production-Dispatch Gap Analysis</h2>
-            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-amber-500"></span> Gap (MT)
-              </div>
+      {productionData && productionData.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          
+          {/* Production vs Dispatch */}
+          <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">Production vs Dispatch (MT)</h2>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
+                  <YAxis stroke="#888" tick={{ fill: '#888' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar dataKey="production" name="Production" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="dispatch" name="Dispatch" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
-                <YAxis stroke="#888" tick={{ fill: '#888' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="gap" name="Gap" fill="#f59e0b" stroke="#f59e0b" fillOpacity={0.2} strokeWidth={2} />
-              </ComposedChart>
-            </ResponsiveContainer>
+
+          {/* Target Achievement */}
+          <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">Target Achievement</h2>
+            <div className="h-72 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
+                  <YAxis stroke="#888" tick={{ fill: '#888' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar dataKey="production" name="Actual Production" fill="#64748b" barSize={40} radius={[4, 4, 0, 0]} />
+                  <Line type="monotone" dataKey="target" name="Target" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} activeDot={{ r: 6 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Production-Dispatch Gap */}
+          <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift lg:col-span-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Production-Dispatch Gap Analysis</h2>
+              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-amber-500"></span> Gap (MT)
+                </div>
+              </div>
+            </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={productionData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="year" stroke="#888" tick={{ fill: '#888' }} />
+                  <YAxis stroke="#888" tick={{ fill: '#888' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="gap" name="Gap" fill="#f59e0b" stroke="#f59e0b" fillOpacity={0.2} strokeWidth={2} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-12 flex flex-col items-center justify-center text-center shadow-sm">
+          <TrendingUp className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-4" />
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">No Data Available</h3>
+          <p className="text-slate-500 max-w-md">
+            Upload and extract production documents to generate dynamic analytics and charts.
+          </p>
+        </div>
+      )}
 
       {/* AI Insights */}
       <div className="bg-white dark:bg-dark-card p-5 md:p-5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover-lift">
-        <h2 className="-4">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-amber-500" />
           AI-Generated Insights
         </h2>

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analyticsController');
+const { protect } = require('../middleware/authMiddleware');
 
-router.get('/trends', analyticsController.getTrends);
-router.get('/anomalies', analyticsController.getAnomalies);
-router.get('/dashboard', analyticsController.getDashboardData);
+router.get('/trends', protect, analyticsController.getTrends);
+router.get('/anomalies', protect, analyticsController.getAnomalies);
+router.get('/dashboard', protect, analyticsController.getDashboardData);
 
 module.exports = router;

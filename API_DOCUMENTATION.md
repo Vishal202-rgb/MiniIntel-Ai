@@ -16,16 +16,19 @@ The backend listens by default on port `5000` (or `process.env.PORT`). Flutter a
 
 | Target Platform | Host Address / Base URL | Why? |
 | :--- | :--- | :--- |
-| **Android Emulator** | `http://10.0.2.2:5000/api/v1` | `127.0.0.1` inside the Android emulator points to the emulator itself. `10.0.2.2` bridges to the host development PC. (Use `10.0.3.2` if running Genymotion). |
-| **iOS Simulator** | `http://127.0.0.1:5000/api/v1` or `http://localhost:5000/api/v1` | iOS Simulator shares the host network loopback adapter. |
-| **Windows Desktop** | `http://127.0.0.1:5000/api/v1` or `http://localhost:5000/api/v1` | Native Windows executable connects directly to local loopback socket. |
-| **Physical Devices (Android / iOS)** | `http://<YOUR_LAN_IP>:5000/api/v1` (e.g. `http://192.168.1.50:5000/api/v1`) | Physical mobile phones must be on the same Wi-Fi network and target your computer's local IP address. Ensure port 5000 is open in Windows Firewall. |
-| **Production / Staging Server** | `https://api.mineintel.ai/api/v1` | Public HTTPS domain with valid SSL/TLS certificate. |
+| **Live Production / Vercel** | `https://mini-intel-ai-sih.vercel.app/api/v1` | **Primary live API endpoint**. Deployed on Vercel with automatic SSL/TLS. Use this for all production and live testing builds across Android, iOS, and Windows. |
+| **Android Emulator (Local Dev)** | `http://10.0.2.2:5000/api/v1` | `127.0.0.1` inside the Android emulator points to the emulator itself. `10.0.2.2` bridges to the host development PC. (Use `10.0.3.2` if running Genymotion). |
+| **iOS Simulator (Local Dev)** | `http://127.0.0.1:5000/api/v1` or `http://localhost:5000/api/v1` | iOS Simulator shares the host network loopback adapter. |
+| **Windows Desktop (Local Dev)** | `http://127.0.0.1:5000/api/v1` or `http://localhost:5000/api/v1` | Native Windows executable connects directly to local loopback socket. |
+| **Physical Devices via LAN** | `http://<YOUR_LAN_IP>:5000/api/v1` (e.g. `http://192.168.1.50:5000/api/v1`) | Physical mobile phones must be on the same Wi-Fi network and target your computer's local IP address when developing offline. |
 
-#### Static File / Document Download URL Root
-The backend serves raw document uploads statically at `/uploads/<filename>`.
-Example: `http://10.0.2.2:5000/uploads/doc-1725681234567.pdf`.  
-However, for authenticated, access-controlled document downloads, always use `GET /api/v1/documents/:id/download`.
+#### Document Download & Storage on Live Vercel Server
+> [!IMPORTANT]
+> On the live Vercel deployment (`https://mini-intel-ai-sih.vercel.app`), Vercel routes `/api/(.*)` to Express and routes all non-API paths to the React single-page application.
+> Therefore, **direct static URL links like `/uploads/<filename>` return the React SPA HTML page (`index.html`) on live Vercel**.
+> Flutter clients MUST always use the authenticated API stream endpoint:
+> `GET https://mini-intel-ai-sih.vercel.app/api/v1/documents/:id/download`  
+> (This route matches `/api/` in `vercel.json`, executes inside Express, and returns the binary stream with proper `Content-Type` and `Content-Disposition`).
 
 ---
 
@@ -1381,10 +1384,12 @@ class ApiClient {
   
   // Platform-aware base URL
   static String get baseUrl {
-    // Check your environment / platform:
-    // Android Emulator: 'http://10.0.2.2:5000/api/v1'
-    // iOS Simulator / Windows: 'http://127.0.0.1:5000/api/v1'
-    return 'http://10.0.2.2:5000/api/v1';
+    // 1. Live Vercel Production API (Default for all release & live builds):
+    return 'https://mini-intel-ai-sih.vercel.app/api/v1';
+
+    // 2. Alternative Local Development Endpoints (if running backend locally):
+    // Android Emulator: return 'http://10.0.2.2:5000/api/v1';
+    // iOS Simulator / Windows: return 'http://127.0.0.1:5000/api/v1';
   }
 
   ApiClient._internal() {

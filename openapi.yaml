@@ -9,14 +9,14 @@ info:
   contact:
     name: MineIntel AI Engineering Team
 servers:
+  - url: https://mini-intel-ai-sih.vercel.app/api/v1
+    description: Live Vercel Production REST API
   - url: http://10.0.2.2:5000/api/v1
-    description: Android Emulator Local Bridge
+    description: Android Emulator Local Bridge (Development)
   - url: http://127.0.0.1:5000/api/v1
-    description: iOS Simulator & Windows Desktop Localhost
+    description: iOS Simulator & Windows Desktop Localhost (Development)
   - url: http://localhost:5000/api/v1
     description: Localhost Development Server
-  - url: https://api.mineintel.ai/api/v1
-    description: Production HTTPS Endpoint
 
 security:
   - BearerAuth: []

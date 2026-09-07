@@ -1,0 +1,2483 @@
+openapi: 3.0.3
+info:
+  title: MineIntel AI REST API
+  description: >
+    Comprehensive REST API for MineIntel AI (Mining Intelligence, Regulatory Compliance
+    & Automated Document Processing). Tailored for cross-platform Flutter clients targeting
+    Android, iOS, and Windows Desktop.
+  version: 1.0.0
+  contact:
+    name: MineIntel AI Engineering Team
+servers:
+  - url: http://10.0.2.2:5000/api/v1
+    description: Android Emulator Local Bridge
+  - url: http://127.0.0.1:5000/api/v1
+    description: iOS Simulator & Windows Desktop Localhost
+  - url: http://localhost:5000/api/v1
+    description: Localhost Development Server
+  - url: https://api.mineintel.ai/api/v1
+    description: Production HTTPS Endpoint
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Health
+    description: System readiness and environment status
+  - name: Auth
+    description: Authentication, registration, and user profiles
+  - name: Admin
+    description: Administrative user management and platform statistics
+  - name: Dashboard
+    description: User and admin analytics dashboards
+  - name: Command Centre
+    description: Pipeline operations and attention queue
+  - name: Settings
+    description: User preferences (language, theme, notifications)
+  - name: Help
+    description: FAQs and support guides
+  - name: Documents
+    description: Document ingestion, parsing, OCR, and storage
+  - name: Extraction
+    description: Parameter extraction and Human-in-the-Loop review
+  - name: Validation
+    description: Automated rule validation and quality scoring
+  - name: Reports
+    description: Statutory report generation and multi-format exports
+  - name: Reviews
+    description: Dedicated review and approval queues
+  - name: Knowledge Base
+    description: Vector embeddings, indexing, and semantic search
+  - name: RAG
+    description: Retrieval-Augmented Generation low-level vector engine
+  - name: AI Assistant
+    description: Conversational intelligence with cited evidence
+  - name: Analytics
+    description: Production metrics, variance, and anomaly detection
+  - name: Topics
+    description: Topic discovery, clustering, and trends
+  - name: Agents
+    description: Multi-agent autonomous workflow orchestration
+  - name: Audit
+    description: Immutable audit trail and provenance logs
+  - name: Notifications
+    description: In-app notification center
+  - name: Intelligence
+    description: Cross-document correlations and entity relationships
+  - name: Integration
+    description: External DMS, MIS, and GIS geo-spatial feeds
+
+paths:
+  # =========================================================================
+  # 1. HEALTH
+  # =========================================================================
+  /health:
+    get:
+      tags: [Health]
+      summary: Check system and database health
+      description: Public health check returning database connection state, uptime, and API version.
+      security: []
+      responses:
+        '200':
+          description: API is operational
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Database disconnected or degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # =========================================================================
+  # 2. AUTHENTICATION & PROFILE
+  # =========================================================================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register standard user
+      description: Creates a standard user account with role 'user'. Reserved admin usernames are rejected.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  example: mining_engineer
+                password:
+                  type: string
+                  minLength: 6
+                  example: SecurePassword123!
+                email:
+                  type: string
+                  format: email
+                  example: engineer@mineintel.ai
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          description: Validation failure or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Reserved identity registration blocked
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate user or admin
+      description: Authenticates user credentials. Issues 30-day HMAC SHA-256 JWT. Auto-provisions admin if credentials match system admin environment configuration.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: mining_engineer
+                password:
+                  type: string
+                  example: SecurePassword123!
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '401':
+          description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Account is suspended or inactive
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout session
+      description: Logs user logout and records an audit trail event if Bearer token is provided.
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user profile
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+
+  /auth/profile:
+    put:
+      tags: [Auth]
+      summary: Update profile fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                department:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessEnvelope'
+
+  /auth/change-password:
+    put:
+      tags: [Auth]
+      summary: Change authenticated user password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: Password changed successfully
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh authorization token
+      description: Accepts token either in Authorization header or in request body.
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/UserSummary'
+
+  # =========================================================================
+  # 3. ADMIN MANAGEMENT
+  # =========================================================================
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users (Admin only)
+      responses:
+        '200':
+          description: Array of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        '403':
+          description: Non-admin forbidden
+
+  /admin/users/{id}/role:
+    put:
+      tags: [Admin]
+      summary: Update user role (Admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [user, reviewer]
+      responses:
+        '200':
+          description: Role updated
+        '403':
+          description: Cannot assign admin role
+
+  /admin/users/{id}:
+    delete:
+      tags: [Admin]
+      summary: Delete user account (Admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: User deleted
+        '403':
+          description: Self-deletion or admin account deletion forbidden
+
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: System overview statistics
+      responses:
+        '200':
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    properties:
+                      totalUsers: { type: integer }
+                      totalDocuments: { type: integer }
+                      indexedDocuments: { type: integer }
+                      reportsGenerated: { type: integer }
+                      totalValidations: { type: integer }
+                      openValidations: { type: integer }
+
+  /admin/system-health:
+    get:
+      tags: [Admin]
+      summary: Detailed subsystem health
+      responses:
+        '200':
+          description: Health indicators
+
+  # =========================================================================
+  # 4. DASHBOARD
+  # =========================================================================
+  /dashboard/overview:
+    get:
+      tags: [Dashboard]
+      summary: Aggregated dashboard summary
+      responses:
+        '200':
+          description: User/admin dashboard overview
+
+  /dashboard/kpis:
+    get:
+      tags: [Dashboard]
+      summary: Key performance indicators
+      responses:
+        '200':
+          description: Numerical KPI values
+
+  /dashboard/activity:
+    get:
+      tags: [Dashboard]
+      summary: Activity audit stream
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 15 }
+      responses:
+        '200':
+          description: Array of activity events
+
+  /dashboard/alerts:
+    get:
+      tags: [Dashboard]
+      summary: Critical alerts requiring attention
+      responses:
+        '200':
+          description: Alerts list
+
+  /dashboard/recent-documents:
+    get:
+      tags: [Dashboard]
+      summary: Most recently uploaded documents
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: Documents array
+
+  # =========================================================================
+  # 5. COMMAND CENTRE
+  # =========================================================================
+  /command-centre/overview:
+    get:
+      tags: [Command Centre]
+      summary: Multi-tenant operations overview
+      responses:
+        '200':
+          description: Overview metrics
+
+  /command-centre/pipeline:
+    get:
+      tags: [Command Centre]
+      summary: Real-time ingestion queue status
+      responses:
+        '200':
+          description: Queue metrics
+
+  /command-centre/status:
+    get:
+      tags: [Command Centre]
+      summary: Subsystem health statuses
+      responses:
+        '200':
+          description: Health state
+
+  /command-centre/attention-items:
+    get:
+      tags: [Command Centre]
+      summary: Items requiring human intervention
+      responses:
+        '200':
+          description: Urgent items
+
+  /command-centre/activity:
+    get:
+      tags: [Command Centre]
+      summary: Live operations feed
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Live feed array
+
+  # =========================================================================
+  # 6. SETTINGS
+  # =========================================================================
+  /settings:
+    get:
+      tags: [Settings]
+      summary: Retrieve complete user settings tree
+      responses:
+        '200':
+          description: Settings data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+    put:
+      tags: [Settings]
+      summary: Bulk update settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdateRequest'
+      responses:
+        '200':
+          description: Settings updated
+
+  /settings/language:
+    get:
+      tags: [Settings]
+      summary: Get language preferences
+      responses:
+        '200':
+          description: Language settings
+    put:
+      tags: [Settings]
+      summary: Update language preference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [language]
+              properties:
+                language:
+                  type: string
+                  enum: [en, hi]
+      responses:
+        '200':
+          description: Language updated
+
+  /settings/appearance:
+    get:
+      tags: [Settings]
+      summary: Get appearance settings
+      responses:
+        '200':
+          description: Appearance settings
+    put:
+      tags: [Settings]
+      summary: Update theme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [theme]
+              properties:
+                theme:
+                  type: string
+                  enum: [light, dark]
+      responses:
+        '200':
+          description: Theme updated
+
+  /settings/notifications:
+    get:
+      tags: [Settings]
+      summary: Get notification preferences
+      responses:
+        '200':
+          description: Notification settings
+    put:
+      tags: [Settings]
+      summary: Update notification preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailNotif: { type: boolean }
+                pushNotif: { type: boolean }
+                reportAlerts: { type: boolean }
+      responses:
+        '200':
+          description: Preferences updated
+
+  # =========================================================================
+  # 7. HELP & FAQS
+  # =========================================================================
+  /help:
+    get:
+      tags: [Help]
+      summary: Help categories and overview
+      responses:
+        '200':
+          description: Help overview
+
+  /help/faqs:
+    get:
+      tags: [Help]
+      summary: List FAQs with category/search filters
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        '200':
+          description: FAQs array
+
+  /help/search:
+    get:
+      tags: [Help]
+      summary: Full-text search across documentation
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Search results
+
+  /help/faqs/{id}:
+    get:
+      tags: [Help]
+      summary: Specific FAQ details
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: FAQ item
+
+  # =========================================================================
+  # 8. DOCUMENTS
+  # =========================================================================
+  /documents/upload:
+    post:
+      tags: [Documents]
+      summary: Upload document (Multipart)
+      description: Uploads document binary, computes SHA-256 hash for deduplication (returns 409 on duplicate), and queues background OCR/parsing.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Document file (PDF, DOCX, XLSX, CSV, PPTX, Image)
+      responses:
+        '201':
+          description: Document uploaded and queued
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Document'
+        '400':
+          description: No file uploaded or invalid mime type
+        '409':
+          description: Duplicate document detected by checksum
+
+  /documents:
+    get:
+      tags: [Documents]
+      summary: List documents with filtering & pagination
+      description: Non-admin users see only their own documents. Admins see all tenant documents.
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [pdf, docx, xlsx, csv, image, pptx]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed, extracted]
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: classification
+          schema:
+            type: string
+            enum: [public, internal, confidential, restricted]
+        - in: query
+          name: dateFrom
+          schema: { type: string, format: date-time }
+        - in: query
+          name: dateTo
+          schema: { type: string, format: date-time }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Paginated documents array
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentResponse'
+
+  /documents/{id}:
+    get:
+      tags: [Documents]
+      summary: Get document details and extracted pages
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Document and extracted pages
+    delete:
+      tags: [Documents]
+      summary: Delete document and associated chunks/files
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deleted document ID
+
+  /documents/{id}/download:
+    get:
+      tags: [Documents]
+      summary: Download original document file binary
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Binary file stream with Content-Disposition attachment
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /documents/{id}/metadata:
+    get:
+      tags: [Documents]
+      summary: Retrieve technical & GIS metadata
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Metadata object
+    put:
+      tags: [Documents]
+      summary: Update document metadata
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category: { type: string }
+                classification:
+                  type: string
+                  enum: [public, internal, confidential, restricted]
+                gisMetadata:
+                  type: object
+                  properties:
+                    latitude: { type: number }
+                    longitude: { type: number }
+                    region: { type: string }
+                retentionDate: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Updated document
+
+  /documents/{id}/reprocess:
+    post:
+      tags: [Documents]
+      summary: Trigger re-ingestion and OCR
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Queued for reprocessing
+
+  /documents/{id}/status:
+    get:
+      tags: [Documents]
+      summary: Ingestion progress & steps (Poll this endpoint)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: ProcessingJob object
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProcessingJob'
+
+  # =========================================================================
+  # 9. EXTRACTION & HITL
+  # =========================================================================
+  /extraction/run:
+    post:
+      tags: [Extraction]
+      summary: Run AI parameter extraction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId: { type: string }
+      responses:
+        '200':
+          description: Extracted records
+
+  /extraction/{documentId}:
+    get:
+      tags: [Extraction]
+      summary: Extraction summary & stats for document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Summary and records
+
+  /extraction/{documentId}/records:
+    get:
+      tags: [Extraction]
+      summary: List extracted records for document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [pending, approved, rejected] }
+        - in: query
+          name: parameter
+          schema: { type: string }
+        - in: query
+          name: mineName
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Paginated records array
+
+  /extraction/{documentId}/records/{recordId}:
+    put:
+      tags: [Extraction]
+      summary: Edit extracted record value/unit with audit trail
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: recordId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value: { type: string }
+                unit: { type: string }
+                parameter: { type: string }
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+                period: { type: string }
+                mineName: { type: string }
+                subsidiary: { type: string }
+      responses:
+        '200':
+          description: Updated record
+
+  /extraction/{documentId}/reprocess:
+    post:
+      tags: [Extraction]
+      summary: Clear and re-run extraction
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Re-extraction completed
+
+  /extraction/records/{id}/approve:
+    post:
+      tags: [Extraction]
+      summary: Approve single record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Record approved
+
+  /extraction/records/{id}/reject:
+    post:
+      tags: [Extraction]
+      summary: Reject single record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Record rejected
+
+  /extraction/records/bulk-approve:
+    post:
+      tags: [Extraction]
+      summary: Bulk approve records by ID array
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Matched and modified counts
+
+  # =========================================================================
+  # 10. VALIDATION & QUALITY CONTROL
+  # =========================================================================
+  /validation/run:
+    post:
+      tags: [Validation]
+      summary: Run validation rules & compute quality metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId: { type: string }
+      responses:
+        '200':
+          description: Validation report with qualityScore
+
+  /validation:
+    get:
+      tags: [Validation]
+      summary: List validation issues across documents
+      parameters:
+        - in: query
+          name: documentId
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [all, open, resolved, ignored] }
+        - in: query
+          name: severity
+          schema: { type: string, enum: [info, warning, error, critical] }
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Issues list with quality metrics
+
+  /validation/summary:
+    get:
+      tags: [Validation]
+      summary: Get validation KPI summary
+      parameters:
+        - in: query
+          name: documentId
+          schema: { type: string }
+      responses:
+        '200':
+          description: KPI summary
+
+  /validation/{documentId}:
+    get:
+      tags: [Validation]
+      summary: Validation details for specific document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Document validation metrics & issues
+
+  /validation/{documentId}/issues:
+    get:
+      tags: [Validation]
+      summary: Filtered issues list for document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: severity
+          schema: { type: string }
+      responses:
+        '200':
+          description: Issues array
+
+  /validation/issues/{issueId}:
+    put:
+      tags: [Validation]
+      summary: Resolve issue and sync correction to extracted record
+      parameters:
+        - in: path
+          name: issueId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [open, resolved, ignored]
+                  default: resolved
+                correctedValue: { type: string }
+                resolution: { type: string }
+                notes: { type: string }
+      responses:
+        '200':
+          description: Issue resolved and record updated
+
+  /validation/{documentId}/approve:
+    post:
+      tags: [Validation]
+      summary: Approve document validation & finalize all pending records
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Document and records approved
+
+  /validation/{documentId}/review:
+    post:
+      tags: [Validation]
+      summary: Submit human review decision & batch resolve issues
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected]
+                comments: { type: string }
+                issueResolutions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      issueId: { type: string }
+                      status: { type: string }
+                      correctedValue: { type: string }
+                      resolution: { type: string }
+      responses:
+        '200':
+          description: Review decision recorded
+
+  # =========================================================================
+  # 11. REPORTS & EXPORTS
+  # =========================================================================
+  /reports/generate:
+    post:
+      tags: [Reports]
+      summary: Generate statutory or variance report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                type:
+                  type: string
+                  example: production_summary
+                title:
+                  type: string
+                  example: Monthly Production Summary
+                documentIds:
+                  type: array
+                  items: { type: string }
+                language:
+                  type: string
+                  enum: [en, hi]
+                  default: en
+      responses:
+        '201':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Report'
+
+  /reports:
+    get:
+      tags: [Reports]
+      summary: List reports with filters & pagination
+      parameters:
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, review, approved, rejected]
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: Paginated reports array
+
+  /reports/{id}:
+    get:
+      tags: [Reports]
+      summary: Get report content and citations
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Report object
+    put:
+      tags: [Reports]
+      summary: Edit report content
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                content: { type: object }
+                markdown: { type: string }
+                language: { type: string }
+      responses:
+        '200':
+          description: Updated report
+    delete:
+      tags: [Reports]
+      summary: Delete report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Report deleted
+
+  /reports/{id}/submit-review:
+    post:
+      tags: [Reports]
+      summary: Submit draft report for review
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Status changed to review
+
+  /reports/{id}/approve:
+    post:
+      tags: [Reports]
+      summary: Approve report (ADMIN ONLY)
+      description: Strictly restricted to admin.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Report approved
+        '403':
+          description: Only administrators can approve reports
+
+  /reports/{id}/reject:
+    post:
+      tags: [Reports]
+      summary: Reject report with reason (Reviewer/Admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+                comment: { type: string }
+      responses:
+        '200':
+          description: Report rejected
+
+  /reports/{id}/evidence:
+    get:
+      tags: [Reports]
+      summary: Get citations and linked evidence snippets
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Evidence array
+
+  /reports/{id}/version-history:
+    get:
+      tags: [Reports]
+      summary: Get revision history of report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Versions array
+
+  /reports/{id}/changes:
+    get:
+      tags: [Reports]
+      summary: Get version changes and diffs
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Changes object
+
+  /reports/{id}/export/pdf:
+    get:
+      tags: [Reports]
+      summary: Export report as binary PDF
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: PDF binary file stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /reports/{id}/export/docx:
+    get:
+      tags: [Reports]
+      summary: Export report as Word document (.docx)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Word binary file stream
+          content:
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+
+  /reports/{id}/export/csv:
+    get:
+      tags: [Reports]
+      summary: Export report data as CSV text
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: CSV file stream
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /reports/{id}/export/json:
+    get:
+      tags: [Reports]
+      summary: Export report data as JSON file
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: JSON file download
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  # =========================================================================
+  # 12. REVIEWS QUEUE
+  # =========================================================================
+  /reviews/pending:
+    get:
+      tags: [Reviews]
+      summary: List all reports pending review
+      responses:
+        '200':
+          description: Pending reviews array
+
+  /reviews/{id}:
+    get:
+      tags: [Reviews]
+      summary: Get review details for specific report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Review item
+
+  /reviews/{id}/approve:
+    post:
+      tags: [Reviews]
+      summary: Dedicated approve endpoint (ADMIN ONLY)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Approved
+
+  /reviews/{id}/reject:
+    post:
+      tags: [Reviews]
+      summary: Dedicated reject endpoint (Reviewer/Admin)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200':
+          description: Rejected
+
+  # =========================================================================
+  # 13. KNOWLEDGE BASE & VECTOR INDEXING
+  # =========================================================================
+  /knowledge-base:
+    get:
+      tags: [Knowledge Base]
+      summary: List indexed documents & vector statistics
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Knowledge base items
+
+  /knowledge-base/index:
+    post:
+      tags: [Knowledge Base]
+      summary: Index document into vector database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId: { type: string }
+      responses:
+        '201':
+          description: Document chunks indexed
+
+  /knowledge-base/{documentId}:
+    get:
+      tags: [Knowledge Base]
+      summary: Document vector chunks & metadata
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Chunks list
+    delete:
+      tags: [Knowledge Base]
+      summary: Remove document vector index
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Index deleted
+
+  /knowledge-base/search:
+    post:
+      tags: [Knowledge Base]
+      summary: Semantic vector search with filters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+                topK: { type: integer, default: 5 }
+                filters: { type: object }
+      responses:
+        '200':
+          description: Similar chunks with similarity scores
+
+  # =========================================================================
+  # 14. RAG VECTOR ENGINE
+  # =========================================================================
+  /rag/{documentId}/index:
+    post:
+      tags: [RAG]
+      summary: Low-level vector indexing endpoint
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Chunks indexed
+
+  /rag/search:
+    post:
+      tags: [RAG]
+      summary: Low-level vector similarity search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+                topK: { type: integer, default: 5 }
+      responses:
+        '200':
+          description: Search results
+
+  # =========================================================================
+  # 15. AI CONVERSATIONAL ASSISTANT
+  # =========================================================================
+  /ai-assistant/query:
+    post:
+      tags: [AI Assistant]
+      summary: Ask AI question with RAG evidence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  example: What was the coal production for Rajmahal OCP in July 2026?
+                conversationId:
+                  type: string
+                topK:
+                  type: integer
+                  default: 5
+      responses:
+        '200':
+          description: AI response with citations and confidence
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          answer: { type: string }
+                          confidence: { type: number }
+                          citations: { type: array, items: { type: object } }
+                          evidence: { type: array, items: { type: object } }
+                          calculation: { type: object }
+                          insufficientEvidence: { type: boolean }
+                          conversationId: { type: string }
+
+  /ai-assistant/history:
+    get:
+      tags: [AI Assistant]
+      summary: List user conversation threads
+      responses:
+        '200':
+          description: Conversations array
+
+  /ai-assistant/history/{id}:
+    get:
+      tags: [AI Assistant]
+      summary: Get full conversation messages and citations
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conversation session details
+    delete:
+      tags: [AI Assistant]
+      summary: Delete conversation thread
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Conversation deleted
+
+  # =========================================================================
+  # 16. ANALYTICS
+  # =========================================================================
+  /analytics/overview:
+    get:
+      tags: [Analytics]
+      summary: Mining production & dispatch summaries
+      responses:
+        '200':
+          description: Production overview
+
+  /analytics/kpis:
+    get:
+      tags: [Analytics]
+      summary: Stripping ratios and mining KPIs
+      responses:
+        '200':
+          description: KPIs object
+
+  /analytics/production:
+    get:
+      tags: [Analytics]
+      summary: Production time-series data
+      responses:
+        '200':
+          description: Production metrics
+
+  /analytics/dispatch:
+    get:
+      tags: [Analytics]
+      summary: Coal dispatch mode breakdown (Rail, Road, MGR)
+      responses:
+        '200':
+          description: Dispatch metrics
+
+  /analytics/trends:
+    get:
+      tags: [Analytics]
+      summary: Historical production trends
+      responses:
+        '200':
+          description: Trends array
+
+  /analytics/variance:
+    get:
+      tags: [Analytics]
+      summary: Target vs actual production variance
+      responses:
+        '200':
+          description: Variance data
+
+  /analytics/anomalies:
+    get:
+      tags: [Analytics]
+      summary: Statistical anomaly detection
+      responses:
+        '200':
+          description: Anomalies array
+
+  # =========================================================================
+  # 17. TOPICS
+  # =========================================================================
+  /topics:
+    get:
+      tags: [Topics]
+      summary: Discovered topic taxonomy list
+      responses:
+        '200':
+          description: Topics array
+
+  /topics/analyze:
+    post:
+      tags: [Topics]
+      summary: Discover topics across document corpus
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                documentIds:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Discovered topics
+
+  /topics/trends:
+    get:
+      tags: [Topics]
+      summary: Topic prominence over time
+      responses:
+        '200':
+          description: Trends array
+
+  /topics/clusters:
+    get:
+      tags: [Topics]
+      summary: Topic co-occurrence graph
+      responses:
+        '200':
+          description: Clusters object
+
+  /topics/entities:
+    get:
+      tags: [Topics]
+      summary: Named entity frequency across topics
+      responses:
+        '200':
+          description: Entities array
+
+  /topics/emerging:
+    get:
+      tags: [Topics]
+      summary: Fast-rising topics
+      responses:
+        '200':
+          description: Emerging topics
+
+  /topics/changes:
+    get:
+      tags: [Topics]
+      summary: Topic shifts between periods
+      responses:
+        '200':
+          description: Changes object
+
+  # =========================================================================
+  # 18. AGENTS
+  # =========================================================================
+  /agents/orchestrate:
+    post:
+      tags: [Agents]
+      summary: Orchestrate multi-agent autonomous task
+      description: Concurrency-guarded. Returns 409 Conflict if identical task string is already executing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [task]
+              properties:
+                task:
+                  type: string
+                  example: Perform compliance check for monsoon guidelines.
+                context:
+                  type: object
+      responses:
+        '200':
+          description: Task orchestration result
+        '409':
+          description: Task already in progress
+
+  # =========================================================================
+  # 19. AUDIT TRAIL
+  # =========================================================================
+  /audit:
+    get:
+      tags: [Audit]
+      summary: System audit logs with filtering & paging
+      parameters:
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: user
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [SUCCESS, FAILED, PROCESSING] }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Paginated audit logs
+
+  /audit/stats:
+    get:
+      tags: [Audit]
+      summary: Audit statistics & top actions
+      responses:
+        '200':
+          description: Stats object
+
+  /audit/export:
+    get:
+      tags: [Audit]
+      summary: Export audit trail as CSV or JSON
+      parameters:
+        - in: query
+          name: format
+          schema: { type: string, enum: [csv, json], default: csv }
+      responses:
+        '200':
+          description: File download stream
+
+  /audit/user/{userId}:
+    get:
+      tags: [Audit]
+      summary: Audit logs for specific user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: User audit logs
+
+  /audit/document/{documentId}:
+    get:
+      tags: [Audit]
+      summary: Audit trail for specific document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Document audit logs
+
+  /audit/report/{reportId}:
+    get:
+      tags: [Audit]
+      summary: Audit trail for specific report
+      parameters:
+        - in: path
+          name: reportId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Report audit logs
+
+  /audit/{id}:
+    get:
+      tags: [Audit]
+      summary: Specific audit log record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Audit log entry
+
+  # =========================================================================
+  # 20. NOTIFICATIONS
+  # =========================================================================
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: In-app user notifications & unread count
+      parameters:
+        - in: query
+          name: unread
+          schema: { type: string, enum: ['true', 'false'] }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Notifications array and unreadCount
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  unreadCount: { type: integer }
+
+  /notifications/read-all:
+    put:
+      tags: [Notifications]
+      summary: Mark all notifications as read
+      responses:
+        '200':
+          description: All marked read
+
+  /notifications/{id}/read:
+    put:
+      tags: [Notifications]
+      summary: Mark single notification as read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Updated notification
+
+  # =========================================================================
+  # 21. DOCUMENT INTELLIGENCE
+  # =========================================================================
+  /intelligence:
+    get:
+      tags: [Intelligence]
+      summary: Document intelligence overview
+      responses:
+        '200':
+          description: Overview metrics
+
+  /intelligence/analyze:
+    post:
+      tags: [Intelligence]
+      summary: Trigger cross-document semantic correlation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                documentIds:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: Correlation results
+
+  /intelligence/trends:
+    get:
+      tags: [Intelligence]
+      summary: Multi-document production trends
+      responses:
+        '200':
+          description: Trends array
+
+  /intelligence/entities:
+    get:
+      tags: [Intelligence]
+      summary: Mining entity registry (Mines, Equipment, Locations)
+      responses:
+        '200':
+          description: Entities array
+
+  /intelligence/clusters:
+    get:
+      tags: [Intelligence]
+      summary: Corpus semantic clusters
+      responses:
+        '200':
+          description: Clusters array
+
+  /intelligence/similarity:
+    get:
+      tags: [Intelligence]
+      summary: Cross-document similarity matrix
+      responses:
+        '200':
+          description: Similarity matrix
+
+  /intelligence/changes:
+    get:
+      tags: [Intelligence]
+      summary: Operational variations between documents
+      responses:
+        '200':
+          description: Changes array
+
+  /intelligence/entities/{documentId}:
+    get:
+      tags: [Intelligence]
+      summary: Entities detected in specific document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Document entities
+
+  /intelligence/similarity/{documentId}:
+    get:
+      tags: [Intelligence]
+      summary: Documents similar to target document
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Similar documents array
+
+  /intelligence/link-evidence/{documentId}:
+    post:
+      tags: [Intelligence]
+      summary: Link extracted records to external evidence snippets
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Linked evidence results
+
+  # =========================================================================
+  # 22. INTEGRATION (DMS / MIS / GIS)
+  # =========================================================================
+  /integration/documents:
+    get:
+      tags: [Integration]
+      summary: DMS-compatible document catalog
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: fileType
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paginated DMS documents
+
+  /integration/records:
+    get:
+      tags: [Integration]
+      summary: MIS-compatible tabular records
+      parameters:
+        - in: query
+          name: parameter
+          schema: { type: string }
+        - in: query
+          name: period
+          schema: { type: string }
+        - in: query
+          name: documentId
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Paginated MIS records
+
+  /integration/gis:
+    get:
+      tags: [Integration]
+      summary: GIS geo-spatial coordinates for map widgets
+      description: Returns all documents possessing geographic coordinates (latitude, longitude, region). Ideal for Flutter Google Maps or flutter_map plugins.
+      responses:
+        '200':
+          description: GIS records array
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id: { type: string }
+                            originalName: { type: string }
+                            category: { type: string }
+                            status: { type: string }
+                            gisMetadata:
+                              type: object
+                              properties:
+                                latitude: { type: number, example: 23.7957 }
+                                longitude: { type: number, example: 86.4304 }
+                                region: { type: string, example: Jharia Coalfield }
+
+# ===========================================================================
+# COMPONENTS & SCHEMAS
+# ===========================================================================
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Success
+        data:
+          type: object
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ErrorResponse:
+      type: object
+      required: [success, message, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Validation failed
+        error:
+          type: string
+          example: Field "password" is required
+        code:
+          type: string
+          example: MONGOOSE_VALIDATION_ERROR
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 48
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 50
+        pages:
+          type: integer
+          example: 1
+
+    HealthResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          type: object
+          properties:
+            api: { type: string, example: healthy }
+            server: { type: string, example: online }
+            database: { type: string, example: connected }
+            timestamp: { type: string, format: date-time }
+            version: { type: string, example: v1 }
+            uptime: { type: integer, example: 1420 }
+            environment: { type: string, example: development }
+        message: { type: string }
+
+    AuthSuccessResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            _id: { type: string }
+            username: { type: string }
+            email: { type: string }
+            role:
+              type: string
+              enum: [user, reviewer, admin]
+            token: { type: string }
+        message: { type: string }
+
+    User:
+      type: object
+      properties:
+        _id: { type: string }
+        username: { type: string }
+        email: { type: string }
+        role:
+          type: string
+          enum: [user, reviewer, admin]
+        status:
+          type: string
+          enum: [active, suspended, inactive]
+        department: { type: string }
+        lastLogin: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    UserSummary:
+      type: object
+      properties:
+        _id: { type: string }
+        username: { type: string }
+        role: { type: string }
+
+    Document:
+      type: object
+      properties:
+        _id: { type: string }
+        filename: { type: string }
+        originalName: { type: string }
+        mimeType: { type: string }
+        fileSize: { type: integer }
+        fileType:
+          type: string
+          enum: [pdf, docx, xlsx, csv, image, pptx]
+        hash: { type: string }
+        category: { type: string }
+        classification:
+          type: string
+          enum: [public, internal, confidential, restricted]
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, extracted]
+        totalPages: { type: integer }
+        gisMetadata:
+          type: object
+          properties:
+            latitude: { type: number }
+            longitude: { type: number }
+            region: { type: string }
+        retentionDate: { type: string, format: date-time }
+        uploadedAt: { type: string, format: date-time }
+        userId: { type: string }
+
+    PaginatedDocumentResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    ProcessingJob:
+      type: object
+      properties:
+        _id: { type: string }
+        documentId: { type: string }
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        currentStep: { type: string }
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              status:
+                type: string
+                enum: [pending, processing, completed, failed]
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+        error: { type: string }
+
+    ExtractedRecord:
+      type: object
+      properties:
+        _id: { type: string }
+        documentId: { type: string }
+        pageNumber: { type: integer }
+        parameter: { type: string }
+        value: { type: string }
+        unit: { type: string }
+        period: { type: string }
+        mineName: { type: string }
+        subsidiary: { type: string }
+        confidenceScore: { type: number }
+        sourceText: { type: string }
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        originalValue: { type: string }
+        editHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              oldValue: { type: string }
+              newValue: { type: string }
+              editedAt: { type: string, format: date-time }
+
+    ValidationResult:
+      type: object
+      properties:
+        _id: { type: string }
+        documentId: { type: string }
+        recordId: { type: string }
+        type:
+          type: string
+          enum: [missing_data, duplicate, conflict, unit_mismatch, invalid_value, suspicious_value, cross_document_mismatch]
+        severity:
+          type: string
+          enum: [info, warning, error, critical]
+        field: { type: string }
+        message: { type: string }
+        status:
+          type: string
+          enum: [open, resolved, ignored]
+        resolution: { type: string }
+        correctedValue: { type: string }
+        notes: { type: string }
+        resolvedAt: { type: string, format: date-time }
+
+    Report:
+      type: object
+      properties:
+        _id: { type: string }
+        title: { type: string }
+        type: { type: string }
+        content: { type: object }
+        status:
+          type: string
+          enum: [draft, review, approved, rejected]
+        fileUrl: { type: string }
+        generatedBy: { type: string }
+        reviewerId: { type: string }
+        reviewerComments: { type: string }
+        reviewedAt: { type: string, format: date-time }
+        approvedBy: { type: string }
+        approvedAt: { type: string, format: date-time }
+        version: { type: integer }
+        confidenceScore: { type: number }
+        language: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Notification:
+      type: object
+      properties:
+        _id: { type: string }
+        userId: { type: string }
+        message: { type: string }
+        type: { type: string }
+        category:
+          type: string
+          enum: [report, review, approval, system, alert, upload]
+        relatedId: { type: string }
+        read: { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    SettingsResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: object
+          properties:
+            language:
+              type: object
+              properties:
+                language: { type: string, enum: [en, hi] }
+                timezone: { type: string }
+                supportedLanguages: { type: array, items: { type: object } }
+            appearance:
+              type: object
+              properties:
+                theme: { type: string, enum: [light, dark] }
+                supportedThemes: { type: array, items: { type: string } }
+            notifications:
+              type: object
+              properties:
+                emailNotif: { type: boolean }
+                pushNotif: { type: boolean }
+                reportAlerts: { type: boolean }
+            account:
+              type: object
+              properties:
+                username: { type: string }
+                email: { type: string }
+                role: { type: string }
+                department: { type: string }
+                organization: { type: string }
+
+    SettingsUpdateRequest:
+      type: object
+      properties:
+        language:
+          type: object
+          properties:
+            language: { type: string, enum: [en, hi] }
+        appearance:
+          type: object
+          properties:
+            theme: { type: string, enum: [light, dark] }
+        notifications:
+          type: object
+          properties:
+            emailNotif: { type: boolean }
+            pushNotif: { type: boolean }
+            reportAlerts: { type: boolean }

@@ -1,4 +1,4 @@
-import apiClient, { uploadFile, downloadFile } from './client';
+import apiClient, { uploadFile, downloadFile } from './client.js';
 
 /**
  * Document Ingestion & Storage REST API Module

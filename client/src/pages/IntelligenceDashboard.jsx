@@ -248,7 +248,7 @@ const ChangeDetection = ({ documents }) => {
     changed: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   };
 
-  const extractedDocs = documents.filter(d => d.status === 'extracted');
+  const extractedDocs = documents.filter(d => d.status === 'completed' || d.status === 'extracted');
 
   return (
     <div className="space-y-4">

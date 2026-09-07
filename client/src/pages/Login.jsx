@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Loader2, Lock, User, Mail, UserCircle, ArrowLeft, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import authApi from '../api/authApi';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -20,7 +20,7 @@ const Login = () => {
     setLoading(true);
     try {
       if (isRegistering) {
-        await axios.post('/api/auth/register', { username, email, password });
+        await authApi.register(username, email, password);
         await login(username, password);
       } else {
         await login(username, password);

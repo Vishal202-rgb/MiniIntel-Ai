@@ -3,7 +3,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area
 } from 'recharts';
 import { FileText, TrendingUp, Truck, CheckCircle, AlertTriangle, Lightbulb, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import analyticsApi from '../api/analyticsApi';
 
 const AnalyticsDashboard = () => {
   const [data, setData] = useState(null);
@@ -18,16 +18,8 @@ const AnalyticsDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      // Assuming authorization interceptors are setup globally in api.js, 
-      // but to be safe and use raw axios if interceptors aren't covering this component:
-      const userInfo = localStorage.getItem('userInfo');
-      const token = userInfo ? JSON.parse(userInfo).token : '';
-      
-      const response = await axios.get('/api/analytics/dashboard', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
-      
-      setData(response.data.data);
+      const response = await analyticsApi.getDashboard();
+      setData(response.data || response);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to load analytics data.');
     } finally {

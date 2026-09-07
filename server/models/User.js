@@ -8,6 +8,18 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['user', 'reviewer', 'admin'], default: 'user' },
   status: { type: String, enum: ['active', 'suspended', 'inactive'], default: 'active' },
   department: { type: String, default: '' },
+  preferences: {
+    language: { type: String, default: 'en' },
+    timezone: { type: String, default: 'Asia/Kolkata (IST)' },
+    appearance: {
+      theme: { type: String, enum: ['light', 'dark'], default: 'light' }
+    },
+    notifications: {
+      emailNotif: { type: Boolean, default: true },
+      pushNotif: { type: Boolean, default: true },
+      reportAlerts: { type: Boolean, default: false }
+    }
+  },
   lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });

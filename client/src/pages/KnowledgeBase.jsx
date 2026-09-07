@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Database, FileText, Loader2, CheckCircle, AlertTriangle, ChevronDown } from 'lucide-react';
-import { indexDocument, searchKnowledgeBase } from '../services/apiRag';
-import axios from 'axios';
+import { knowledgeBaseApi, documentApi } from '../api';
 import { useLocation } from 'react-router-dom';
 
 const KnowledgeBase = () => {
@@ -32,9 +31,12 @@ const KnowledgeBase = () => {
 
   const fetchDocuments = async () => {
     try {
-      const res = await axios.get('/api/documents');
+      const res = await documentApi.getDocuments();
+      const docs = Array.isArray(res.data)
+        ? res.data
+        : (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
       // Filter for documents that are ready to be indexed
-      const eligibleDocs = res.data.filter(doc => doc.status === 'completed' || doc.status === 'extracted');
+      const eligibleDocs = docs.filter(doc => doc.status === 'completed' || doc.status === 'extracted');
       setDocuments(eligibleDocs);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -47,7 +49,7 @@ const KnowledgeBase = () => {
     setIndexingStatus('loading');
     setIndexMessage('');
     try {
-      await indexDocument(selectedDocId);
+      await knowledgeBaseApi.indexDocument(selectedDocId);
       setIndexingStatus('success');
       setIndexMessage('Document indexed successfully for AI Semantic Search.');
     } catch (error) {
@@ -64,7 +66,8 @@ const KnowledgeBase = () => {
     setHasSearched(true);
     setSearchResults([]);
     try {
-      const data = await searchKnowledgeBase(queryToSearch);
+      const res = await knowledgeBaseApi.search(queryToSearch);
+      const data = res.data?.results || res.data || res;
       setSearchResults(Array.isArray(data) ? data : (data.results || []));
     } catch (error) {
       console.error('Search error:', error);

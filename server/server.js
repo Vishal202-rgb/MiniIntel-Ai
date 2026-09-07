@@ -64,25 +64,23 @@ console.log(
 // Connect to Database
 connectDB();
 
-// Middleware
-app.use(
-  cors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      process.env.CLIENT_URL,
-    ].filter(Boolean),
-    credentials: true,
-  })
-);
+// Centralized CORS & API Response Middlewares
+const { corsOptions } = require('./config/cors');
+const apiResponseMiddleware = require('./middleware/apiResponseMiddleware');
 
+// Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(apiResponseMiddleware);
 app.use(morgan('dev'));
 
 // Static folder for uploads
 app.use('/uploads', express.static(uploadsDir));
 
-// Routes
+// Versioned API Layer (v1)
+app.use('/api/v1', require('./routes/api/v1'));
+
+// Existing Routes (Preserved for full backward compatibility)
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/reports', reportRoutes);

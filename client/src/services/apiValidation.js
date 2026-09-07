@@ -1,42 +1,24 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: '/api',
-});
-
-api.interceptors.request.use((config) => {
-  const userInfo = localStorage.getItem('userInfo');
-  if (userInfo) {
-    const { token } = JSON.parse(userInfo);
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import validationApi from '../api/validationApi';
 
 export const validateDocument = async (documentId) => {
-  const response = await api.post(`/validation/${documentId}/validate`);
-  return response.data;
+  return validationApi.validateDocument(documentId);
 };
 
 export const getValidationResults = async (documentId) => {
-  const response = await api.get(`/documents/${documentId}/validation`);
-  return response.data;
+  return validationApi.getValidationResults(documentId);
 };
 
 export const getValidationSummary = async (documentId) => {
-  const url = documentId ? `/validation/summary?documentId=${documentId}` : `/validation/summary`;
-  const response = await api.get(url);
-  return response.data;
+  return validationApi.getValidationSummary(documentId);
 };
 
 export const resolveIssue = async (id, data) => {
-  const response = await api.put(`/validation/${id}/resolve`, data);
-  return response.data;
+  return validationApi.resolveIssue(id, data);
 };
 
 export default {
   validateDocument,
   getValidationResults,
   getValidationSummary,
-  resolveIssue
+  resolveIssue,
 };

@@ -10,7 +10,10 @@ const useDocuments = (filters = {}) => {
     try {
       setLoading(true);
       const response = await getDocuments(params);
-      setDocuments(response.data);
+      const docs = Array.isArray(response.data)
+        ? response.data
+        : (Array.isArray(response.data?.data) ? response.data.data : []);
+      setDocuments(docs);
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to fetch documents');
@@ -24,7 +27,7 @@ const useDocuments = (filters = {}) => {
   }, [filters.search, filters.type, filters.status]);
 
   useEffect(() => {
-    const hasPending = documents.some(
+    const hasPending = Array.isArray(documents) && documents.some(
       (doc) => doc.status === 'pending' || doc.status === 'processing'
     );
     let interval;

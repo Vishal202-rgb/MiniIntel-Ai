@@ -4,7 +4,7 @@ import {
   AlertCircle, FileOutput, Search, RefreshCw, CheckCircle, XCircle,
   ChevronDown, ChevronUp, Trash2, Loader2, Eye, Check, X
 } from 'lucide-react';
-import axios from '../services/api';
+import { userApi, documentApi, auditApi } from '../api';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -114,18 +114,21 @@ const AdminDashboard = () => {
     setSuccessMessage('');
     try {
       const results = await Promise.allSettled([
-        axios.get('/admin/stats'),
-        axios.get('/admin/users'),
-        axios.get('/documents'),
-        axios.get('/audit?limit=15'),
-        axios.get('/admin/system-health')
+        userApi.getAdminStats(),
+        userApi.getUsers(),
+        documentApi.getDocuments(),
+        auditApi.getAuditLogs({ limit: 15 }),
+        userApi.getSystemHealth()
       ]);
 
-      if (results[0].status === 'fulfilled') setStats(results[0].value.data?.data);
-      if (results[1].status === 'fulfilled') setUsers(results[1].value.data?.data || []);
-      if (results[2].status === 'fulfilled') setDocuments(results[2].value.data?.data || results[2].value.data || []);
-      if (results[3].status === 'fulfilled') setAuditLogs(results[3].value.data?.data || []);
-      if (results[4].status === 'fulfilled') setSystemHealth(results[4].value.data?.data);
+      if (results[0].status === 'fulfilled') setStats(results[0].value.data || results[0].value.data?.data || results[0].value);
+      if (results[1].status === 'fulfilled') setUsers(results[1].value.data || results[1].value.data?.data || []);
+      if (results[2].status === 'fulfilled') {
+        const rawDocs = results[2].value.data || results[2].value.data?.data || results[2].value;
+        setDocuments(Array.isArray(rawDocs) ? rawDocs : (rawDocs?.records || []));
+      }
+      if (results[3].status === 'fulfilled') setAuditLogs(results[3].value.data || results[3].value.data?.data || []);
+      if (results[4].status === 'fulfilled') setSystemHealth(results[4].value.data || results[4].value.data?.data || results[4].value);
 
       // Check if critical endpoints failed
       const criticalFailed = results[0].status === 'rejected' && results[1].status === 'rejected';
@@ -151,19 +154,19 @@ const AdminDashboard = () => {
     setSuccessMessage('');
     
     try {
-      await axios.delete(`/admin/users/${userId}`);
+      await userApi.deleteUser(userId);
       setSuccessMessage('User deleted successfully.');
       // Refresh the data to update stats and tables
       const results = await Promise.allSettled([
-        axios.get('/admin/stats'),
-        axios.get('/admin/users'),
-        axios.get('/audit?limit=15')
+        userApi.getAdminStats(),
+        userApi.getUsers(),
+        auditApi.getAuditLogs({ limit: 15 })
       ]);
-      if (results[0].status === 'fulfilled') setStats(results[0].value.data?.data);
-      if (results[1].status === 'fulfilled') setUsers(results[1].value.data?.data || []);
-      if (results[2].status === 'fulfilled') setAuditLogs(results[2].value.data?.data || []);
+      if (results[0].status === 'fulfilled') setStats(results[0].value.data || results[0].value.data?.data || results[0].value);
+      if (results[1].status === 'fulfilled') setUsers(results[1].value.data || results[1].value.data?.data || []);
+      if (results[2].status === 'fulfilled') setAuditLogs(results[2].value.data || results[2].value.data?.data || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete user.');
+      setError(err.response?.data?.message || err.message || 'Failed to delete user.');
     } finally {
       setDeletingUser(null);
     }

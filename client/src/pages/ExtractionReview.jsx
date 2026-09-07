@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiExtraction from '../services/apiExtraction';
-import apiValidation from '../services/apiValidation';
-import axios from 'axios';
+import { extractionApi, validationApi, documentApi } from '../api';
 import RecordTable from '../components/extraction/RecordTable';
 import RecordEditor from '../components/extraction/RecordEditor';
 import { FileText, Play, AlertCircle, CheckCircle, Loader2, Database, ChevronDown } from 'lucide-react';
@@ -9,8 +7,9 @@ import BackButton from '../components/common/BackButton';
 
 const getDocuments = async () => {
   try {
-    const res = await axios.get('/api/documents');
-    return res.data;
+    const res = await documentApi.getDocuments();
+    const data = res.data?.data || res.data || [];
+    return Array.isArray(data) ? data : [];
   } catch (err) {
     return [];
   }
@@ -46,7 +45,7 @@ const ExtractionReview = () => {
   const loadRecords = async (docId) => {
     setLoading(true);
     try {
-      const data = await apiExtraction.getExtractedRecords(docId);
+      const data = await extractionApi.getExtractedRecords(docId);
       setRecords(data || []);
     } catch (error) {
       console.error(error);
@@ -62,8 +61,8 @@ const ExtractionReview = () => {
     setExtracting(true);
     setMessage(null);
     try {
-      const res = await apiExtraction.extractData(selectedDocument);
-      await apiValidation.validateDocument(selectedDocument);
+      const res = await extractionApi.extractData(selectedDocument);
+      await validationApi.validateDocument(selectedDocument);
       await loadRecords(selectedDocument);
       
       const count = res.count !== undefined ? res.count : (res.records?.length || 0);
@@ -79,7 +78,7 @@ const ExtractionReview = () => {
 
   const handleUpdate = async (id, data) => {
     try {
-      await apiExtraction.updateRecord(id, data);
+      await extractionApi.updateRecord(id, data);
       setEditingRecord(null);
       loadRecords(selectedDocument);
     } catch (error) {
@@ -89,7 +88,7 @@ const ExtractionReview = () => {
 
   const handleApprove = async (id) => {
     try {
-      await apiExtraction.approveRecord(id);
+      await extractionApi.approveRecord(id);
       loadRecords(selectedDocument);
     } catch (error) {
       console.error(error);
@@ -98,7 +97,7 @@ const ExtractionReview = () => {
 
   const handleReject = async (id) => {
     try {
-      await apiExtraction.rejectRecord(id);
+      await extractionApi.rejectRecord(id);
       loadRecords(selectedDocument);
     } catch (error) {
       console.error(error);
@@ -107,7 +106,7 @@ const ExtractionReview = () => {
 
   const handleBulkApprove = async (ids) => {
     try {
-      await apiExtraction.bulkApprove(ids);
+      await extractionApi.bulkApprove(ids);
       loadRecords(selectedDocument);
     } catch (error) {
       console.error(error);

@@ -1,16 +1,15 @@
+import apiClient from '../api/client';
+
 export const getNotifications = async () => {
   try {
-    const userInfo = localStorage.getItem('userInfo');
-    const token = userInfo ? JSON.parse(userInfo).token : '';
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    const response = await fetch('/api/notifications', { headers });
-    if (!response.ok) {
-      throw new Error('Failed to fetch notifications');
-    }
-    return await response.json();
+    const response = await apiClient.get('/notifications');
+    return response.data;
   } catch (error) {
     console.error('Error fetching notifications:', error);
     return [];
   }
+};
+
+export default {
+  getNotifications,
 };

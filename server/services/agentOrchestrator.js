@@ -20,7 +20,7 @@ const orchestrateTask = async (task, context) => {
     
     if (lowerTask.includes('analyze') || lowerTask.includes('production') || lowerTask.includes('trends')) {
       action = 'analyze';
-      reqContext.maxCalls = 5; // Complex task
+      reqContext.maxCalls = 10; // Complex task
     } else if ((lowerTask.includes('extract') || lowerTask.includes('parse')) && (context.documentId)) {
       action = 'extract';
       reqContext.maxCalls = 4; // Normal query

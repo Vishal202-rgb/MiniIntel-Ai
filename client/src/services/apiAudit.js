@@ -1,16 +1,28 @@
-export const getLogs = async () => {
+import auditApi from '../api/auditApi';
+
+export const getLogs = async (params) => {
   try {
-    const userInfo = localStorage.getItem('userInfo');
-    const token = userInfo ? JSON.parse(userInfo).token : '';
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    const response = await fetch('/api/audit', { headers });
-    if (!response.ok) {
-      throw new Error('Failed to fetch audit logs');
-    }
-    return await response.json();
+    const res = await auditApi.getAuditLogs(params);
+    const data = res.data?.data || res.data || [];
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error('Error fetching audit logs:', error);
     return [];
   }
+};
+
+export const getStats = async () => {
+  try {
+    const res = await auditApi.getAuditStats();
+    return res.data || res;
+  } catch (error) {
+    console.error('Error fetching audit stats:', error);
+    return null;
+  }
+};
+
+export default {
+  getLogs,
+  getStats,
+  exportAudit: auditApi.exportAudit,
 };

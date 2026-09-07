@@ -7,6 +7,7 @@ import {
   Settings as SettingsIcon, Globe, Shield, User, Bell, Palette, 
   CheckCircle, Loader2, ArrowRight
 } from 'lucide-react';
+import settingsApi from '../api/settingsApi';
 
 const Settings = () => {
   const { lang, setLang, t } = useLanguage();
@@ -35,25 +36,37 @@ const Settings = () => {
     setLocalTheme(theme);
   }, [theme]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
 
-    // Simulate network delay
-    setTimeout(() => {
+    try {
       if (localLang !== lang) setLang(localLang);
       if (localTheme !== theme) setTheme(localTheme);
       
-      // Save notification prefs to localStorage since we don't have a backend endpoint for this
       localStorage.setItem('prefs_email_notif', emailNotif);
       localStorage.setItem('prefs_push_notif', pushNotif);
       localStorage.setItem('prefs_report_alerts', reportAlerts);
 
-      setIsSaving(false);
+      await settingsApi.updateSettings({
+        language: localLang,
+        appearance: { theme: localTheme },
+        notifications: {
+          emailNotifications: emailNotif,
+          pushNotifications: pushNotif,
+          reportAlerts: reportAlerts,
+        }
+      });
+
       setSaveSuccess(true);
-      
       setTimeout(() => setSaveSuccess(false), 3000);
-    }, 600);
+    } catch (err) {
+      console.error('Failed to sync settings with server:', err);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -64,9 +77,24 @@ const Settings = () => {
     setReportAlerts(localStorage.getItem('prefs_report_alerts') === 'true');
   };
 
-  // Load initial notification prefs
+  // Load initial preferences from REST API
   useEffect(() => {
-    handleCancel();
+    const loadRemoteSettings = async () => {
+      try {
+        const res = await settingsApi.getSettings();
+        const s = res.data || res;
+        if (s.language) setLocalLang(s.language);
+        if (s.appearance?.theme) setLocalTheme(s.appearance.theme);
+        if (s.notifications) {
+          if (s.notifications.emailNotifications !== undefined) setEmailNotif(s.notifications.emailNotifications);
+          if (s.notifications.pushNotifications !== undefined) setPushNotif(s.notifications.pushNotifications);
+          if (s.notifications.reportAlerts !== undefined) setReportAlerts(s.notifications.reportAlerts);
+        }
+      } catch (e) {
+        handleCancel();
+      }
+    };
+    loadRemoteSettings();
     // eslint-disable-next-line
   }, []);
 

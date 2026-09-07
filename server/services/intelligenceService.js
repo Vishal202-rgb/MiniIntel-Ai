@@ -373,6 +373,151 @@ exports.getTopicTrends = async () => {
   return topics.map(t => ({
     name: t.name,
     weight: t.weight,
-    trends: t.trendData.sort((a, b) => a.period.localeCompare(b.period))
+    trends: t.trendData.sort((a, b) => (a.period || '').localeCompare(b.period || ''))
   }));
+};
+
+// =============================================
+// 7. INTELLIGENCE SUMMARY & CROSS-DOC HELPERS
+// =============================================
+exports.getIntelligenceSummary = async (user, filters = {}) => {
+  const docQuery = {};
+  if (user && user.role !== 'admin') docQuery.userId = user._id;
+  if (filters.document) docQuery._id = filters.document;
+
+  const docs = await Document.find(docQuery).select('originalName filename entities similarDocuments').lean();
+  const topics = await Topic.find({}).lean();
+
+  let totalEntitiesCount = 0;
+  docs.forEach(d => {
+    if (d.entities && d.entities.length > 0) totalEntitiesCount += d.entities.length;
+  });
+
+  return {
+    totalDocumentsAnalyzed: docs.length,
+    totalEntitiesFound: totalEntitiesCount,
+    totalTopicsDiscovered: topics.length,
+    crossDocumentSimilaritiesComputed: docs.filter(d => d.similarDocuments && d.similarDocuments.length > 0).length,
+    filtersApplied: filters
+  };
+};
+
+exports.getAllEntities = async (user, filters = {}) => {
+  const docQuery = {};
+  if (user && user.role !== 'admin') docQuery.userId = user._id;
+  if (filters.document) docQuery._id = filters.document;
+
+  const docs = await Document.find(docQuery).select('originalName entities').lean();
+  const recordQuery = {};
+  if (filters.document) recordQuery.documentId = filters.document;
+  if (filters.mine) recordQuery.mineName = { $regex: new RegExp(filters.mine, 'i') };
+  if (filters.subsidiary) recordQuery.subsidiary = { $regex: new RegExp(filters.subsidiary, 'i') };
+
+  const records = await ExtractedRecord.find(recordQuery).lean();
+
+  const entityMap = new Map();
+
+  docs.forEach(d => {
+    (d.entities || []).forEach(e => {
+      const key = `${(e.name || '').toLowerCase()}_${e.type}`;
+      if (!entityMap.has(key)) {
+        entityMap.set(key, { name: e.name, type: e.type, mentions: e.mentions || 1, documents: [d.originalName] });
+      } else {
+        const existing = entityMap.get(key);
+        existing.mentions += (e.mentions || 1);
+        if (!existing.documents.includes(d.originalName)) existing.documents.push(d.originalName);
+      }
+    });
+  });
+
+  records.forEach(r => {
+    if (r.mineName) {
+      const key = `${r.mineName.toLowerCase()}_mine`;
+      if (!entityMap.has(key)) {
+        entityMap.set(key, { name: r.mineName, type: 'Mine', mentions: 1, documents: [] });
+      } else {
+        entityMap.get(key).mentions++;
+      }
+    }
+    if (r.subsidiary) {
+      const key = `${r.subsidiary.toLowerCase()}_subsidiary`;
+      if (!entityMap.has(key)) {
+        entityMap.set(key, { name: r.subsidiary, type: 'Subsidiary', mentions: 1, documents: [] });
+      } else {
+        entityMap.get(key).mentions++;
+      }
+    }
+  });
+
+  const entities = Array.from(entityMap.values());
+  const byType = {};
+  entities.forEach(e => {
+    byType[e.type] = (byType[e.type] || 0) + 1;
+  });
+
+  return {
+    totalEntities: entities.length,
+    byType,
+    entities: entities.sort((a, b) => b.mentions - a.mentions)
+  };
+};
+
+exports.getClusters = async (user, filters = {}) => {
+  const topics = await Topic.find({})
+    .populate('relatedTopics.topicId', 'name weight')
+    .lean();
+
+  const clusters = topics.map((t, idx) => ({
+    clusterId: `cluster_${idx + 1}`,
+    name: t.name,
+    weight: t.weight || 1.0,
+    keywords: t.keywords || [],
+    documentCount: (t.documents || []).length,
+    relatedTopics: (t.relatedTopics || []).map(r => ({
+      name: r.topicId?.name || 'Related Topic',
+      strength: r.strength
+    }))
+  }));
+
+  return {
+    totalClusters: clusters.length,
+    clusters
+  };
+};
+
+exports.getSimilarityMatrix = async (user, filters = {}) => {
+  if (filters.document) {
+    const results = await exports.computeDocumentSimilarity(filters.document);
+    return { documentId: filters.document, similarDocuments: results };
+  }
+
+  const docs = await Document.find({ 'similarDocuments.0': { $exists: true } })
+    .select('originalName filename similarDocuments')
+    .populate('similarDocuments.documentId', 'originalName filename')
+    .lean();
+
+  const nodes = [];
+  const links = [];
+  const seenNodes = new Set();
+
+  docs.forEach(doc => {
+    const dId = String(doc._id);
+    if (!seenNodes.has(dId)) {
+      seenNodes.add(dId);
+      nodes.push({ id: dId, name: doc.originalName || doc.filename });
+    }
+
+    (doc.similarDocuments || []).forEach(sim => {
+      const targetId = String(sim.documentId?._id || sim.documentId);
+      if (sim.score && sim.score > 0.4) {
+        links.push({
+          source: dId,
+          target: targetId,
+          score: sim.score
+        });
+      }
+    });
+  });
+
+  return { nodes, links };
 };

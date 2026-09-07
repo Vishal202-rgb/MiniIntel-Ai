@@ -1,21 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Monitor, FileText, CheckCircle, AlertTriangle, FileOutput, Bot, Send, Loader2 } from 'lucide-react';
-import { orchestrate } from '../services/apiAgents';
+import { commandCentreApi, aiAssistantApi } from '../api';
 
 const CommandCenter = () => {
   const [taskInput, setTaskInput] = useState('');
   const [isOrchestrating, setIsOrchestrating] = useState(false);
   const [orchestratorResult, setOrchestratorResult] = useState(null);
+  const [overviewData, setOverviewData] = useState(null);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await commandCentreApi.getOverview();
+        setOverviewData(res.data || res);
+      } catch (e) {
+        // Fallback to defaults
+      }
+    };
+    fetchOverview();
+  }, []);
 
   const stats = [
-    { label: 'Docs Processed', value: '1,248', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { label: 'Validation Score', value: '98.5%', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
-    { label: 'Open Issues', value: '12', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { label: 'Reports Generated', value: '342', icon: FileOutput, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' }
+    { label: 'Docs Processed', value: overviewData?.documentsProcessed?.toLocaleString() || '1,248', icon: FileText, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    { label: 'Validation Score', value: overviewData?.validationScore ? `${overviewData.validationScore}%` : '98.5%', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
+    { label: 'Open Issues', value: overviewData?.openIssues !== undefined ? String(overviewData.openIssues) : '12', icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    { label: 'Reports Generated', value: overviewData?.reportsGenerated !== undefined ? String(overviewData.reportsGenerated) : '342', icon: FileOutput, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' }
   ];
 
   const handleOrchestrate = async (e) => {
@@ -25,7 +38,7 @@ const CommandCenter = () => {
     setIsOrchestrating(true);
     setOrchestratorResult(null);
     try {
-      const res = await orchestrate(taskInput, { source: 'command-center' });
+      const res = await aiAssistantApi.orchestrate(taskInput, { source: 'command-center' });
       const successMessage = res.data?.message || res.message || 'Task completed successfully.';
       setOrchestratorResult({ success: true, message: successMessage });
     } catch (err) {

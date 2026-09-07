@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollText, Loader2, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
-import api from '../services/api';
+import auditApi from '../api/auditApi';
 
 const AuditTrail = () => {
   const [logs, setLogs] = useState([]);
@@ -12,11 +12,11 @@ const AuditTrail = () => {
     const fetchData = async () => {
       try {
         const [logsRes, statsRes] = await Promise.all([
-          api.get('/audit'),
-          api.get('/audit/stats')
+          auditApi.getAuditLogs(),
+          auditApi.getAuditStats()
         ]);
-        setLogs(logsRes.data.data || []);
-        setStats(statsRes.data.data || { totalEvents: 0, successful: 0, failed: 0, activeUsers: 0 });
+        setLogs(logsRes.data || logsRes.data?.data || []);
+        setStats(statsRes.data || statsRes.data?.data || { totalEvents: 0, successful: 0, failed: 0, activeUsers: 0 });
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load audit logs.');
       } finally {

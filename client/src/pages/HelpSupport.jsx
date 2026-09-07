@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HelpCircle, Search, ChevronDown, ChevronRight, BookOpen, 
   Upload, ShieldCheck, Database, MessageSquare, FileOutput, 
   Users, Mail
 } from 'lucide-react';
+import helpApi from '../api/helpApi';
 
 const guides = [
   {
@@ -104,6 +105,26 @@ const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [openGuides, setOpenGuides] = useState({});
   const [openFaqs, setOpenFaqs] = useState({});
+  const [apiFaqs, setApiFaqs] = useState([]);
+
+  useEffect(() => {
+    const loadHelpData = async () => {
+      try {
+        const res = await helpApi.getFaqs();
+        const list = res.data?.faqs || res.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          const formatted = list.map(item => ({
+            q: item.question || item.q,
+            a: item.answer || item.a
+          }));
+          setApiFaqs(formatted);
+        }
+      } catch (e) {
+        // Fallback to offline faqs array
+      }
+    };
+    loadHelpData();
+  }, []);
 
   const toggleGuide = (id) => setOpenGuides(prev => ({ ...prev, [id]: !prev[id] }));
   const toggleFaq = (idx) => setOpenFaqs(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -113,7 +134,8 @@ const HelpSupport = () => {
     g.title.toLowerCase().includes(query) || 
     g.content.some(c => c.toLowerCase().includes(query))
   );
-  const filteredFaqs = faqs.filter(f => 
+  const activeFaqs = apiFaqs.length > 0 ? apiFaqs : faqs;
+  const filteredFaqs = activeFaqs.filter(f => 
     f.q.toLowerCase().includes(query) || 
     f.a.toLowerCase().includes(query)
   );

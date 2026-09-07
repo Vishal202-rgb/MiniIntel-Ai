@@ -1,24 +1,14 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: '/api',
-});
-
-api.interceptors.request.use((config) => {
-  const userInfo = localStorage.getItem('userInfo');
-  if (userInfo) {
-    const { token } = JSON.parse(userInfo);
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import knowledgeBaseApi from '../api/knowledgeBaseApi';
 
 export const indexDocument = async (documentId) => {
-  const response = await api.post(`/rag/${documentId}/index`);
-  return response.data;
+  return knowledgeBaseApi.indexDocument(documentId);
 };
 
 export const searchKnowledgeBase = async (query) => {
-  const response = await api.post(`/rag/search`, { query });
-  return response.data;
+  return knowledgeBaseApi.search(query);
+};
+
+export default {
+  indexDocument,
+  searchKnowledgeBase,
 };

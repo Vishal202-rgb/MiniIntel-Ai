@@ -1,0 +1,4343 @@
+====================================================================================================
+                        MINEINTEL AI — BACKEND API ENDPOINT REFERENCE
+====================================================================================================
+System: MineIntel AI (Mining Intelligence, Regulatory Compliance & Automated Document Processing)
+Repository: MineIntel-AI-SIH26023
+Document Version: 1.0.0
+Audit & Verification Date: September 7, 2026
+Source of Truth: Actual Backend Implementation (Node.js/Express, Mongoose ODM, MongoDB Atlas)
+Server Entry Point: server/server.js
+Root Router Mounts:
+  - Versioned REST v1 Layer : /api/v1  (server/routes/api/v1/index.js)
+  - Legacy Backward-Compat  : /api     (server/routes/*.js)
+  - Static File Serving     : /uploads (server/uploads or /tmp/uploads)
+Default Listener Port: 5000 (process.env.PORT || 5000)
+
+====================================================================================================
+TABLE OF CONTENTS
+====================================================================================================
+1. ARCHITECTURAL & PROTOCOL CONVENTIONS
+   1.1 Response Payload Standard Envelope
+   1.2 Authentication & Token Transport
+   1.3 Role-Based Access Control (RBAC) Matrix
+   1.4 Standard HTTP Status Codes
+
+2. MASTER ENDPOINT DIRECTORY
+   PART A: VERSIONED REST API (v1) [/api/v1]
+     - Module 01: System Health & Info (/api/v1/health)
+     - Module 02: Authentication & User Profile (/api/v1/auth)
+     - Module 03: Administration & User Governance (/api/v1/admin)
+     - Module 04: Dashboard Analytics (/api/v1/dashboard)
+     - Module 05: Command Centre (/api/v1/command-centre & /api/v1/command-center)
+     - Module 06: User Settings & Preferences (/api/v1/settings)
+     - Module 07: Help & Knowledge FAQs (/api/v1/help)
+     - Module 08: Document Lifecycle Management (/api/v1/documents)
+     - Module 09: Data Extraction & Human-in-the-Loop Records (/api/v1/extraction)
+     - Module 10: Validation & Quality Control (/api/v1/validation)
+     - Module 11: Automated Reports & Review Workflow (/api/v1/reports)
+     - Module 12: Dedicated Review Governance (/api/v1/reviews)
+     - Module 13: Knowledge Base & Vector Indexing (/api/v1/knowledge-base)
+     - Module 14: RAG Vector Engine (/api/v1/rag)
+     - Module 15: AI Conversational Assistant (/api/v1/ai-assistant)
+     - Module 16: Analytics & Production Variance (/api/v1/analytics)
+     - Module 17: Topic Modeling & Taxonomy Discovery (/api/v1/topics)
+     - Module 18: Multi-Agent Orchestration (/api/v1/agents)
+     - Module 19: Audit Trail & Provenance (/api/v1/audit)
+     - Module 20: Notification Center (/api/v1/notifications)
+     - Module 21: Document Intelligence & Cross-Document Reasoning (/api/v1/intelligence)
+     - Module 22: External DMS/MIS & GIS Spatial Integration (/api/v1/integration)
+
+   PART B: LEGACY COMPATIBILITY API LAYER [/api]
+     - Legacy Module L01: /api/auth
+     - Legacy Module L02: /api/admin
+     - Legacy Module L03: /api/documents
+     - Legacy Module L04: /api/reports
+     - Legacy Module L05: /api/validation
+     - Legacy Module L06: /api/rag
+     - Legacy Module L07: /api/ai-assistant
+     - Legacy Module L08: /api/analytics
+     - Legacy Module L09: /api/topics
+     - Legacy Module L10: /api/extraction
+     - Legacy Module L11: /api/agents
+     - Legacy Module L12: /api/audit
+     - Legacy Module L13: /api/notifications
+     - Legacy Module L14: /api/intelligence
+     - Legacy Module L15: /api/integration
+
+   PART C: STATIC ASSET SERVING
+     - Static Route: /uploads/*
+
+====================================================================================================
+1. ARCHITECTURAL & PROTOCOL CONVENTIONS
+====================================================================================================
+
+1.1 Response Payload Standard Envelope
+--------------------------------------
+All REST v1 endpoints return a consistent JSON envelope schema:
+
+Success Response:
+{
+  "success": true,
+  "data": { ... } | [ ... ],
+  "message": "Descriptive success message",
+  "meta": {                          // Included when paginated
+    "total": 120,
+    "page": 1,
+    "limit": 50,
+    "pages": 3
+  }
+}
+
+Error Response:
+{
+  "success": false,
+  "message": "Human-readable error description",
+  "error": "SPECIFIC_ERROR_CODE_OR_MESSAGE"
+}
+
+1.2 Authentication & Token Transport
+------------------------------------
+- Format: JSON Web Token (JWT) signed with HMAC SHA-256 (30-day lifetime).
+- Transport Header:
+    Authorization: Bearer <jwt_token>
+- Token Payload: { id: "<mongodb_user_object_id>", iat: <timestamp>, exp: <timestamp> }
+- Middleware: server/middleware/auth.js (`authenticate` / `protect`) and
+  server/middleware/authMiddleware.js (`protect`).
+
+1.3 Role-Based Access Control (RBAC) Matrix
+-------------------------------------------
+The platform enforces a 3-tier role hierarchy:
+1. Public: No token required.
+2. Authenticated User ('user'): Basic user privileges. Scoped to own documents,
+   own reports, own audit logs, and own conversational history.
+3. Reviewer ('reviewer'): Technical and regulatory reviewers. Can inspect,
+   comment on, and reject documents/reports. Has access to pending review queues.
+4. Administrator ('admin'): Full governance access. Can view all tenant records,
+   manage users, change roles, approve reports, delete records, and export system audit trails.
+   CRITICAL RBAC ISOLATION: Only the identity matching process.env.ADMIN_USERNAME
+   (default: "admin") can hold the 'admin' role. All role elevation attempts by
+   other users are dynamically overridden and forbidden.
+
+1.4 Standard HTTP Status Codes
+------------------------------
+- 200 OK: Successful query, fetch, or synchronous update.
+- 201 Created: Successful entity creation (upload, register, generate).
+- 307 Temporary Redirect: Redirect from legacy aliases to current canonical route.
+- 400 Bad Request: Missing required parameters, failed schema validation, or malformed input.
+- 401 Unauthorized: Missing, invalid, or expired Bearer token; invalid credentials.
+- 403 Forbidden: Insufficient role permissions or unauthorized attempt to access another user's resource.
+- 404 Not Found: Requested document, report, record, or entity does not exist.
+- 409 Conflict: Duplicate upload detected via SHA-256 checksum, or concurrent duplicate task.
+- 500 Internal Server Error: Unhandled backend exceptions or database failures.
+- 503 Service Unavailable: Database disconnected or degraded service health.
+
+
+====================================================================================================
+PART A: VERSIONED REST API (v1) [/api/v1]
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+MODULE 01: SYSTEM HEALTH & INFO
+Base Path: /api/v1/health
+Implementation File: server/routes/api/v1/health.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 01.1
+- Method: GET
+- Path: /api/v1/health
+- Auth: None (Public)
+- Role: Any
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK (Healthy) or 503 Service Unavailable (Degraded)
+  * Payload:
+    {
+      "success": true,
+      "data": {
+        "api": "healthy" | "degraded",
+        "server": "online",
+        "database": "connected" | "disconnected" | "connecting" | "disconnecting" | "unknown",
+        "timestamp": "2026-09-07T04:12:00.000Z",
+        "version": "v1",
+        "uptime": 1420,
+        "environment": "development" | "production"
+      },
+      "message": "MineIntel AI API v1 is operational"
+    }
+- Purpose: System-level health probe verifying Express server uptime and MongoDB connection readiness.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 02: AUTHENTICATION & USER PROFILE
+Base Path: /api/v1/auth
+Implementation File: server/routes/api/v1/auth.js
+Validators: server/validators/authValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 02.1
+- Method: POST
+- Path: /api/v1/auth/register
+- Auth: None (Public)
+- Role: None (Public)
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "username": "string (required, min 3 chars, cannot match ADMIN_USERNAME)",
+    "password": "string (required, min 6 chars)",
+    "email": "string (optional, valid email format)"
+  }
+- Response Structure:
+  * Status 201 Created:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "username": "johndoe",
+        "email": "johndoe@example.com",
+        "role": "user",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      },
+      "message": "User registered successfully"
+    }
+  * Status 400 Bad Request: Missing fields, short username/password, or username/email already exists.
+  * Status 403 Forbidden: Attempting to register the reserved admin username.
+- Purpose: Registers a new standard user account, stores password hash via Mongoose hook, and logs USER_REGISTER audit event.
+
+Endpoint 02.2
+- Method: POST
+- Path: /api/v1/auth/login
+- Auth: None (Public)
+- Role: None (Public)
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "username": "string (required)",
+    "password": "string (required)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "username": "admin",
+        "email": "admin@mineintel.ai",
+        "role": "admin" | "user" | "reviewer",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      },
+      "message": "Admin authentication successful" | "User authentication successful"
+    }
+  * Status 401 Unauthorized: Invalid username, invalid admin password, or invalid user password.
+  * Status 403 Forbidden: Suspended or inactive account status.
+- Purpose: Authenticates admin or standard user, auto-provisions MongoDB record for predefined admin on first login, updates lastLogin, and issues a 30-day JWT.
+
+Endpoint 02.3
+- Method: POST
+- Path: /api/v1/auth/logout
+- Auth: Optional Bearer token (for audit logging)
+- Role: Any
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {},
+      "message": "Logged out successfully"
+    }
+- Purpose: Concludes user session on the client side and records a USER_LOGOUT audit trail entry if token is provided.
+
+Endpoint 02.4
+- Method: GET
+- Path: /api/v1/auth/me
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "username": "vishal",
+        "email": "vishal@example.com",
+        "role": "user",
+        "department": "Mining Technology Unit",
+        "status": "active",
+        "lastLogin": "2026-09-07T04:00:00.000Z",
+        "createdAt": "2026-09-01T10:00:00.000Z"
+      },
+      "message": "User profile retrieved"
+    }
+  * Status 401 Unauthorized: Token missing, invalid, or expired.
+- Purpose: Returns the currently authenticated user's profile and active identity context.
+
+Endpoint 02.5
+- Method: PUT
+- Path: /api/v1/auth/profile
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "email": "string (optional, valid email, must be unique across users)",
+    "department": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "username": "vishal",
+        "email": "vishal.new@example.com",
+        "department": "Coal Extraction Division",
+        "role": "user",
+        "status": "active"
+      },
+      "message": "Profile updated successfully"
+    }
+  * Status 400 Bad Request: Invalid email syntax or email already in use.
+- Purpose: Updates contact email and organizational department for the authenticated user and logs UPDATE_PROFILE audit record.
+
+Endpoint 02.6
+- Method: PUT
+- Path: /api/v1/auth/change-password
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "currentPassword": "string (required)",
+    "newPassword": "string (required, min 6 chars, must differ from currentPassword)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {},
+      "message": "Password changed successfully"
+    }
+  * Status 400 Bad Request: New password equals old password or fails length requirement.
+  * Status 401 Unauthorized: Current password mismatch.
+- Purpose: Validates existing credentials and updates account password with re-hashing.
+
+Endpoint 02.7
+- Method: POST
+- Path: /api/v1/auth/refresh
+- Auth: None required in header (Token accepted via Authorization Bearer or request body)
+- Role: Any
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "token": "string (optional if provided in Authorization header)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "user": {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "username": "vishal",
+          "role": "user"
+        }
+      },
+      "message": "Token refreshed successfully"
+    }
+  * Status 400 Bad Request: No token supplied.
+  * Status 401 Unauthorized: Expired or invalid token.
+- Purpose: Issues a fresh 30-day JWT token based on an existing valid token.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 03: ADMINISTRATION & USER GOVERNANCE
+Base Path: /api/v1/admin
+Implementation File: server/routes/api/v1/admin.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 03.1
+- Method: GET
+- Path: /api/v1/admin/users
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "username": "admin",
+          "role": "admin",
+          "status": "active",
+          "createdAt": "2026-08-15T00:00:00.000Z"
+        }
+      ],
+      "message": "Users retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller does not possess 'admin' role.
+- Purpose: Lists all registered accounts excluding password hashes for user administration.
+
+Endpoint 03.2
+- Method: PUT
+- Path: /api/v1/admin/users/:id/role
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId of the target user
+- Query Parameters: None
+- Request Body:
+  {
+    "role": "string (required; allowed: 'user', 'reviewer'; 'admin' is explicitly forbidden)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d1",
+        "username": "sarah",
+        "role": "reviewer",
+        "status": "active"
+      },
+      "message": "User role updated successfully"
+    }
+  * Status 403 Forbidden: Attempting to assign 'admin' role to any non-predefined user identity.
+  * Status 404 Not Found: User not found.
+- Purpose: Changes role between standard user and reviewer. Strictly blocks unauthorized admin role elevation.
+
+Endpoint 03.3
+- Method: DELETE
+- Path: /api/v1/admin/users/:id
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId of the target user
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "deletedUserId": "64e0a1b2c3d4e5f6a7b8c9d1" },
+      "message": "User deleted successfully"
+    }
+  * Status 403 Forbidden: Cannot delete own account (self-deletion guard) or predefined administrator account.
+  * Status 404 Not Found: User not found.
+- Purpose: Deletes a user account and writes a DELETE_USER audit trail log.
+
+Endpoint 03.4
+- Method: GET
+- Path: /api/v1/admin/stats
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalUsers": 26,
+        "totalDocuments": 42,
+        "indexedDocuments": 38,
+        "reportsGenerated": 15,
+        "totalValidations": 89,
+        "openValidations": 7
+      },
+      "message": "Admin statistics retrieved"
+    }
+- Purpose: Aggregates system-wide entity counts for high-level administration dashboards.
+
+Endpoint 03.5
+- Method: GET
+- Path: /api/v1/admin/system-health
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "backend": "Online",
+        "mongoDB": "Connected" | "Disconnected",
+        "aiProvider": "Online",
+        "vectorDB": "Online"
+      },
+      "message": "System health status retrieved"
+    }
+- Purpose: Verifies operational state of backend runtime, MongoDB connection pool, AI providers, and vector indexes.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 04: DASHBOARD ANALYTICS
+Base Path: /api/v1/dashboard
+Implementation File: server/routes/api/v1/dashboard.js
+Controller: server/controllers/dashboardController.js
+Service: server/services/dashboardService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 04.1
+- Method: GET
+- Path: /api/v1/dashboard/overview
+- Auth: Required (Bearer token)
+- Role: Any authenticated user (admin sees platform-wide, users see tenancy-scoped)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "stats": {
+          "totalDocuments": 12,
+          "validatedDocuments": 10,
+          "pendingReviews": 2,
+          "avgQualityScore": 94.5
+        },
+        "recentDocuments": [ ... ],
+        "recentActivity": [ ... ],
+        "alerts": [ ... ]
+      },
+      "message": "Dashboard overview retrieved successfully"
+    }
+- Purpose: Aggregates top-level cards, activity feeds, and alerts for the web application dashboard.
+
+Endpoint 04.2
+- Method: GET
+- Path: /api/v1/dashboard/kpis
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentCount": 12,
+        "processedCount": 11,
+        "errorCount": 1,
+        "extractionAccuracy": 97.2,
+        "complianceRate": 93.8
+      },
+      "message": "Dashboard KPIs retrieved successfully"
+    }
+- Purpose: Retrieves concise KPI metrics formatted for statistical display widgets.
+
+Endpoint 04.3
+- Method: GET
+- Path: /api/v1/dashboard/activity
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * limit: integer (optional, default: 15, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "action": "UPLOAD_DOCUMENT",
+          "resource": "Document",
+          "timestamp": "2026-09-07T03:30:00.000Z",
+          "user": "vishal"
+        }
+      ],
+      "message": "Dashboard activity feed retrieved successfully"
+    }
+- Purpose: Streams recent audit and document lifecycle events for timeline feeds.
+
+Endpoint 04.4
+- Method: GET
+- Path: /api/v1/dashboard/alerts
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "alert_1",
+          "severity": "critical" | "warning" | "info",
+          "title": "Production Target Deficit",
+          "message": "Subsidiary ECL reported -14.2% variance against target.",
+          "timestamp": "2026-09-07T01:00:00.000Z"
+        }
+      ],
+      "message": "Dashboard alerts retrieved successfully"
+    }
+- Purpose: Aggregates unresolved critical validation flags and production anomalies.
+
+Endpoint 04.5
+- Method: GET
+- Path: /api/v1/dashboard/recent-documents
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * limit: integer (optional, default: 10, max: 50)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "originalName": "Monthly_Coal_Report_Aug_2026.pdf",
+          "fileType": "pdf",
+          "status": "completed",
+          "uploadedAt": "2026-09-06T18:00:00.000Z"
+        }
+      ],
+      "message": "Recent documents retrieved successfully"
+    }
+- Purpose: Retrieves recent documents owned by or visible to the user.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 05: COMMAND CENTRE
+Base Path: /api/v1/command-centre (and alias: /api/v1/command-center)
+Implementation File: server/routes/api/v1/commandCentre.js
+Controller: server/controllers/commandCentreController.js
+Service: server/services/commandCentreService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 05.1
+- Method: GET
+- Path: /api/v1/command-centre/overview (or /api/v1/command-center/overview)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "activePipelines": 3,
+        "systemHealth": "OPTIMAL",
+        "attentionItemsCount": 4,
+        "throughputPerHour": 48
+      },
+      "message": "Command Centre overview retrieved successfully"
+    }
+- Purpose: Provides operational telemetry for mission-critical command center monitoring consoles.
+
+Endpoint 05.2
+- Method: GET
+- Path: /api/v1/command-centre/pipeline (or /api/v1/command-center/pipeline)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "queued": 1,
+        "processing": 2,
+        "completed": 35,
+        "failed": 2,
+        "stages": { "ocr": 1, "extraction": 1, "validation": 0, "indexing": 0 }
+      },
+      "message": "Command Centre pipeline retrieved successfully"
+    }
+- Purpose: Real-time status breakdown of active document ingestion and analysis stages.
+
+Endpoint 05.3
+- Method: GET
+- Path: /api/v1/command-centre/status (or /api/v1/command-center/status)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "orchestrator": "idle",
+        "ocrWorker": "active",
+        "vectorService": "ready",
+        "memoryUsageMB": 184
+      },
+      "message": "Command Centre status retrieved successfully"
+    }
+- Purpose: Detailed health and workload metrics for background processor workers.
+
+Endpoint 05.4
+- Method: GET
+- Path: /api/v1/command-centre/attention-items (or /api/v1/command-center/attention-items)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "type": "FAILED_INGESTION",
+          "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "reason": "Corrupt PDF stream on page 4",
+          "actionRequired": "Trigger reprocess or manual upload"
+        }
+      ],
+      "message": "Command Centre attention items retrieved successfully"
+    }
+- Purpose: Lists system faults, validation errors, and pending approval blockages needing human intervention.
+
+Endpoint 05.5
+- Method: GET
+- Path: /api/v1/command-centre/activity (or /api/v1/command-center/activity)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * limit: integer (optional, default: 20, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ... ],
+      "message": "Command Centre activity feed retrieved successfully"
+    }
+- Purpose: Real-time event log for command center operator monitoring.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 06: USER SETTINGS & PREFERENCES
+Base Path: /api/v1/settings
+Implementation File: server/routes/api/v1/settings.js
+Controller: server/controllers/settingsController.js
+Service: server/services/settingsService.js
+Validators: server/validators/settingsValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 06.1
+- Method: GET
+- Path: /api/v1/settings
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "language": "en",
+        "appearance": { "theme": "dark" },
+        "notifications": {
+          "emailNotif": true,
+          "pushNotif": false,
+          "reportAlerts": true
+        }
+      },
+      "message": "Settings retrieved successfully"
+    }
+- Purpose: Returns the full configuration preference suite for the logged-in user.
+
+Endpoint 06.2
+- Method: PUT
+- Path: /api/v1/settings
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "language": "string ('en' | 'hi') or object { language: 'en' }",
+    "appearance": "string ('light' | 'dark') or object { theme: 'dark' }",
+    "notifications": {
+      "emailNotif": "boolean",
+      "pushNotif": "boolean",
+      "reportAlerts": "boolean"
+    }
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...updatedSettings },
+      "message": "Settings updated successfully"
+    }
+- Purpose: Bulk updates user UI and notification preferences.
+
+Endpoint 06.3
+- Method: GET
+- Path: /api/v1/settings/language
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "language": "en" },
+      "message": "Language settings retrieved successfully"
+    }
+- Purpose: Retrieves active language setting.
+
+Endpoint 06.4
+- Method: PUT
+- Path: /api/v1/settings/language
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "language": "string (required; allowed: 'en', 'hi')"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "language": "hi" },
+      "message": "Language preference updated successfully"
+    }
+  * Status 400 Bad Request: Unsupported language code.
+- Purpose: Updates interface language preference (English vs Hindi).
+
+Endpoint 06.5
+- Method: GET
+- Path: /api/v1/settings/appearance
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "theme": "dark" },
+      "message": "Appearance settings retrieved successfully"
+    }
+- Purpose: Retrieves UI theme setting.
+
+Endpoint 06.6
+- Method: PUT
+- Path: /api/v1/settings/appearance
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "theme": "string (required; allowed: 'light', 'dark')"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "theme": "dark" },
+      "message": "Appearance theme updated successfully"
+    }
+  * Status 400 Bad Request: Unsupported theme name.
+- Purpose: Updates UI color palette theme.
+
+Endpoint 06.7
+- Method: GET
+- Path: /api/v1/settings/notifications
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "emailNotif": true,
+        "pushNotif": false,
+        "reportAlerts": true
+      },
+      "message": "Notification settings retrieved successfully"
+    }
+- Purpose: Retrieves notification channel dispatch flags.
+
+Endpoint 06.8
+- Method: PUT
+- Path: /api/v1/settings/notifications
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "emailNotif": "boolean (optional)",
+    "pushNotif": "boolean (optional)",
+    "reportAlerts": "boolean (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "emailNotif": true,
+        "pushNotif": true,
+        "reportAlerts": true
+      },
+      "message": "Notification preferences updated successfully"
+    }
+- Purpose: Updates notification dispatch switches.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 07: HELP & KNOWLEDGE FAQS
+Base Path: /api/v1/help
+Implementation File: server/routes/api/v1/help.js
+Controller: server/controllers/helpController.js
+Service: server/services/helpService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 07.1
+- Method: GET
+- Path: /api/v1/help
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "categories": [ "Ingestion", "Validation", "RAG & AI", "Reports", "Compliance" ],
+        "popularFaqs": [ ... ],
+        "supportContact": { "email": "support@mineintel.ai", "hotline": "1800-MINE-INTEL" }
+      },
+      "message": "Help & Support overview retrieved successfully"
+    }
+- Purpose: Provides knowledge base categories, popular FAQ entries, and technical support contacts.
+
+Endpoint 07.2
+- Method: GET
+- Path: /api/v1/help/faqs
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * category: string (optional category filter)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "faq_1",
+          "category": "Validation",
+          "question": "How is the quality score computed?",
+          "answer": "The quality score starts at 100 with deductions: 5 per critical issue, 3 per error, 1 per warning."
+        }
+      ],
+      "message": "FAQs retrieved successfully"
+    }
+- Purpose: Lists FAQs optionally filtered by category.
+
+Endpoint 07.3
+- Method: GET
+- Path: /api/v1/help/faqs/:id
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters:
+  * id: string FAQ identifier
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "id": "faq_1", "question": "...", "answer": "..." },
+      "message": "FAQ retrieved successfully"
+    }
+  * Status 404 Not Found: FAQ not found.
+- Purpose: Retrieves a single FAQ article by identifier.
+
+Endpoint 07.4
+- Method: GET
+- Path: /api/v1/help/search
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * q: string (search query text; alias: query)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...matchingFaqs ],
+      "message": "Help search executed successfully"
+    }
+- Purpose: Free-text search across documentation and FAQs.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 08: DOCUMENT LIFECYCLE MANAGEMENT
+Base Path: /api/v1/documents
+Implementation File: server/routes/api/v1/documents.js
+Middleware: server/middleware/upload.js (Multer)
+Validators: server/validators/documentValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 08.1
+- Method: POST
+- Path: /api/v1/documents/upload
+- Auth: Required (Bearer token)
+- Role: Authenticated User / Admin
+- Content-Type: multipart/form-data
+- URL Parameters: None
+- Query Parameters: None
+- Request Body (Multipart Form):
+  * file: Binary file stream (required form field name: "file")
+    Supported file types: PDF (.pdf), Word (.docx), Excel (.xlsx), PowerPoint (.pptx), CSV (.csv), Images (.png, .jpg, .tiff)
+- Response Structure:
+  * Status 201 Created:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "filename": "1694000000000-Coal_Report.pdf",
+        "originalName": "Coal_Report.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": 2048576,
+        "fileType": "pdf",
+        "hash": "a1b2c3d4e5f6...",
+        "status": "pending",
+        "userId": "64e0a1b2c3d4e5f6a7b8c900",
+        "uploadedAt": "2026-09-07T04:00:00.000Z"
+      },
+      "message": "Document uploaded successfully and queued for processing"
+    }
+  * Status 400 Bad Request: Missing file.
+  * Status 409 Conflict: Duplicate document checksum matched an existing file.
+- Purpose: Receives single document, computes SHA-256 hash for deduplication, records initial Document and ProcessingJob, and launches background ingestion/OCR asynchronously.
+
+Endpoint 08.2
+- Method: GET
+- Path: /api/v1/documents
+- Auth: Required (Bearer token)
+- Role: Authenticated user (sees own) / Admin (sees all)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * search: string (case-insensitive regex match against originalName)
+  * type: string ('pdf' | 'docx' | 'xlsx' | 'pptx' | 'csv' | 'image')
+  * status: string ('pending' | 'processing' | 'completed' | 'failed')
+  * category: string (e.g. 'Production Report', 'Safety Audit')
+  * classification: string ('public' | 'internal' | 'confidential' | 'restricted')
+  * dateFrom: ISO date string (filter uploadedAt >= dateFrom)
+  * dateTo: ISO date string (filter uploadedAt <= dateTo)
+  * page: integer (default: 1)
+  * limit: integer (default: 50, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "originalName": "ECL_Production_August.pdf",
+          "fileType": "pdf",
+          "fileSize": 524288,
+          "status": "completed",
+          "category": "Production Report",
+          "classification": "internal",
+          "totalPages": 14,
+          "uploadedAt": "2026-09-06T12:00:00.000Z"
+        }
+      ],
+      "message": "Documents retrieved successfully",
+      "meta": { "total": 18, "page": 1, "limit": 50, "pages": 1 }
+    }
+- Purpose: Lists accessible documents with multi-parameter filtering, sorting, and pagination.
+
+Endpoint 08.3
+- Method: GET
+- Path: /api/v1/documents/:id
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId of the document
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "document": {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "originalName": "ECL_Production_August.pdf",
+          "status": "completed",
+          "totalPages": 14,
+          "entities": [ ... ],
+          "topicIds": [ ... ]
+        },
+        "pages": [
+          {
+            "_id": "64e0a1b2c3d4e5f6a7b8c9e1",
+            "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+            "pageNumber": 1,
+            "text": "EASTERN COALFIELDS LIMITED\nMonthly Production Summary..."
+          }
+        ]
+      },
+      "message": "Document retrieved successfully"
+    }
+  * Status 400 Bad Request: Invalid ObjectId format.
+  * Status 403 Forbidden: Caller is neither the owner nor admin.
+  * Status 404 Not Found: Document not found.
+- Purpose: Returns full document record alongside its extracted text pages.
+
+Endpoint 08.4
+- Method: DELETE
+- Path: /api/v1/documents/:id
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "deletedId": "64e0a1b2c3d4e5f6a7b8c9d0" },
+      "message": "Document deleted successfully"
+    }
+  * Status 403 Forbidden: Caller is neither owner nor admin.
+  * Status 404 Not Found: Document not found.
+- Purpose: Cascading deletion: removes Document, DocumentPage, DocumentChunk, ProcessingJob, ExtractedRecord, and unlinks file on disk.
+
+Endpoint 08.5
+- Method: GET
+- Path: /api/v1/documents/:id/download
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None (Returns original binary file stream)
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: <original_mime_type> (e.g. application/pdf)
+    Content-Disposition: attachment; filename="<encoded_original_name>"
+    [Binary File Stream]
+  * Status 404 Not Found: File removed from physical disk or document not found.
+- Purpose: Downloads the original physical file uploaded for this document.
+
+Endpoint 08.6
+- Method: GET
+- Path: /api/v1/documents/:id/metadata
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "originalName": "ECL_Production.pdf",
+        "filename": "1694000000000-ECL_Production.pdf",
+        "mimeType": "application/pdf",
+        "fileType": "pdf",
+        "fileSize": 1048576,
+        "hash": "a1b2...",
+        "status": "completed",
+        "category": "Production Report",
+        "classification": "internal",
+        "totalPages": 8,
+        "entities": [ { "name": "Rajmahal", "type": "LOCATION" } ],
+        "topicIds": [ ... ],
+        "similarDocuments": [ ... ],
+        "gisMetadata": { "latitude": 25.04, "longitude": 87.25, "mineCode": "ECL-04" },
+        "retentionDate": "2031-09-07T00:00:00.000Z",
+        "uploadedAt": "2026-09-06T10:00:00.000Z",
+        "processedAt": "2026-09-06T10:01:15.000Z"
+      },
+      "message": "Document metadata retrieved successfully"
+    }
+- Purpose: Retrieves all technical, classification, GIS, entity, and retention metadata.
+
+Endpoint 08.7
+- Method: PUT
+- Path: /api/v1/documents/:id/metadata
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "category": "string (optional)",
+    "classification": "string (optional; 'public' | 'internal' | 'confidential' | 'restricted')",
+    "gisMetadata": {
+      "latitude": "number (optional)",
+      "longitude": "number (optional)",
+      "elevation": "number (optional)",
+      "mineCode": "string (optional)"
+    },
+    "retentionDate": "ISO date string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...updatedDocument },
+      "message": "Document metadata updated successfully"
+    }
+  * Status 400 Bad Request: Invalid classification or coordinates.
+- Purpose: Updates editable metadata fields without altering extracted content.
+
+Endpoint 08.8
+- Method: POST
+- Path: /api/v1/documents/:id/reprocess
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...document, "status": "pending" },
+      "message": "Document queued for reprocessing"
+    }
+- Purpose: Resets document status, clears previous job records, and relaunches the parsing and OCR background pipeline.
+
+Endpoint 08.9
+- Method: GET
+- Path: /api/v1/documents/:id/status
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c9f0",
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "status": "queued" | "processing" | "completed" | "failed",
+        "progress": 100,
+        "error": null,
+        "createdAt": "2026-09-06T10:00:01.000Z",
+        "updatedAt": "2026-09-06T10:01:15.000Z"
+      },
+      "message": "Processing job status retrieved"
+    }
+  * Status 404 Not Found: Processing job not found.
+- Purpose: Returns the background processing progress percentage and status.
+
+Endpoint 08.10
+- Method: POST
+- Path: /api/v1/documents/:id/retry
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 307 Temporary Redirect: Redirects HTTP client to /api/v1/documents/:id/reprocess
+- Purpose: Backward-compatible alias for the reprocess endpoint.
+
+Endpoint 08.11
+- Method: GET
+- Path: /api/v1/documents/:id/validation
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex MongoDB ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK: Array of ValidationResult objects for this document.
+- Purpose: Route alias returning validation results for the specified document.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 09: DATA EXTRACTION & HUMAN-IN-THE-LOOP RECORDS
+Base Path: /api/v1/extraction
+Implementation File: server/routes/api/v1/extraction.js
+Service: server/services/extractionService.js
+Validators: server/validators/extractionValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 09.1
+- Method: POST
+- Path: /api/v1/extraction/run
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "documentId": "string (required, 24-char hex ObjectId)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "count": 14,
+        "records": [ ...ExtractedRecord ]
+      },
+      "message": "Extraction completed successfully"
+    }
+  * Status 400 Bad Request: Missing documentId.
+  * Status 404 Not Found: Document not found.
+- Purpose: Runs AI Gemini table/parameter extraction pipeline over document pages and stores structured ExtractedRecord entries.
+
+Endpoint 09.2
+- Method: GET
+- Path: /api/v1/extraction/:documentId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "summary": {
+          "total": 23,
+          "approved": 20,
+          "pending": 2,
+          "rejected": 1,
+          "avgConfidence": 0.94,
+          "parameters": [ "Raw Coal Production", "Overburden Removal", "Coal Dispatch" ]
+        },
+        "records": [ ...ExtractedRecord ]
+      },
+      "message": "Extraction summary retrieved successfully"
+    }
+- Purpose: Retrieves complete extraction summary, approval metrics, average confidence scores, and record payload.
+
+Endpoint 09.3
+- Method: GET
+- Path: /api/v1/extraction/:documentId/records
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters:
+  * status: string (optional; 'pending' | 'approved' | 'rejected')
+  * parameter: string (optional regex filter, e.g. 'Production')
+  * mineName: string (optional regex filter, e.g. 'Rajmahal')
+  * page: integer (default: 1)
+  * limit: integer (default: 50, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c911",
+          "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "parameter": "Raw Coal Production",
+          "value": 1420.5,
+          "originalValue": 1420.5,
+          "unit": "Tonnes",
+          "mineName": "Rajmahal OCP",
+          "subsidiary": "ECL",
+          "period": "August 2026",
+          "confidenceScore": 0.96,
+          "status": "approved",
+          "editHistory": [ ... ]
+        }
+      ],
+      "message": "Extracted records retrieved successfully",
+      "meta": { "total": 23, "page": 1, "limit": 50, "pages": 1 }
+    }
+- Purpose: Retrieves filtered and paginated list of extracted data rows for review grids.
+
+Endpoint 09.4
+- Method: PUT
+- Path: /api/v1/extraction/:documentId/records/:recordId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId of document
+  * recordId: 24-character hex ObjectId of record
+- Query Parameters: None
+- Request Body:
+  {
+    "value": "string | number (optional updated numeric/string value)",
+    "unit": "string (optional)",
+    "parameter": "string (optional)",
+    "status": "string (optional; 'pending' | 'approved' | 'rejected')",
+    "period": "string (optional)",
+    "mineName": "string (optional)",
+    "subsidiary": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...updatedRecord },
+      "message": "Extracted record updated successfully"
+    }
+  * Status 404 Not Found: Record not found.
+- Purpose: Human-in-the-loop editing. Updates record value or status, archives previous value in editHistory array with timestamps and reviewer identity.
+
+Endpoint 09.5
+- Method: POST
+- Path: /api/v1/extraction/:documentId/reprocess
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "documentId": "64e0a1b2c3d4e5f6a7b8c9d0", "count": 14, "records": [ ... ] },
+      "message": "Document re-extraction completed successfully"
+    }
+- Purpose: Clears existing records and re-executes AI table and entity extraction.
+
+Endpoint 09.6
+- Method: POST
+- Path: /api/v1/extraction/:documentId/extract
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "count": 14, "records": [ ... ] },
+      "message": "Extraction completed"
+    }
+- Purpose: Backward-compatible alias for extraction invocation.
+
+Endpoint 09.7
+- Method: PUT
+- Path: /api/v1/extraction/records/:id
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId of the extracted record
+- Query Parameters: None
+- Request Body:
+  {
+    "value": "string | number (optional)",
+    "unit": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...updatedRecord },
+      "message": "Record updated successfully"
+    }
+- Purpose: Direct record edit endpoint by record ID.
+
+Endpoint 09.8
+- Method: POST
+- Path: /api/v1/extraction/records/:id/approve
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of the extracted record
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...record, "status": "approved" },
+      "message": "Record approved successfully"
+    }
+- Purpose: Approves a single extracted record, tagging reviewer name and reviewedAt timestamp.
+
+Endpoint 09.9
+- Method: POST
+- Path: /api/v1/extraction/records/:id/reject
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of the extracted record
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...record, "status": "rejected" },
+      "message": "Record rejected successfully"
+    }
+- Purpose: Rejects an extracted record, excluding it from downstream analytical aggregation.
+
+Endpoint 09.10
+- Method: POST
+- Path: /api/v1/extraction/records/bulk-approve
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "ids": [ "64e0a1b2c3d4e5f6a7b8c911", "64e0a1b2c3d4e5f6a7b8c912" ]
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "matchedCount": 2, "modifiedCount": 2 },
+      "message": "Records approved successfully"
+    }
+  * Status 400 Bad Request: Empty or invalid IDs array.
+- Purpose: Batch-approves multiple extracted records in a single transactional query.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 10: VALIDATION & QUALITY CONTROL
+Base Path: /api/v1/validation
+Implementation File: server/routes/api/v1/validation.js
+Service: server/services/validationService.js
+Validators: server/validators/validationValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 10.1
+- Method: POST
+- Path: /api/v1/validation/run
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional if provided in body)
+- Request Body:
+  {
+    "documentId": "string (required, 24-character hex ObjectId)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "Coal_Report.pdf",
+        "qualityScore": 92,
+        "avgConfidence": 0.95,
+        "totalIssues": 3,
+        "openIssues": 2,
+        "resolvedIssues": 1,
+        "bySeverity": { "info": 0, "warning": 2, "error": 0, "critical": 0 },
+        "byType": { "range_check": 1, "math_discrepancy": 1 },
+        "issues": [ ...ValidationResult ]
+      },
+      "message": "Document validation completed successfully"
+    }
+- Purpose: Executes mathematical cross-checks, range constraints, and sanity checks; records validation issues; and calculates document quality score (100 - penalties).
+
+Endpoint 10.2
+- Method: GET
+- Path: /api/v1/validation
+- Auth: Required (Bearer token)
+- Role: Authenticated user (scoped to own docs) / Admin (system-wide)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional ObjectId filter)
+  * status: string (optional; 'open' | 'resolved' | 'ignored' | 'all')
+  * severity: string (optional; 'info' | 'warning' | 'error' | 'critical')
+  * type: string (optional; e.g. 'range_check', 'cross_table')
+  * page: integer (default: 1)
+  * limit: integer (default: 50, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...ValidationResult ],
+      "message": "Validation results retrieved successfully",
+      "meta": {
+        "total": 12,
+        "page": 1,
+        "limit": 50,
+        "pages": 1,
+        "qualityScore": 88,
+        "bySeverity": { "info": 1, "warning": 2, "error": 1, "critical": 0 },
+        "byType": { "range_check": 2, "outlier": 2 }
+      }
+    }
+- Purpose: Retrieves all validation issues across accessible documents with multi-parameter filtering and quality score summaries.
+
+Endpoint 10.3
+- Method: GET
+- Path: /api/v1/validation/summary
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalIssues": 5,
+        "bySeverity": { "info": 1, "warning": 3, "error": 1, "critical": 0 },
+        "qualityScore": 84,
+        "issues": [ ...ValidationResult ]
+      },
+      "message": "Validation summary retrieved successfully"
+    }
+- Purpose: Summarizes issues count, severity counts, and net quality score.
+
+Endpoint 10.4
+- Method: GET
+- Path: /api/v1/validation/:documentId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "August_Production.pdf",
+        "documentStatus": "completed",
+        "qualityScore": 95,
+        "avgConfidence": 0.96,
+        "totalIssues": 2,
+        "openIssues": 1,
+        "resolvedIssues": 1,
+        "recordsCount": 18,
+        "bySeverity": { "info": 0, "warning": 1, "error": 0, "critical": 0 },
+        "byType": { "range_check": 1 },
+        "issues": [ ... ]
+      },
+      "message": "Document validation summary retrieved successfully"
+    }
+- Purpose: Full audit summary and quality metric evaluation for a specific document.
+
+Endpoint 10.5
+- Method: GET
+- Path: /api/v1/validation/:documentId/issues
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters:
+  * status: string (optional)
+  * severity: string (optional)
+  * type: string (optional)
+  * page: integer (default: 1)
+  * limit: integer (default: 50)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...ValidationResult ],
+      "message": "Validation issues retrieved successfully",
+      "meta": { "total": 2, "page": 1, "limit": 50, "pages": 1 }
+    }
+- Purpose: Paginated list of issues for a specific document.
+
+Endpoint 10.6
+- Method: PUT
+- Path: /api/v1/validation/issues/:issueId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * issueId: 24-character hex ObjectId of the issue
+- Query Parameters: None
+- Request Body:
+  {
+    "status": "string (optional; default: 'resolved'; 'open' | 'resolved' | 'ignored')",
+    "resolution": "string (optional descriptive resolution note)",
+    "correctedValue": "any (optional; synchronizes correction into linked ExtractedRecord and saves audit editHistory)",
+    "notes": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "issue": {
+          "_id": "64e0a1b2c3d4e5f6a7b8c955",
+          "status": "resolved",
+          "resolution": "Corrected value to 1420.5 Tonnes per supervisor log",
+          "correctedValue": 1420.5,
+          "resolvedAt": "2026-09-07T04:10:00.000Z"
+        },
+        "record": { ...ExtractedRecord }
+      },
+      "message": "Validation issue updated successfully"
+    }
+- Purpose: Resolves a quality issue. If `correctedValue` is supplied, propagates the correction directly to the target ExtractedRecord and logs an audit entry.
+
+Endpoint 10.7
+- Method: POST
+- Path: /api/v1/validation/:documentId/approve
+- Auth: Required (Bearer token)
+- Role: Document Owner, Reviewer, or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "August_Production.pdf",
+        "status": "approved",
+        "approvedBy": "admin",
+        "approvedAt": "2026-09-07T04:15:00.000Z",
+        "recordsApproved": 18
+      },
+      "message": "Document validation approved successfully"
+    }
+- Purpose: Approves document validation, auto-resolves non-critical open issues, and transitions pending records to 'approved'.
+
+Endpoint 10.8
+- Method: POST
+- Path: /api/v1/validation/:documentId/review
+- Auth: Required (Bearer token)
+- Role: Document Owner, Reviewer, or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "decision": "string (optional, default 'approved'; 'approved' | 'rejected' | 'needs_correction' | 'in_review')",
+    "comments": "string (optional)",
+    "issueResolutions": [
+      {
+        "issueId": "64e0a1b2c3d4e5f6a7b8c955",
+        "correctedValue": 1420.5,
+        "status": "resolved",
+        "resolution": "Updated per weighbridge ticket",
+        "notes": "Verified against physical ticket"
+      }
+    ]
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "August_Production.pdf",
+        "decision": "approved",
+        "comments": "All figures cross-checked with weighbridge logs.",
+        "reviewedBy": "admin",
+        "reviewedAt": "2026-09-07T04:16:00.000Z",
+        "resolvedIssuesCount": 1
+      },
+      "message": "Document review completed with decision: approved"
+    }
+- Purpose: Comprehensive human review submission. Executes batch issue resolutions and transitions document and record states based on decision.
+
+Endpoint 10.9
+- Method: POST
+- Path: /api/v1/validation/:documentId/validate
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "count": 2, "results": [ ... ] },
+      "message": "Validation completed"
+    }
+- Purpose: Backward-compatible alias for running document validation.
+
+Endpoint 10.10
+- Method: PUT
+- Path: /api/v1/validation/:id/resolve
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId of the issue
+- Query Parameters: None
+- Request Body:
+  {
+    "resolution": "string (optional)",
+    "correctedValue": "any (optional)",
+    "notes": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...issue, "status": "resolved" },
+      "message": "Issue resolved successfully"
+    }
+- Purpose: Backward-compatible alias for resolving a validation issue.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 11: AUTOMATED REPORTS & REVIEW WORKFLOW
+Base Path: /api/v1/reports
+Implementation File: server/routes/api/v1/reports.js
+Controller: server/controllers/reportController.js
+Service: server/services/reportService.js
+Validators: server/validators/reportValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 11.1
+- Method: POST
+- Path: /api/v1/reports/generate
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "type": "string (required; e.g. 'production', 'dispatch', 'summary', 'gap_analysis', 'compliance')",
+    "data": {
+      "mine": "string (optional)",
+      "subsidiary": "string (optional)",
+      "period": "string (optional)",
+      "documentId": "string (optional)"
+    }
+  }
+- Response Structure:
+  * Status 201 Created:
+    {
+      "success": true,
+      "data": {
+        "_id": "64e0a1b2c3d4e5f6a7b8c988",
+        "title": "Coal Production Intelligence Report - August 2026",
+        "type": "production",
+        "status": "draft",
+        "content": { ...structuredSections },
+        "markdown": "# Coal Production Intelligence Report\n\n...",
+        "version": 1,
+        "generatedBy": "64e0a1b2c3d4e5f6a7b8c900",
+        "createdAt": "2026-09-07T04:20:00.000Z"
+      },
+      "message": "Report generated successfully"
+    }
+  * Status 400 Bad Request: Missing report type.
+- Purpose: Uses Gemini LLM and RAG retrieved document context to synthesize an executive intelligence report, records initial draft, and dispatches notification to admins.
+
+Endpoint 11.2
+- Method: GET
+- Path: /api/v1/reports
+- Auth: Required (Bearer token)
+- Role: Authenticated user (sees own) / Admin (sees all)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * status: string (optional; 'draft' | 'review' | 'approved' | 'rejected')
+  * type: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c988",
+          "title": "Coal Production Intelligence Report - August 2026",
+          "type": "production",
+          "status": "approved",
+          "version": 2,
+          "generatedBy": { "_id": "...", "username": "vishal" },
+          "approvedBy": { "_id": "...", "username": "admin" },
+          "createdAt": "2026-09-07T04:20:00.000Z"
+        }
+      ],
+      "message": "Reports retrieved successfully"
+    }
+- Purpose: Lists accessible generated reports with reviewer and approval populates.
+
+Endpoint 11.3
+- Method: GET
+- Path: /api/v1/reports/:id
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...reportObject },
+      "message": "Report retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller is not author, reviewer, or admin.
+  * Status 404 Not Found: Report not found.
+- Purpose: Retrieves full report payload including markdown content, findings, and metadata.
+
+Endpoint 11.4
+- Method: PUT
+- Path: /api/v1/reports/:id
+- Auth: Required (Bearer token)
+- Role: Report Creator or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "title": "string (optional)",
+    "content": "object (optional structured sections)",
+    "markdown": "string (optional markdown content)",
+    "language": "string (optional)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...updatedReport, "version": 2 },
+      "message": "Report updated successfully"
+    }
+  * Status 400 Bad Request: Empty update payload.
+  * Status 403 Forbidden: Caller is not author or admin.
+- Purpose: Modifies report content, automatically snapshotting previous version into previousVersions array and incrementing version number.
+
+Endpoint 11.5
+- Method: DELETE
+- Path: /api/v1/reports/:id
+- Auth: Required (Bearer token)
+- Role: Report Creator or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "deletedId": "64e0a1b2c3d4e5f6a7b8c988" },
+      "message": "Report deleted successfully"
+    }
+  * Status 403 Forbidden: Unauthorized deletion attempt.
+  * Status 404 Not Found: Report not found.
+- Purpose: Deletes report record.
+
+Endpoint 11.6
+- Method: POST (and alias: PUT)
+- Path: /api/v1/reports/:id/submit-review (and alias: /api/v1/reports/:id/submit)
+- Auth: Required (Bearer token)
+- Role: Report Creator or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "reviewerId": "string (optional ObjectId of designated reviewer; if omitted, notifies all admins)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...report, "status": "review" },
+      "message": "Report submitted for review successfully"
+    }
+  * Status 400 Bad Request: Report not in draft/rejected state.
+- Purpose: Submits report into formal review pipeline, transitions status to 'review', and dispatches review alert notifications.
+
+Endpoint 11.7
+- Method: POST (and alias: PUT)
+- Path: /api/v1/reports/:id/approve
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "comments": "string (optional reviewer comments)",
+    "reason": "string (optional alias for comments)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        ...report,
+        "status": "approved",
+        "approvedBy": "64e0a1b2c3d4e5f6a7b8c900",
+        "approvedAt": "2026-09-07T04:25:00.000Z"
+      },
+      "message": "Report approved successfully"
+    }
+  * Status 400 Bad Request: Report is not currently in 'review' status.
+  * Status 403 Forbidden: Non-admin user attempted approval (Strict RBAC constraint).
+- Purpose: Formally approves report, locks content, marks approvedAt timestamp, records audit event, and dispatches approval notification to report author.
+
+Endpoint 11.8
+- Method: POST (and alias: PUT)
+- Path: /api/v1/reports/:id/reject
+- Auth: Required (Bearer token)
+- Role: Reviewer or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "comments": "string (required, non-empty rejection reason)",
+    "reason": "string (optional alias for comments)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        ...report,
+        "status": "rejected",
+        "reviewerComments": "Production figures on page 3 mismatch subsidiary tally.",
+        "reviewedAt": "2026-09-07T04:26:00.000Z"
+      },
+      "message": "Report rejected successfully"
+    }
+  * Status 400 Bad Request: Missing rejection comments or report not in 'review' status.
+  * Status 403 Forbidden: Caller lacks reviewer or admin role.
+- Purpose: Rejects report with mandatory feedback notes, snapshots current version, updates status to 'rejected', and notifies author.
+
+Endpoint 11.9
+- Method: GET
+- Path: /api/v1/reports/:id/evidence
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "reportId": "64e0a1b2c3d4e5f6a7b8c988",
+        "evidence": [
+          {
+            "chunkId": "64e0a1b2c3d4e5f6a7b8c9c1",
+            "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+            "documentName": "ECL_Production.pdf",
+            "pageNumber": 2,
+            "text": "Actual production reached 1,420.5 Thousand Tonnes in August 2026.",
+            "similarityScore": 0.92
+          }
+        ]
+      },
+      "message": "Report evidence retrieved successfully"
+    }
+- Purpose: Retrieves grounded evidence citations and source document page references backing each statement in the generated report.
+
+Endpoint 11.10
+- Method: GET
+- Path: /api/v1/reports/:id/version-history
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "reportId": "64e0a1b2c3d4e5f6a7b8c988",
+        "currentVersion": 2,
+        "versions": [
+          { "version": 1, "date": "2026-09-07T04:20:00.000Z", "content": { ... } }
+        ]
+      },
+      "message": "Report version history retrieved successfully"
+    }
+- Purpose: Retrieves complete revision history snapshots for regulatory auditing.
+
+Endpoint 11.11
+- Method: GET
+- Path: /api/v1/reports/:id/changes
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters:
+  * fromVersion: integer (optional)
+  * toVersion: integer (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "reportId": "64e0a1b2c3d4e5f6a7b8c988",
+        "diff": [
+          { "type": "modified", "path": "summary.production", "old": "1400", "new": "1420.5" }
+        ]
+      },
+      "message": "Report changes retrieved successfully"
+    }
+- Purpose: Calculates structured difference between any two versions of a report.
+
+Endpoint 11.12
+- Method: GET
+- Path: /api/v1/reports/:id/export/pdf
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None (Returns application/pdf)
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: application/pdf
+    Content-Disposition: attachment; filename="Report_<title>.pdf"
+    [Binary PDF Buffer]
+- Purpose: Exports report formatted as a publication-ready PDF document.
+
+Endpoint 11.13
+- Method: GET
+- Path: /api/v1/reports/:id/export/docx
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None (Returns DOCX binary)
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+    Content-Disposition: attachment; filename="Report_<title>.docx"
+    [Binary DOCX Buffer]
+- Purpose: Exports report formatted as a Microsoft Word document (.docx).
+
+Endpoint 11.14
+- Method: GET
+- Path: /api/v1/reports/:id/export/csv
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None (Returns text/csv)
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: text/csv; charset=utf-8
+    Content-Disposition: attachment; filename="Report_<title>.csv"
+    [CSV Text Stream]
+- Purpose: Exports tabular report data as CSV file.
+
+Endpoint 11.15
+- Method: GET
+- Path: /api/v1/reports/:id/export/json
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: None (Returns application/json file download)
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: application/json; charset=utf-8
+    Content-Disposition: attachment; filename="Report_<title>.json"
+    [JSON Text Content]
+- Purpose: Exports report as a standalone downloadable JSON file.
+
+Endpoint 11.16
+- Method: GET
+- Path: /api/v1/reports/:id/export
+- Auth: Required (Bearer token)
+- Role: Report Creator, Reviewer, or Admin
+- Content-Type: Content type matches requested format
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters:
+  * format: string (optional, default: 'json'; allowed: 'pdf' | 'docx' | 'csv' | 'json')
+- Request Body: None
+- Response Structure:
+  * Status 200 OK: File attachment stream matching requested format.
+- Purpose: Query-string driven multi-format export endpoint.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 12: DEDICATED REVIEW GOVERNANCE
+Base Path: /api/v1/reviews
+Implementation File: server/routes/api/v1/reviews.js
+Controller: server/controllers/reportController.js
+Validators: server/validators/reportValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 12.1
+- Method: GET
+- Path: /api/v1/reviews/pending
+- Auth: Required (Bearer token)
+- Role: Reviewer or Admin
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c988",
+          "title": "Coal Production Intelligence Report",
+          "status": "review",
+          "generatedBy": { "_id": "...", "username": "vishal" },
+          "updatedAt": "2026-09-07T04:22:00.000Z"
+        }
+      ],
+      "message": "Pending reviews retrieved successfully"
+    }
+- Purpose: Lists all reports currently in 'review' status awaiting review/approval action.
+
+Endpoint 12.2
+- Method: GET
+- Path: /api/v1/reviews/:id
+- Auth: Required (Bearer token)
+- Role: Reviewer or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of report
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...report },
+      "message": "Review details retrieved successfully"
+    }
+  * Status 404 Not Found: Report not found.
+- Purpose: Retrieves detailed report context and review history for a specific report.
+
+Endpoint 12.3
+- Method: POST (and alias: PUT)
+- Path: /api/v1/reviews/:id/approve
+- Auth: Required (Bearer token)
+- Role: Admin only
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "comments": "string (optional approval remarks)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...report, "status": "approved" },
+      "message": "Report approved successfully"
+    }
+  * Status 403 Forbidden: Non-admin caller.
+- Purpose: Formally approves report via reviews sub-router.
+
+Endpoint 12.4
+- Method: POST (and alias: PUT)
+- Path: /api/v1/reviews/:id/reject
+- Auth: Required (Bearer token)
+- Role: Reviewer or Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body:
+  {
+    "comments": "string (required non-empty rejection reason)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...report, "status": "rejected" },
+      "message": "Report rejected successfully"
+    }
+  * Status 400 Bad Request: Missing reason.
+- Purpose: Rejects report with feedback comments via reviews sub-router.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 13: KNOWLEDGE BASE & VECTOR INDEXING
+Base Path: /api/v1/knowledge-base
+Implementation File: server/routes/api/v1/knowledgeBase.js
+Services: server/services/chunkingService.js, server/services/embeddingService.js, server/services/ragService.js
+Validators: server/validators/knowledgeBaseValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 13.1
+- Method: GET
+- Path: /api/v1/knowledge-base
+- Auth: Required (Bearer token)
+- Role: Authenticated user (scoped to own) / Admin (system-wide)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * search: string (optional regex filter)
+  * category: string (optional)
+  * classification: string (optional)
+  * page: integer (default: 1)
+  * limit: integer (default: 50, max: 100)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c9d0",
+          "originalName": "ECL_Production.pdf",
+          "isIndexed": true,
+          "chunksCount": 42,
+          "lastIndexedAt": "2026-09-06T10:05:00.000Z"
+        }
+      ],
+      "message": "Knowledge base documents retrieved successfully",
+      "meta": {
+        "total": 14,
+        "page": 1,
+        "limit": 50,
+        "pages": 1,
+        "totalIndexedDocuments": 12,
+        "totalVectorChunks": 486
+      }
+    }
+- Purpose: Lists documents with vector indexing status, chunk counts, and total vector collection metrics.
+
+Endpoint 13.2
+- Method: POST
+- Path: /api/v1/knowledge-base/index
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional if provided in body)
+- Request Body:
+  {
+    "documentId": "string (required, 24-char hex ObjectId)"
+  }
+- Response Structure:
+  * Status 201 Created:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "ECL_Production.pdf",
+        "chunksIndexed": 42,
+        "indexedAt": "2026-09-07T04:30:00.000Z"
+      },
+      "message": "Document indexed successfully into Knowledge Base"
+    }
+  * Status 400 Bad Request: Document has no extracted text pages.
+  * Status 404 Not Found: Document not found.
+- Purpose: Cleans old vectors, chunks document text, generates Gemini embeddings (768-dim), saves to DocumentChunk, and invalidates RAG cache.
+
+Endpoint 13.3
+- Method: DELETE
+- Path: /api/v1/knowledge-base/:documentId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "documentId": "64e0a1b2c3d4e5f6a7b8c9d0", "chunksDeleted": 42 },
+      "message": "Document vector index deleted successfully"
+    }
+- Purpose: Removes document chunks from vector index and purges in-memory RAG cache.
+
+Endpoint 13.4
+- Method: POST
+- Path: /api/v1/knowledge-base/search
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "query": "string (required search query string)",
+    "topK": "integer (optional, default: 5, max: 50)",
+    "filters": {
+      "category": "string (optional)",
+      "classification": "string (optional)",
+      "documentId": "string (optional)"
+    }
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "query": "Overburden removal targets at Rajmahal",
+        "topK": 5,
+        "filters": {},
+        "totalResults": 5,
+        "results": [
+          {
+            "chunkId": "64e0a1b2c3d4e5f6a7b8c9c1",
+            "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+            "documentName": "ECL_Production.pdf",
+            "pageNumber": 3,
+            "text": "Overburden removal target set at 3,200 Thousand Cu.M...",
+            "similarity": 0.895
+          }
+        ]
+      },
+      "message": "Knowledge base search completed successfully"
+    }
+  * Status 400 Bad Request: Missing query string.
+- Purpose: Semantic vector search using cosine similarity across embedded document chunks with RBAC filtering.
+
+Endpoint 13.5
+- Method: GET
+- Path: /api/v1/knowledge-base/:documentId
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "document": { ...documentSummary },
+        "chunksCount": 42,
+        "chunks": [
+          {
+            "_id": "64e0a1b2c3d4e5f6a7b8c9c1",
+            "chunkIndex": 0,
+            "pageNumber": 1,
+            "content": "EASTERN COALFIELDS LIMITED...",
+            "createdAt": "2026-09-06T10:05:00.000Z"
+          }
+        ]
+      },
+      "message": "Document knowledge base details retrieved successfully"
+    }
+- Purpose: Retrieves all vector chunk text blocks for an indexed document (raw embedding float arrays omitted for transport efficiency).
+
+Endpoint 13.6
+- Method: POST
+- Path: /api/v1/knowledge-base/:documentId/index
+- Auth: Required (Bearer token)
+- Role: Document Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 201 Created (Matches /api/v1/knowledge-base/index response)
+- Purpose: Parameterized URL alias for indexing a document.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 14: RAG VECTOR ENGINE
+Base Path: /api/v1/rag
+Implementation File: server/routes/api/v1/rag.js
+Controller: server/controllers/ragController.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 14.1
+- Method: POST
+- Path: /api/v1/rag/:documentId/index
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "message": "Document indexed successfully",
+      "chunksIndexed": 42
+    }
+- Purpose: Legacy-compatible chunking and embedding endpoint under v1.
+
+Endpoint 14.2
+- Method: POST
+- Path: /api/v1/rag/search
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "query": "string (required search query)",
+    "topK": "integer (optional, default: 5)"
+  }
+- Response Structure:
+  * Status 200 OK: Array of search result objects with chunkId, text, and similarity.
+  * Status 400 Bad Request: Missing query.
+- Purpose: Vector search endpoint returning top-K similar chunks.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 15: AI CONVERSATIONAL ASSISTANT
+Base Path: /api/v1/ai-assistant
+Implementation File: server/routes/api/v1/aiAssistant.js
+Controller: server/controllers/aiAssistantController.js
+Service: server/services/aiAssistantService.js
+Validators: server/validators/aiAssistantValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 15.1
+- Method: POST
+- Path: /api/v1/ai-assistant/query (and alias: /api/v1/ai-assistant/ask)
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "query": "string (required; alias: 'question')",
+    "conversationId": "string (optional 24-char hex ObjectId for multi-turn chat)",
+    "topK": "integer (optional, 1 to 50, default: 5)",
+    "filters": "object (optional metadata filters)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "answer": "Based on the August 2026 reports, Eastern Coalfields Limited (ECL) produced 1,420.5 Thousand Tonnes of raw coal...",
+        "confidence": 0.94,
+        "citations": [
+          { "documentName": "ECL_Production.pdf", "pageNumber": 3, "chunkIndex": 2 }
+        ],
+        "evidence": [
+          { "text": "Raw coal production for the month stood at 1420.5 kt.", "source": "ECL_Production.pdf" }
+        ],
+        "calculation": { "variance": "+2.4%", "target": "1387.0 kt" },
+        "insufficientEvidence": false,
+        "conversationId": "64e0a1b2c3d4e5f6a7b8ca10"
+      },
+      "message": "Query processed successfully"
+    }
+  * Status 400 Bad Request: Missing query/question string.
+- Purpose: Conversational RAG assistant grounded in ingested mining documents. Provides citations, calculates formulas, updates Conversation history in DB, and writes an AI_ASSISTANT_QUERY audit log.
+
+Endpoint 15.2
+- Method: GET
+- Path: /api/v1/ai-assistant/history (and alias: /api/v1/ai-assistant/conversations)
+- Auth: Required (Bearer token)
+- Role: Authenticated user (sees own) / Admin (sees all)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "64e0a1b2c3d4e5f6a7b8ca10",
+          "title": "Coal Production Analysis ECL",
+          "messageCount": 6,
+          "createdAt": "2026-09-07T03:00:00.000Z",
+          "updatedAt": "2026-09-07T03:15:00.000Z"
+        }
+      ],
+      "message": "Conversation history retrieved successfully"
+    }
+- Purpose: Lists past AI chat sessions for thread resumption.
+
+Endpoint 15.3
+- Method: GET
+- Path: /api/v1/ai-assistant/history/:id (and alias: /api/v1/ai-assistant/conversations/:id)
+- Auth: Required (Bearer token)
+- Role: Conversation Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of conversation
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "id": "64e0a1b2c3d4e5f6a7b8ca10",
+        "title": "Coal Production Analysis ECL",
+        "createdAt": "2026-09-07T03:00:00.000Z",
+        "updatedAt": "2026-09-07T03:15:00.000Z",
+        "messages": [
+          { "role": "user", "content": "What was the total production for ECL?", "timestamp": "..." },
+          { "role": "assistant", "content": "The total raw coal production was 1,420.5 kt...", "citations": [ ... ] }
+        ]
+      },
+      "message": "Conversation retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller does not own conversation and is not admin.
+  * Status 404 Not Found: Conversation not found.
+- Purpose: Retrieves full message thread history for chat session UI.
+
+Endpoint 15.4
+- Method: DELETE
+- Path: /api/v1/ai-assistant/history/:id
+- Auth: Required (Bearer token)
+- Role: Conversation Owner / Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of conversation
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { "id": "64e0a1b2c3d4e5f6a7b8ca10" },
+      "message": "Conversation history deleted successfully"
+    }
+- Purpose: Deletes a conversation session and records audit event.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 16: ANALYTICS & PRODUCTION VARIANCE
+Base Path: /api/v1/analytics
+Implementation File: server/routes/api/v1/analytics.js
+Controller: server/controllers/analyticsController.js
+Service: server/services/analyticsService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 16.1
+- Method: GET
+- Path: /api/v1/analytics/overview
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * document: string ObjectId (optional filter)
+  * mine: string (optional regex filter)
+  * subsidiary: string (optional regex filter)
+  * period: string (optional regex filter)
+  * subject: string (optional parameter filter)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalProduction": 14250.8,
+        "totalDispatch": 13890.2,
+        "netGap": 360.6,
+        "productionTargetAchievement": 98.4,
+        "topProducingMines": [ ... ]
+      },
+      "message": "Analytics overview retrieved successfully"
+    }
+- Purpose: Provides consolidated production volume, dispatch totals, and gap analysis honoring RBAC tenancy.
+
+Endpoint 16.2
+- Method: GET
+- Path: /api/v1/analytics/kpis
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalRecords": 142,
+        "averageConfidence": 0.94,
+        "verifiedRecords": 135,
+        "targetAchievementPct": 98.4
+      },
+      "message": "KPI metrics retrieved successfully"
+    }
+- Purpose: Aggregates operational KPIs for data charts.
+
+Endpoint 16.3
+- Method: GET
+- Path: /api/v1/analytics/production
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "byMine": [ { "mine": "Rajmahal", "production": 1420.5 } ],
+        "bySubsidiary": [ { "subsidiary": "ECL", "production": 3450.0 } ],
+        "byPeriod": [ { "period": "August 2026", "production": 14250.8 } ]
+      },
+      "message": "Production analytics retrieved successfully"
+    }
+- Purpose: Categorical breakdown of coal and mineral extraction volumes.
+
+Endpoint 16.4
+- Method: GET
+- Path: /api/v1/analytics/dispatch
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "byMine": [ { "mine": "Rajmahal", "dispatch": 1380.0 } ],
+        "bySubsidiary": [ { "subsidiary": "ECL", "dispatch": 3320.0 } ],
+        "byPeriod": [ { "period": "August 2026", "dispatch": 13890.2 } ]
+      },
+      "message": "Dispatch analytics retrieved successfully"
+    }
+- Purpose: Breakdown of evacuation, rail dispatches, and offtake metrics.
+
+Endpoint 16.5
+- Method: GET
+- Path: /api/v1/analytics/trends
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        { "period": "2026-06", "production": 13800, "dispatch": 13200 },
+        { "period": "2026-07", "production": 14100, "dispatch": 13600 },
+        { "period": "2026-08", "production": 14250, "dispatch": 13890 }
+      ],
+      "message": "Production trends retrieved successfully"
+    }
+- Purpose: Multi-month time-series trajectory of production vs dispatch.
+
+Endpoint 16.6
+- Method: GET
+- Path: /api/v1/analytics/variance
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "mine": "Rajmahal",
+          "parameter": "Raw Coal Production",
+          "target": 1400.0,
+          "actual": 1420.5,
+          "variance": 20.5,
+          "variancePct": 1.46
+        }
+      ],
+      "message": "Variance analysis retrieved successfully"
+    }
+- Purpose: Computes mathematical discrepancy between official planned targets and actual figures.
+
+Endpoint 16.7
+- Method: GET
+- Path: /api/v1/analytics/anomalies
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: (Supports same filters as 16.1)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "type": "PRODUCTION_DISPATCH_GAP",
+          "mine": "Mugma Area",
+          "details": "Dispatch exceeds production by 42.1% indicating stock depletion.",
+          "severity": "warning"
+        }
+      ],
+      "message": "Anomalies retrieved successfully"
+    }
+- Purpose: Identifies statistical outliers and abnormal operational variances across mines.
+
+Endpoint 16.8
+- Method: GET
+- Path: /api/v1/analytics/dashboard
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...dashboardAnalyticsPayload }
+    }
+- Purpose: Legacy consolidated analytics payload consumed by React AnalyticsDashboard UI.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 17: TOPIC MODELING & TAXONOMY DISCOVERY
+Base Path: /api/v1/topics
+Implementation File: server/routes/api/v1/topics.js
+Controller: server/controllers/topicController.js
+Service: server/services/intelligenceService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 17.1
+- Method: GET
+- Path: /api/v1/topics
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8ca20",
+          "name": "Coal Production",
+          "description": "Metrics and trends related to coal extraction and overall production volume.",
+          "keywords": [ "coal", "production", "raw", "extraction" ],
+          "weight": 0.95,
+          "documentCount": 8,
+          "mentionCount": 64,
+          "relevanceScore": 0.98
+        }
+      ],
+      "message": "Topics retrieved successfully"
+    }
+- Purpose: Retrieves enriched mining taxonomy merged from MongoDB Topic collection and system default categories.
+
+Endpoint 17.2
+- Method: POST
+- Path: /api/v1/topics/analyze
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional)
+- Request Body:
+  {
+    "documentId": "string (optional; defaults to latest completed document)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "topicsFound": 3,
+        "topics": [ ...Topic ]
+      },
+      "message": "Topic analysis completed successfully"
+    }
+- Purpose: Triggers Gemini LLM topic discovery on document text and saves discovered topics.
+
+Endpoint 17.3
+- Method: GET
+- Path: /api/v1/topics/trends
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "64e0a1b2c3d4e5f6a7b8ca20",
+          "name": "Coal Dispatch",
+          "weight": 0.85,
+          "periods": [ { "period": "2026-07", "count": 14 }, { "period": "2026-08", "count": 22 } ]
+        }
+      ],
+      "message": "Topic temporal trends retrieved successfully"
+    }
+- Purpose: Analyzes topic emergence across chronological reporting periods.
+
+Endpoint 17.4
+- Method: GET
+- Path: /api/v1/topics/clusters
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "clusterId": "cluster_1",
+          "name": "Coal Production",
+          "weight": 0.9,
+          "keywords": [ "coal", "production" ],
+          "documentsCount": 8,
+          "relatedTopics": [ { "name": "Coal Dispatch", "strength": 0.82 } ]
+        }
+      ],
+      "message": "Topic clusters retrieved successfully"
+    }
+- Purpose: Semantic clusters grouping related topics by relationship strength.
+
+Endpoint 17.5
+- Method: GET
+- Path: /api/v1/topics/entities
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "topicId": "64e0a1b2c3d4e5f6a7b8ca20",
+          "topicName": "Coal Production",
+          "entitiesCount": 12,
+          "entities": [ { "name": "Rajmahal", "type": "MINE", "mentions": 18 } ]
+        }
+      ],
+      "message": "Topic-entity associations retrieved successfully"
+    }
+- Purpose: Maps named entities (mines, subsidiaries, equipment) to discovered topics.
+
+Endpoint 17.6
+- Method: GET
+- Path: /api/v1/topics/emerging
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "topicId": "64e0a1b2c3d4e5f6a7b8ca20",
+          "name": "Overburden Evacuation",
+          "weight": 0.78,
+          "growthRate": 45.2,
+          "latestPeriod": "August 2026",
+          "status": "ACCELERATING"
+        }
+      ],
+      "message": "Emerging topics identified successfully"
+    }
+- Purpose: Identifies accelerating or newly appearing topics between reporting periods.
+
+Endpoint 17.7
+- Method: GET
+- Path: /api/v1/topics/changes
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "topicId": "64e0a1b2c3d4e5f6a7b8ca20",
+          "name": "Safety Compliance",
+          "fromPeriod": "July 2026",
+          "toPeriod": "August 2026",
+          "countChange": 8,
+          "weightChange": 0.12,
+          "direction": "EXPANDING"
+        }
+      ],
+      "message": "Topic changes across periods retrieved successfully"
+    }
+- Purpose: Measures expanding vs contracting topic trends across reporting periods.
+
+Endpoint 17.8
+- Method: POST
+- Path: /api/v1/topics/extract
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": []
+    }
+- Purpose: Legacy stub preserved for backward compatibility.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 18: MULTI-AGENT ORCHESTRATION
+Base Path: /api/v1/agents
+Implementation File: server/routes/api/v1/agents.js
+Controller: server/controllers/agentController.js
+Service: server/services/agentOrchestrator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 18.1
+- Method: POST
+- Path: /api/v1/agents/orchestrate
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body:
+  {
+    "task": "string (required task description; e.g. 'generate_monthly_compliance_report')",
+    "context": {
+      "documentId": "string (optional)",
+      "subsidiary": "string (optional)",
+      "period": "string (optional)"
+    }
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "task": "generate_monthly_compliance_report",
+        "status": "completed",
+        "agentSteps": [
+          { "agent": "ExtractionAgent", "status": "done" },
+          { "agent": "ValidationAgent", "status": "done" },
+          { "agent": "ReportingAgent", "status": "done" }
+        ],
+        "result": { ... }
+      }
+    }
+  * Status 400 Bad Request: Missing task field.
+  * Status 409 Conflict: The exact same task is already currently executing.
+- Purpose: Dispatches autonomous multi-agent task execution coordinating specialized agents for ingestion, analysis, and report generation with concurrent task lock guards.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 19: AUDIT TRAIL & PROVENANCE
+Base Path: /api/v1/audit
+Implementation File: server/routes/api/v1/audit.js
+Controller: server/controllers/auditController.js
+Service: server/services/auditService.js
+Validators: server/validators/auditValidator.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 19.1
+- Method: GET
+- Path: /api/v1/audit
+- Auth: Required (Bearer token)
+- Role: Authenticated user (sees own) / Admin (sees all)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * limit: integer (default: 100, max: 500)
+  * page: integer (default: 1)
+  * skip: integer (optional)
+  * action: string (optional action filter, e.g. 'USER_LOGIN', 'DELETE_DOCUMENT')
+  * status: string (optional; 'SUCCESS' | 'FAILED')
+  * resource: string (optional, e.g. 'Document', 'Report', 'Auth')
+  * startDate: ISO date string (optional)
+  * endDate: ISO date string (optional)
+  * search: string (optional regex search over action, resource, ipAddress)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8ca30",
+          "user": { "_id": "...", "username": "admin", "role": "admin" },
+          "action": "APPROVE_REPORT",
+          "resource": "Report",
+          "resourceId": "64e0a1b2c3d4e5f6a7b8c988",
+          "status": "SUCCESS",
+          "ipAddress": "127.0.0.1",
+          "details": { "comments": "Approved" },
+          "timestamp": "2026-09-07T04:25:00.000Z"
+        }
+      ],
+      "message": "Audit logs retrieved successfully",
+      "meta": { "total": 142, "limit": 100, "skip": 0, "page": 1, "pages": 2 }
+    }
+- Purpose: Retrieves compliance audit log records with pagination and multi-attribute filters.
+
+Endpoint 19.2
+- Method: GET
+- Path: /api/v1/audit/stats
+- Auth: Required (Bearer token)
+- Role: Authenticated user (scoped) / Admin (system-wide)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalEvents": 312,
+        "successful": 308,
+        "failed": 4,
+        "activeUsers": 9
+      },
+      "message": "Audit statistics retrieved"
+    }
+- Purpose: Aggregates system audit events, success/failure counts, and active user tallies.
+
+Endpoint 19.3
+- Method: GET
+- Path: /api/v1/audit/export
+- Auth: Required (Bearer token)
+- Role: Authenticated user (exports own) / Admin (exports all/filtered)
+- Content-Type: None (Returns CSV text or JSON download)
+- URL Parameters: None
+- Query Parameters:
+  * format: string (optional, default: 'csv'; 'csv' | 'json')
+  * action: string (optional)
+  * resource: string (optional)
+  * status: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    Content-Type: text/csv; charset=utf-8 or application/json; charset=utf-8
+    Content-Disposition: attachment; filename="audit_logs_export.<csv|json>"
+    [Export Data Stream up to 5,000 logs]
+- Purpose: Official export of immutable system audit events for external oversight and compliance bodies.
+
+Endpoint 19.4
+- Method: GET
+- Path: /api/v1/audit/user/:userId
+- Auth: Required (Bearer token)
+- Role: Target User or Admin
+- Content-Type: None
+- URL Parameters:
+  * userId: 24-character hex ObjectId of user
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...AuditLog ],
+      "message": "User audit logs retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller is not the target user and is not admin.
+- Purpose: Returns recent 100 audit events attributed to a specific user.
+
+Endpoint 19.5
+- Method: GET
+- Path: /api/v1/audit/document/:documentId
+- Auth: Required (Bearer token)
+- Role: Document Owner or Admin
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId of document
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...AuditLog ],
+      "message": "Document audit logs retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller lacks access to document.
+  * Status 404 Not Found: Document not found.
+- Purpose: Complete lifecycle audit provenance for a specific document (upload, OCR, edits, approvals).
+
+Endpoint 19.6
+- Method: GET
+- Path: /api/v1/audit/report/:reportId
+- Auth: Required (Bearer token)
+- Role: Report Owner or Admin
+- Content-Type: None
+- URL Parameters:
+  * reportId: 24-character hex ObjectId of report
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...AuditLog ],
+      "message": "Report audit logs retrieved successfully"
+    }
+  * Status 403 Forbidden: Caller lacks access to report.
+  * Status 404 Not Found: Report not found.
+- Purpose: Complete lifecycle audit provenance for a report (generation, revisions, review submissions, approvals, rejections).
+
+Endpoint 19.7
+- Method: GET
+- Path: /api/v1/audit/:id
+- Auth: Required (Bearer token)
+- Role: Event Owner or Admin
+- Content-Type: None
+- URL Parameters:
+  * id: 24-character hex ObjectId of audit entry
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...AuditLog },
+      "message": "Audit log retrieved successfully"
+    }
+  * Status 404 Not Found: Audit log not found.
+- Purpose: Retrieves a single audit log entry by ID.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 20: NOTIFICATION CENTER
+Base Path: /api/v1/notifications
+Implementation File: server/routes/api/v1/notifications.js
+Controller: server/controllers/notificationController.js
+Service: server/services/notificationService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 20.1
+- Method: GET
+- Path: /api/v1/notifications
+- Auth: Required (Bearer token)
+- Role: Authenticated user (sees own and system-wide) / Admin (sees all)
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * unread: string ('true' to filter unread only)
+  * limit: integer (optional, default: 50)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8ca40",
+          "userId": "64e0a1b2c3d4e5f6a7b8c900",
+          "message": "Your report 'Coal Production Intelligence Report' has been approved.",
+          "type": "success",
+          "category": "approval",
+          "referenceId": "64e0a1b2c3d4e5f6a7b8c988",
+          "read": false,
+          "createdAt": "2026-09-07T04:25:01.000Z"
+        }
+      ],
+      "unreadCount": 1
+    }
+- Purpose: Retrieves in-app alerts and notifications with unread counts.
+
+Endpoint 20.2
+- Method: PUT
+- Path: /api/v1/notifications/read-all
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "message": "All notifications marked as read"
+    }
+- Purpose: Batch marks all unread notifications as read.
+
+Endpoint 20.3
+- Method: PUT
+- Path: /api/v1/notifications/:id/read
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: application/json
+- URL Parameters:
+  * id: 24-character hex ObjectId of notification
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": { ...notification, "read": true }
+    }
+  * Status 404 Not Found: Notification not found.
+- Purpose: Marks a single notification as read.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 21: DOCUMENT INTELLIGENCE & CROSS-DOCUMENT REASONING
+Base Path: /api/v1/intelligence
+Implementation File: server/routes/api/v1/intelligence.js
+Controller: server/controllers/intelligenceController.js
+Service: server/services/intelligenceService.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 21.1
+- Method: GET
+- Path: /api/v1/intelligence
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional)
+  * timeframe: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalEntities": 84,
+        "totalTopics": 12,
+        "similarityClusters": 4,
+        "recentChanges": 6
+      },
+      "message": "Intelligence overview retrieved successfully"
+    }
+- Purpose: High-level overview of entities, topics, clusters, and cross-report changes.
+
+Endpoint 21.2
+- Method: POST
+- Path: /api/v1/intelligence/analyze
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters: None
+- Query Parameters:
+  * documentId: string (optional)
+- Request Body:
+  {
+    "documentId": "string (optional; defaults to latest completed document)"
+  }
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "documentName": "ECL_Production.pdf",
+        "entitiesExtracted": 14,
+        "topicsExtracted": 3,
+        "similarDocumentsFound": 2
+      },
+      "message": "Document intelligence analysis completed successfully"
+    }
+- Purpose: Triggers multi-faceted intelligence extraction (entities, topic discovery, document similarity).
+
+Endpoint 21.3
+- Method: GET
+- Path: /api/v1/intelligence/trends (and alias: /api/v1/intelligence/topics/trends)
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...topicTrends ],
+      "message": "Topic intelligence trends retrieved successfully"
+    }
+- Purpose: Temporal intelligence trends across topics.
+
+Endpoint 21.4
+- Method: GET
+- Path: /api/v1/intelligence/entities
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * document: string ObjectId (optional)
+  * type: string (optional; 'LOCATION' | 'ORGANIZATION' | 'MINE' | 'EQUIPMENT' | 'FIGURE')
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        { "name": "Rajmahal", "type": "MINE", "count": 18, "documents": [ ... ] }
+      ],
+      "message": "Named entities retrieved successfully"
+    }
+- Purpose: Retrieves catalog of named entities discovered across all documents.
+
+Endpoint 21.5
+- Method: GET
+- Path: /api/v1/intelligence/clusters
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [ ...clusters ],
+      "message": "Intelligence clusters retrieved successfully"
+    }
+- Purpose: Semantic clusters of related intelligence themes and documents.
+
+Endpoint 21.6
+- Method: GET
+- Path: /api/v1/intelligence/similarity
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * document: string ObjectId (alias: documentId)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "targetDocument": "64e0a1b2c3d4e5f6a7b8c9d0",
+        "similar": [
+          { "documentId": "64e0a1b2c3d4e5f6a7b8c9d1", "similarity": 0.88, "commonEntities": [ "Rajmahal" ] }
+        ]
+      },
+      "message": "Document similarity retrieved successfully"
+    }
+- Purpose: Cosine similarity matrix across documents.
+
+Endpoint 21.7
+- Method: GET
+- Path: /api/v1/intelligence/changes
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * docA: string ObjectId (optional; compares against docB)
+  * docB: string ObjectId (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": {
+        "totalChanges": 4,
+        "added": 1,
+        "removed": 0,
+        "modified": 3,
+        "changes": [
+          { "parameter": "Raw Coal Production", "docAValue": 1380.0, "docBValue": 1420.5, "variancePct": 2.9 }
+        ]
+      },
+      "message": "Document changes detected successfully"
+    }
+- Purpose: Computes parameter diffs between two document versions or reporting periods.
+
+Endpoint 21.8
+- Method: GET
+- Path: /api/v1/intelligence/entities/:documentId
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "documentName": "ECL_Production.pdf",
+      "entities": [ { "name": "Rajmahal", "type": "MINE" } ]
+    }
+  * Status 404 Not Found: Document not found.
+- Purpose: Retrieves or on-demand extracts entities for a specific document.
+
+Endpoint 21.9
+- Method: GET
+- Path: /api/v1/intelligence/similarity/:documentId
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: None
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "documentName": "ECL_Production.pdf",
+      "similar": [ ...similarDocuments ]
+    }
+  * Status 404 Not Found: Document not found.
+- Purpose: Returns documents most similar to the specified document.
+
+Endpoint 21.10
+- Method: POST
+- Path: /api/v1/intelligence/link-evidence/:documentId
+- Auth: Required (Bearer token)
+- Role: Any authenticated user
+- Content-Type: application/json
+- URL Parameters:
+  * documentId: 24-character hex ObjectId
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "documentId": "64e0a1b2c3d4e5f6a7b8c9d0",
+      "linked": true
+    }
+- Purpose: Computes bidirectional citation links between extracted parameters and source text chunks.
+
+
+----------------------------------------------------------------------------------------------------
+MODULE 22: EXTERNAL DMS/MIS & GIS SPATIAL INTEGRATION
+Base Path: /api/v1/integration
+Implementation File: server/routes/api/v1/integration.js
+----------------------------------------------------------------------------------------------------
+
+Endpoint 22.1
+- Method: GET
+- Path: /api/v1/integration/documents
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * page: integer (default: 1)
+  * limit: integer (default: 20)
+  * category: string (optional)
+  * fileType: string (optional)
+  * status: string (optional)
+  * classification: string (optional)
+  * search: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "originalName": "ECL_Production.pdf",
+          "fileType": "pdf",
+          "category": "Production Report",
+          "status": "completed",
+          "classification": "internal",
+          "totalPages": 8,
+          "uploadedAt": "2026-09-06T10:00:00.000Z",
+          "gisMetadata": { "latitude": 25.04, "longitude": 87.25 },
+          "entities": [ ... ]
+        }
+      ],
+      "message": "DMS documents retrieved",
+      "meta": { "total": 14, "page": 1, "pages": 1 }
+    }
+- Purpose: External Document Management System (DMS) interoperability endpoint exposing cataloged documents with classifications and GIS tags.
+
+Endpoint 22.2
+- Method: GET
+- Path: /api/v1/integration/records
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters:
+  * page: integer (default: 1)
+  * limit: integer (default: 50)
+  * parameter: string (optional)
+  * period: string (optional)
+  * documentId: string (optional)
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "_id": "64e0a1b2c3d4e5f6a7b8c911",
+          "parameter": "Raw Coal Production",
+          "value": 1420.5,
+          "unit": "Tonnes",
+          "period": "August 2026",
+          "documentId": { "_id": "...", "originalName": "ECL_Production.pdf" }
+        }
+      ],
+      "message": "MIS records retrieved",
+      "meta": { "total": 23, "page": 1, "pages": 1 }
+    }
+- Purpose: Management Information System (MIS) interoperability endpoint exporting clean extracted parameters.
+
+Endpoint 22.3
+- Method: GET
+- Path: /api/v1/integration/gis
+- Auth: Required (Bearer token)
+- Role: Authenticated user / Admin
+- Content-Type: None
+- URL Parameters: None
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK:
+    {
+      "success": true,
+      "data": [
+        {
+          "originalName": "ECL_Production.pdf",
+          "gisMetadata": { "latitude": 25.04, "longitude": 87.25, "mineCode": "ECL-04" },
+          "category": "Production Report",
+          "status": "completed"
+        }
+      ],
+      "message": "GIS spatial metadata retrieved"
+    }
+- Purpose: GIS and spatial mapping endpoint returning coordinates, elevations, and mine locations.
+
+
+====================================================================================================
+PART B: LEGACY COMPATIBILITY API LAYER [/api]
+====================================================================================================
+Note: The following endpoints are mounted directly under /api in server/server.js.
+They are preserved to ensure zero regressions with existing scripts, legacy tests, and direct callers.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L01: AUTHENTICATION [/api/auth]
+Implementation File: server/routes/auth.js
+----------------------------------------------------------------------------------------------------
+Endpoint L01.1
+- Method: POST
+- Path: /api/auth/login
+- Auth: None (Public)
+- Request Body: { "username": "...", "password": "..." }
+- Response: 200 OK: { _id, username, role, token } | 401 Unauthorized
+- Purpose: Legacy authentication login.
+
+Endpoint L01.2
+- Method: POST
+- Path: /api/auth/register
+- Auth: None (Public)
+- Request Body: { "username": "...", "password": "...", "email": "..." }
+- Response: 201 Created: { _id, username, role, token } | 400 | 403
+- Purpose: Legacy user registration.
+
+Endpoint L01.3
+- Method: GET
+- Path: /api/auth/me
+- Auth: Required (Bearer token via middleware/authMiddleware.js `protect`)
+- Response: 200 OK: { _id, username, role } | 401
+- Purpose: Legacy authenticated user identity retrieval.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L02: ADMINISTRATION [/api/admin]
+Implementation File: server/routes/admin.js
+----------------------------------------------------------------------------------------------------
+Endpoint L02.1
+- Method: GET
+- Path: /api/admin/users
+- Auth: Required (Bearer token via `protect`, `admin`)
+- Response: 200 OK: { success: true, data: [ ...users ] }
+- Purpose: Legacy admin user listing.
+
+Endpoint L02.2
+- Method: PUT
+- Path: /api/admin/users/:id/role
+- Auth: Required (Bearer token via `protect`, `admin`)
+- URL Param: id (User ObjectId)
+- Request Body: { "role": "..." }
+- Response: 200 OK: { success: true, data: user } | 403
+- Purpose: Legacy user role update.
+
+Endpoint L02.3
+- Method: DELETE
+- Path: /api/admin/users/:id
+- Auth: Required (Bearer token via `protect`, `admin`)
+- URL Param: id (User ObjectId)
+- Response: 200 OK: { success: true, message: "User deleted successfully" } | 403
+- Purpose: Legacy user deletion.
+
+Endpoint L02.4
+- Method: GET
+- Path: /api/admin/stats
+- Auth: Required (Bearer token via `protect`, `admin`)
+- Response: 200 OK: { success: true, data: { totalUsers, totalDocuments, indexedDocuments, reportsGenerated, totalValidations, openValidations } }
+- Purpose: Legacy admin statistics overview.
+
+Endpoint L02.5
+- Method: GET
+- Path: /api/admin/system-health
+- Auth: Required (Bearer token via `protect`, `admin`)
+- Response: 200 OK: { success: true, data: { backend, mongoDB, aiProvider, vectorDB } }
+- Purpose: Legacy admin system health overview.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L03: DOCUMENTS [/api/documents]
+Implementation File: server/routes/documents.js
+Controller: server/controllers/documentController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L03.1
+- Method: POST
+- Path: /api/documents/upload
+- Auth: Required (Bearer token via `protect`, Multer upload.single('file'))
+- Request Body: Multipart form with "file" field
+- Response: 201 Created: Document object | 400 | 409
+- Purpose: Legacy single document upload.
+
+Endpoint L03.2
+- Method: POST
+- Path: /api/documents/upload-batch
+- Auth: Required (Bearer token via `protect`, Multer upload.array('files', 20))
+- Request Body: Multipart form with "files" field (up to 20 files)
+- Response: 201 Created: { results: [ { filename, status, document, error } ] }
+- Purpose: Legacy multi-document batch upload.
+
+Endpoint L03.3
+- Method: GET
+- Path: /api/documents
+- Auth: Required (Bearer token via `protect`)
+- Query Params: search, type, status, category, classification, dateFrom, dateTo
+- Response: 200 OK: Document[] (Unwrapped array for legacy compatibility)
+- Purpose: Legacy document listing.
+
+Endpoint L03.4
+- Method: GET
+- Path: /api/documents/:id
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Document ObjectId)
+- Response: 200 OK: { document: Document, pages: DocumentPage[] }
+- Purpose: Legacy single document retrieval with pages.
+
+Endpoint L03.5
+- Method: GET
+- Path: /api/documents/:id/status
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Document ObjectId)
+- Response: 200 OK: ProcessingJob object
+- Purpose: Legacy document job status lookup.
+
+Endpoint L03.6
+- Method: DELETE
+- Path: /api/documents/:id
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Document ObjectId)
+- Response: 200 OK: { message: "Document deleted successfully" }
+- Purpose: Legacy document deletion.
+
+Endpoint L03.7
+- Method: POST
+- Path: /api/documents/:id/retry
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Document ObjectId)
+- Response: 200 OK: Document object (status set to pending)
+- Purpose: Legacy retry failed document processing.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L04: REPORTS [/api/reports]
+Implementation File: server/routes/reports.js
+Controller: server/controllers/reportController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L04.1
+- Method: GET
+- Path: /api/reports
+- Auth: Required (Bearer token via `protect`)
+- Query Params: status, type
+- Response: 200 OK: { success: true, data: Report[] }
+- Purpose: Legacy report listing.
+
+Endpoint L04.2
+- Method: GET
+- Path: /api/reports/:id
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Report ObjectId)
+- Response: 200 OK: { success: true, data: Report }
+- Purpose: Legacy report retrieval by ID.
+
+Endpoint L04.3
+- Method: POST
+- Path: /api/reports/generate
+- Auth: Required (Bearer token via `protect`)
+- Request Body: { "type": "...", "data": { ... } }
+- Response: 201 Created: { success: true, data: Report }
+- Purpose: Legacy report generation.
+
+Endpoint L04.4
+- Method: PUT
+- Path: /api/reports/:id/submit
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Report ObjectId)
+- Request Body: { "reviewerId": "..." }
+- Response: 200 OK: { success: true, data: Report }
+- Purpose: Legacy submit report for review.
+
+Endpoint L04.5
+- Method: PUT
+- Path: /api/reports/:id/approve
+- Auth: Required (Bearer token via `protect`, `reviewer` - note: controller enforces strict admin-only)
+- URL Param: id (Report ObjectId)
+- Request Body: { "comments": "..." }
+- Response: 200 OK: { success: true, data: Report }
+- Purpose: Legacy approve report.
+
+Endpoint L04.6
+- Method: PUT
+- Path: /api/reports/:id/reject
+- Auth: Required (Bearer token via `protect`, `reviewer`)
+- URL Param: id (Report ObjectId)
+- Request Body: { "comments": "...", "reason": "..." }
+- Response: 200 OK: { success: true, data: Report }
+- Purpose: Legacy reject report.
+
+Endpoint L04.7
+- Method: GET
+- Path: /api/reports/:id/export
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Report ObjectId)
+- Query Params: format ('pdf' | 'docx' | 'csv' | 'json')
+- Response: 200 OK: Binary or text download stream
+- Purpose: Legacy report export.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L05: VALIDATION [/api/validation]
+Implementation File: server/routes/validation.js
+Controller: server/controllers/validationController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L05.1
+- Method: POST
+- Path: /api/validation/:documentId/validate
+- Auth: None (Direct legacy route)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { message: "Validation completed", count: N, results: ValidationResult[] }
+- Purpose: Legacy validate document.
+
+Endpoint L05.2
+- Method: GET
+- Path: /api/validation/summary
+- Auth: None (Direct legacy route)
+- Query Params: documentId
+- Response: 200 OK: { totalIssues, bySeverity, qualityScore, issues: ValidationResult[] }
+- Purpose: Legacy validation summary.
+
+Endpoint L05.3
+- Method: GET
+- Path: /api/validation/:documentId
+- Auth: None (Direct legacy route)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: ValidationResult[]
+- Purpose: Legacy validation results for document.
+
+Endpoint L05.4
+- Method: PUT
+- Path: /api/validation/:id/resolve
+- Auth: None (Direct legacy route)
+- URL Param: id (ValidationResult ObjectId)
+- Request Body: { "resolution": "...", "correctedValue": "...", "notes": "..." }
+- Response: 200 OK: ValidationResult object
+- Purpose: Legacy resolve issue by ID.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L06: RAG VECTOR SEARCH [/api/rag]
+Implementation File: server/routes/rag.js
+Controller: server/controllers/ragController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L06.1
+- Method: POST
+- Path: /api/rag/:documentId/index
+- Auth: None (Direct legacy route)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { message: "Document indexed successfully", chunksIndexed: N }
+- Purpose: Legacy index document chunks.
+
+Endpoint L06.2
+- Method: POST
+- Path: /api/rag/search
+- Auth: None (Direct legacy route)
+- Request Body: { "query": "...", "topK": N }
+- Response: 200 OK: Array of search result objects
+- Purpose: Legacy vector search.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L07: AI ASSISTANT [/api/ai-assistant]
+Implementation File: server/routes/aiAssistant.js
+Controller: server/controllers/aiAssistantController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L07.1
+- Method: POST
+- Path: /api/ai-assistant/ask
+- Auth: None (Direct legacy route)
+- Request Body: { "question": "...", "conversationId": "..." }
+- Response: 200 OK: { answer, citations, confidence, conversationId }
+- Purpose: Legacy question answering.
+
+Endpoint L07.2
+- Method: GET
+- Path: /api/ai-assistant/conversations
+- Auth: None (Direct legacy route)
+- Response: 200 OK: Conversation[]
+- Purpose: Legacy list conversations.
+
+Endpoint L07.3
+- Method: GET
+- Path: /api/ai-assistant/conversations/:id
+- Auth: None (Direct legacy route)
+- URL Param: id (Conversation ObjectId)
+- Response: 200 OK: Conversation object
+- Purpose: Legacy get single conversation.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L08: ANALYTICS [/api/analytics]
+Implementation File: server/routes/analytics.js
+Controller: server/controllers/analyticsController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L08.1
+- Method: GET
+- Path: /api/analytics/trends
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, data: [ ...trends ], message: "..." }
+- Purpose: Legacy production trends.
+
+Endpoint L08.2
+- Method: GET
+- Path: /api/analytics/anomalies
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, data: [ ...anomalies ], message: "..." }
+- Purpose: Legacy production anomalies.
+
+Endpoint L08.3
+- Method: GET
+- Path: /api/analytics/dashboard
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, data: { ... } }
+- Purpose: Legacy dashboard data.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L09: TOPICS [/api/topics]
+Implementation File: server/routes/topics.js
+Controller: server/controllers/topicController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L09.1
+- Method: GET
+- Path: /api/topics
+- Auth: None (Direct legacy route)
+- Response: 200 OK: { success: true, data: [ ...topics ], message: "..." }
+- Purpose: Legacy topics listing.
+
+Endpoint L09.2
+- Method: POST
+- Path: /api/topics/extract
+- Auth: None (Direct legacy route)
+- Response: 200 OK: { success: true, data: [] }
+- Purpose: Legacy topics extraction stub.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L10: EXTRACTION [/api/extraction]
+Implementation File: server/routes/extraction.js
+Controller: server/controllers/extractionController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L10.1
+- Method: POST
+- Path: /api/extraction/:documentId/extract
+- Auth: None (Direct legacy route)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { message: "Extraction completed", count: N, records: ExtractedRecord[] }
+- Purpose: Legacy extract document data.
+
+Endpoint L10.2
+- Method: GET
+- Path: /api/extraction/:documentId
+- Auth: None (Direct legacy route)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: ExtractedRecord[] (Unwrapped array)
+- Purpose: Legacy get extracted records for document.
+
+Endpoint L10.3
+- Method: PUT
+- Path: /api/extraction/records/:id
+- Auth: None (Direct legacy route)
+- URL Param: id (Record ObjectId)
+- Request Body: { "value": "...", "unit": "..." }
+- Response: 200 OK: ExtractedRecord object
+- Purpose: Legacy update extracted record.
+
+Endpoint L10.4
+- Method: POST
+- Path: /api/extraction/records/:id/approve
+- Auth: None (Direct legacy route)
+- URL Param: id (Record ObjectId)
+- Response: 200 OK: ExtractedRecord object
+- Purpose: Legacy approve single record.
+
+Endpoint L10.5
+- Method: POST
+- Path: /api/extraction/records/:id/reject
+- Auth: None (Direct legacy route)
+- URL Param: id (Record ObjectId)
+- Response: 200 OK: ExtractedRecord object
+- Purpose: Legacy reject single record.
+
+Endpoint L10.6
+- Method: POST
+- Path: /api/extraction/records/bulk-approve
+- Auth: None (Direct legacy route)
+- Request Body: { "ids": [ "id1", "id2" ] }
+- Response: 200 OK: { matchedCount: N, modifiedCount: N }
+- Purpose: Legacy bulk approve records.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L11: AGENTS [/api/agents]
+Implementation File: server/routes/agents.js
+Controller: server/controllers/agentController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L11.1
+- Method: POST
+- Path: /api/agents/orchestrate
+- Auth: None (Direct legacy route)
+- Request Body: { "task": "...", "context": { ... } }
+- Response: 200 OK: { success: true, data: { ... } }
+- Purpose: Legacy agent orchestrate endpoint.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L12: AUDIT [/api/audit]
+Implementation File: server/routes/audit.js
+Controller: server/controllers/auditController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L12.1
+- Method: GET
+- Path: /api/audit
+- Auth: Required (Bearer token via `protect`)
+- Query Params: limit, page, skip, action, status, resource, startDate, endDate, search
+- Response: 200 OK: { success: true, data: AuditLog[], message: "...", meta: { ... } }
+- Purpose: Legacy audit log retrieval.
+
+Endpoint L12.2
+- Method: GET
+- Path: /api/audit/stats
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, data: { totalEvents, successful, failed, activeUsers }, message: "..." }
+- Purpose: Legacy audit statistics.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L13: NOTIFICATIONS [/api/notifications]
+Implementation File: server/routes/notifications.js
+Controller: server/controllers/notificationController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L13.1
+- Method: GET
+- Path: /api/notifications
+- Auth: Required (Bearer token via `protect`)
+- Query Params: unread, limit
+- Response: 200 OK: { success: true, data: Notification[], unreadCount: N }
+- Purpose: Legacy notifications retrieval.
+
+Endpoint L13.2
+- Method: PUT
+- Path: /api/notifications/read-all
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, message: "All notifications marked as read" }
+- Purpose: Legacy mark all notifications read.
+
+Endpoint L13.3
+- Method: PUT
+- Path: /api/notifications/:id/read
+- Auth: Required (Bearer token via `protect`)
+- URL Param: id (Notification ObjectId)
+- Response: 200 OK: { success: true, data: Notification }
+- Purpose: Legacy mark notification read.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L14: INTELLIGENCE [/api/intelligence]
+Implementation File: server/routes/intelligence.js
+Controller: server/controllers/intelligenceController.js
+----------------------------------------------------------------------------------------------------
+Endpoint L14.1
+- Method: GET
+- Path: /api/intelligence/entities/:documentId
+- Auth: Required (Bearer token via `protect`)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { documentName: "...", entities: [ ... ] }
+- Purpose: Legacy get document entities.
+
+Endpoint L14.2
+- Method: GET
+- Path: /api/intelligence/similarity/:documentId
+- Auth: Required (Bearer token via `protect`)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { documentName: "...", similar: [ ... ] }
+- Purpose: Legacy similar documents retrieval.
+
+Endpoint L14.3
+- Method: GET
+- Path: /api/intelligence/changes
+- Auth: Required (Bearer token via `protect`)
+- Query Params: docA, docB
+- Response: 200 OK: { success: true, data: { ... } }
+- Purpose: Legacy document change detection.
+
+Endpoint L14.4
+- Method: GET
+- Path: /api/intelligence/topics/trends
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: Topic trend array (Unenveloped for React legacy UI)
+- Purpose: Legacy topic trends.
+
+Endpoint L14.5
+- Method: POST
+- Path: /api/intelligence/link-evidence/:documentId
+- Auth: Required (Bearer token via `protect`)
+- URL Param: documentId (Document ObjectId)
+- Response: 200 OK: { documentId: "...", linked: true }
+- Purpose: Legacy link evidence.
+
+----------------------------------------------------------------------------------------------------
+LEGACY MODULE L15: INTEGRATION [/api/integration]
+Implementation File: server/routes/integration.js
+----------------------------------------------------------------------------------------------------
+Endpoint L15.1
+- Method: GET
+- Path: /api/integration/documents
+- Auth: Required (Bearer token via `protect`)
+- Query Params: page, limit, category, fileType, status, classification, search
+- Response: 200 OK: { success: true, data: Document[], total, page, pages }
+- Purpose: Legacy DMS documents listing.
+
+Endpoint L15.2
+- Method: GET
+- Path: /api/integration/records
+- Auth: Required (Bearer token via `protect`)
+- Query Params: page, limit, parameter, period, documentId
+- Response: 200 OK: { success: true, data: ExtractedRecord[], total, page, pages }
+- Purpose: Legacy MIS records listing.
+
+Endpoint L15.3
+- Method: GET
+- Path: /api/integration/gis
+- Auth: Required (Bearer token via `protect`)
+- Response: 200 OK: { success: true, data: Document[] }
+- Purpose: Legacy GIS spatial metadata listing.
+
+
+====================================================================================================
+PART C: STATIC ASSET SERVING
+====================================================================================================
+
+Endpoint C.1
+- Method: GET
+- Path: /uploads/:filename
+- Auth: None (Public static directory serving)
+- Role: Any
+- Content-Type: Inferred from file extension (application/pdf, image/png, image/jpeg, etc.)
+- URL Parameters:
+  * filename: Physical disk filename (e.g. 1694000000000-Report.pdf)
+- Query Parameters: None
+- Request Body: None
+- Response Structure:
+  * Status 200 OK: Raw binary file stream
+  * Status 404 Not Found: File does not exist in uploads directory.
+- Storage Directory:
+  * Local Environment: server/uploads/
+  * Vercel Serverless: /tmp/uploads/
+- Purpose: Direct HTTP streaming of uploaded raw document files and preview assets.
+
+====================================================================================================
+END OF REFERENCE DOCUMENT
+====================================================================================================

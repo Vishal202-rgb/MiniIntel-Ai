@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Shield, Loader2, AlertCircle } from 'lucide-react';
-import api from '../services/api';
+import userApi from '../api/userApi';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -13,10 +13,10 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get('/admin/users');
-      setUsers(res.data.data);
+      const res = await userApi.getUsers();
+      setUsers(res.data || res.data?.data || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load users');
+      setError(err.response?.data?.message || err.message || 'Failed to load users');
     } finally {
       setLoading(false);
     }
@@ -24,7 +24,7 @@ const AdminUsers = () => {
 
   const handleRoleChange = async (id, newRole) => {
     try {
-      await api.put(`/admin/users/${id}/role`, { role: newRole });
+      await userApi.updateUserRole(id, newRole);
       setUsers(users.map(u => u._id === id ? { ...u, role: newRole } : u));
     } catch (err) {
       alert('Failed to change role: ' + (err.response?.data?.message || err.message));

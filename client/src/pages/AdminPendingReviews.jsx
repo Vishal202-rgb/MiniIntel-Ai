@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import reviewsApi from '../api/reviewsApi';
 import { FileOutput, Eye, Check, X, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -23,8 +23,9 @@ const PendingReviews = () => {
     setError(null);
     setSuccessMessage('');
     try {
-      const res = await api.get('/reports?status=review');
-      setPendingReports(res.data.data || []);
+      const res = await reviewsApi.getPendingReviews();
+      const reports = res.data || res.data?.data || [];
+      setPendingReports(Array.isArray(reports) ? reports : []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch pending reports.');
     } finally {
@@ -35,7 +36,7 @@ const PendingReviews = () => {
   const handleApprove = async (id) => {
     setProcessingReport(id);
     try {
-      await api.put(`/reports/${id}/approve`);
+      await reviewsApi.approveReview(id);
       setSuccessMessage('Report approved successfully.');
       fetchPendingReports();
       if (selectedReport?._id === id) setSelectedReport(null);
@@ -53,7 +54,7 @@ const PendingReviews = () => {
     }
     setProcessingReport(selectedReport?._id);
     try {
-      await api.put(`/reports/${selectedReport._id}/reject`, { comments: rejectReason });
+      await reviewsApi.rejectReview(selectedReport._id, rejectReason);
       setSuccessMessage('Report rejected successfully.');
       setShowRejectModal(false);
       setRejectReason('');

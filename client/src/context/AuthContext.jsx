@@ -1,4 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
+import authApi from '../api/authApi';
+import apiClient from '../api/client';
 import axios from 'axios';
 
 export const AuthContext = createContext();
@@ -10,32 +12,47 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
-      const parsed = JSON.parse(userInfo);
-      setUser(parsed);
-      // Set axios default header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+      try {
+        const parsed = JSON.parse(userInfo);
+        setUser(parsed);
+        if (parsed.token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${parsed.token}`;
+        }
+      } catch (e) {
+        console.error('Failed to parse cached user info:', e);
+      }
     }
     setLoading(false);
   }, []);
 
   const login = async (username, password, requireAdmin = false) => {
-    const res = await axios.post('/api/auth/login', { username, password });
-    const userData = res.data;
-    
+    const res = await authApi.login(username, password);
+    const userData = res?.data || res;
+
     if (requireAdmin && userData.role !== 'admin') {
       throw new Error('Access Denied. You are not an administrator.');
     }
 
     setUser(userData);
     localStorage.setItem('userInfo', JSON.stringify(userData));
-    axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+    if (userData.token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+      apiClient.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+    }
     return userData;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
+      // Ignore network errors on logout
+    }
     setUser(null);
     localStorage.removeItem('userInfo');
     delete axios.defaults.headers.common['Authorization'];
+    delete apiClient.defaults.headers.common['Authorization'];
   };
 
   return (

@@ -422,5 +422,5 @@ For developers integrating the backend into a Flutter mobile or desktop applicat
 
 ## 📄 License
 
-This project is developed as an intelligent mining operations and regulatory compliance solution for the **Smart India Hackathon (SIH 2024)**.  
+This project is developed as an intelligent mining operations and regulatory compliance solution for the **Smart India Hackathon (SIH 2026)**.  
 All rights reserved © 2026 MineIntel AI Engineering Team.

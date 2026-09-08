@@ -30,7 +30,7 @@ exports.generateReport = async (req, res, next) => {
     if (!type) {
       return sendError(res, 'Report type is required', 'VALIDATION_ERROR', 400);
     }
-    const reqContext = { userId: req.user._id, isComplex: true };
+    const reqContext = { userId: req.user._id, isComplex: true, isReport: true };
     const report = await reportService.generateReport(data || {}, type, req.user._id, reqContext);
 
     // Notify admins about new report
@@ -45,7 +45,19 @@ exports.generateReport = async (req, res, next) => {
 
     return sendSuccess(res, report, 'Report generated successfully', 201);
   } catch (error) {
-    next(error);
+    console.error('[Report Controller Error]:', error.message);
+    const isContextOrLimit = error.code === 'AI_CONTEXT_LIMIT' || error.code === 'AI_RATE_LIMIT' || error.code === 'MAX_CALLS_EXCEEDED';
+    const statusCode = error.statusCode || (isContextOrLimit ? 422 : 500);
+    const errorCode = error.code || 'REPORT_GENERATION_FAILED';
+    const retryable = error.retryable !== undefined ? error.retryable : true;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || 'Report generation could not be completed because the AI request exceeded the available context limit.',
+      errorCode: errorCode,
+      error: errorCode,
+      retryable: retryable
+    });
   }
 };
 

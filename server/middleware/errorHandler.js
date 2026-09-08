@@ -39,12 +39,22 @@ const errorHandler = (err, req, res, next) => {
     errorCode = 'TOKEN_EXPIRED';
   }
 
+  // AI Context and Rate Limit Errors
+  if (err.code === 'AI_CONTEXT_LIMIT' || err.code === 'AI_RATE_LIMIT' || err.code === 'MAX_CALLS_EXCEEDED') {
+    statusCode = err.statusCode || (err.code === 'AI_RATE_LIMIT' ? 429 : 422);
+    errorCode = err.code || 'AI_CONTEXT_LIMIT';
+  } else if (err.statusCode) {
+    statusCode = err.statusCode;
+  }
+
   // Dual compatibility: includes both standard format ({ success, message, error }) and legacy { error }
   res.status(statusCode).json({
     success: false,
     message,
     error: message,
-    code: errorCode
+    code: errorCode,
+    errorCode: errorCode,
+    retryable: err.retryable !== undefined ? err.retryable : (errorCode === 'AI_CONTEXT_LIMIT' || errorCode === 'AI_RATE_LIMIT')
   });
 };
 

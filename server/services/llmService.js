@@ -40,11 +40,35 @@ const withRetry = async (fn, maxRetries = 3, baseDelayMs = 2000) => {
           const match = error.message.match(/retry in ([\d\.]+)s/);
           if (match && match[1]) delayMsg = `${match[1]}s`;
         }
-        throw new Error(`Gemini Rate Limit Exceeded (Free Tier). Please retry in ${delayMsg}.`);
+        const rateLimitErr = new Error(`Gemini Rate Limit Exceeded. Please retry in ${delayMsg}.`);
+        rateLimitErr.code = 'AI_RATE_LIMIT';
+        rateLimitErr.statusCode = 429;
+        rateLimitErr.retryable = true;
+        throw rateLimitErr;
+      }
+
+      // Check for context/token limit errors (400 or message indicating prompt/context length exceeded)
+      const isContextLimit = error.status === 400 && (
+        (error.message && (
+          error.message.includes('context_length_exceeded') ||
+          error.message.includes('too large') ||
+          error.message.includes('token limit') ||
+          error.message.includes('maximum context length') ||
+          error.message.includes('Request payload size exceeds')
+        ))
+      );
+      if (isContextLimit) {
+        const contextErr = new Error('Report generation could not be completed because the AI request exceeded the available context limit.');
+        contextErr.code = 'AI_CONTEXT_LIMIT';
+        contextErr.statusCode = 422;
+        contextErr.retryable = true;
+        throw contextErr;
       }
 
       const isRetryable = error.status === 503 || error.status >= 500;
       if (!isRetryable || attempt >= maxRetries || (error.status === 503 && attempt >= 2)) {
+        error.code = error.code || (error.status === 503 ? 'AI_SERVICE_UNAVAILABLE' : 'AI_PROVIDER_ERROR');
+        error.retryable = isRetryable;
         throw error;
       }
       
@@ -55,13 +79,29 @@ const withRetry = async (fn, maxRetries = 3, baseDelayMs = 2000) => {
   }
 };
 
-const enforceCallLimit = (options) => {
+const enforceCallLimit = (options, type = 'completion') => {
   if (options && options.reqContext) {
-    options.reqContext.llmCallCount = (options.reqContext.llmCallCount || 0) + 1;
-    const limit = options.reqContext.maxCalls || (options.reqContext.isComplex ? 5 : 4);
-    if (options.reqContext.llmCallCount > limit) {
-      const err = new Error(`Maximum LLM calls (${limit}) exceeded for this task to protect API quota.`);
+    const ctx = options.reqContext;
+    ctx.llmCallCount = (ctx.llmCallCount || 0) + 1;
+
+    if (type === 'embedding') {
+      ctx.embeddingCallCount = (ctx.embeddingCallCount || 0) + 1;
+      const embeddingLimit = ctx.maxEmbeddingCalls || 20;
+      if (ctx.embeddingCallCount > embeddingLimit) {
+        const err = new Error(`Maximum embedding calls (${embeddingLimit}) exceeded for this task.`);
+        err.code = 'MAX_EMBEDDINGS_EXCEEDED';
+        err.retryable = false;
+        throw err;
+      }
+      return;
+    }
+
+    ctx.completionCallCount = (ctx.completionCallCount || 0) + 1;
+    const completionLimit = ctx.maxCalls || (ctx.isComplex ? 8 : 5);
+    if (ctx.completionCallCount > completionLimit) {
+      const err = new Error(`Maximum LLM calls (${completionLimit}) exceeded for this task to protect API quota.`);
       err.code = 'MAX_CALLS_EXCEEDED';
+      err.retryable = true;
       throw err;
     }
   }
@@ -69,10 +109,18 @@ const enforceCallLimit = (options) => {
 
 exports.callLLM = async (systemPrompt, userPrompt, options = {}) => {
   try {
-    enforceCallLimit(options);
+    enforceCallLimit(options, 'completion');
   } catch (err) {
     if (err.code === 'MAX_CALLS_EXCEEDED') {
-      console.warn('Call limit reached, returning best available fallback.');
+      console.warn('Call limit reached in callLLM.');
+      // Never return fallback error text if this is a report or strict generation!
+      if (options.reqContext?.isReport || options.throwOnLimit) {
+        const limitErr = new Error('Report generation could not be completed because the AI request exceeded the available context limit or call quota.');
+        limitErr.code = 'AI_CONTEXT_LIMIT';
+        limitErr.statusCode = 422;
+        limitErr.retryable = true;
+        throw limitErr;
+      }
       if (options.format === 'json') {
         return { action: 'rag', message: 'API limits reached. Attempting to provide partial response.' };
       }
@@ -148,7 +196,7 @@ exports.callLLM = async (systemPrompt, userPrompt, options = {}) => {
 };
 
 exports.generateEmbedding = async (textOrArray, options = {}) => {
-  enforceCallLimit(options);
+  enforceCallLimit(options, 'embedding');
 
   if (process.env.LLM_API_KEY === 'mock-key-for-testing') {
     const isArray = Array.isArray(textOrArray);

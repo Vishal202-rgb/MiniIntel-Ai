@@ -8,138 +8,223 @@ const PDFDocument = require('pdfkit');
 const { Document: DocxDocument, Paragraph, TextRun, Packer, HeadingLevel } = require('docx');
 
 const generateReport = async (data, type, userId, reqContext = {}) => {
+  const { documentId, instructions, template, period, mineName, subsidiary, subject } = data || {};
+
+  // Set reqContext flags for quota isolation and strict mode
+  reqContext.isReport = true;
+  reqContext.isComplex = true;
+  reqContext.maxCalls = reqContext.maxCalls || 5;
+  reqContext.maxEmbeddingCalls = reqContext.maxEmbeddingCalls || 20;
+
+  // Build targeted RAG search query
+  let searchQuery = type;
+  if (instructions) searchQuery += ' ' + instructions.trim();
+  if (template) searchQuery += ' ' + template.trim();
+  if (period) searchQuery += ' ' + period.trim();
+  if (mineName) searchQuery += ' ' + mineName.trim();
+
+  // Scoped RAG filters
+  const ragFilters = {};
+  if (documentId) ragFilters.documentId = documentId;
+  if (mineName) ragFilters.mine = mineName;
+  if (period) ragFilters.period = period;
+  if (subsidiary) ragFilters.subsidiary = subsidiary;
+  if (subject) ragFilters.subject = subject;
+
+  // 1. Retrieve bounded, scoped chunks (bounded topK = 8)
+  let rawChunks = [];
   try {
-    const { documentId, instructions, template } = data;
-    let contextText = '';
-    
-    let searchQuery = type;
-    if (instructions) searchQuery += ' ' + instructions;
-    if (template) searchQuery += ' ' + template;
-    
-    const similarChunks = await ragService.searchSimilar(searchQuery, 10, reqContext);
-    
-    if (documentId) {
-      const filteredChunks = similarChunks.filter(c => {
-        const dId = c.documentId?._id || c.documentId;
-        return dId.toString() === documentId.toString();
-      });
-      const chunksToUse = filteredChunks.length > 0 ? filteredChunks : similarChunks;
-      chunksToUse.forEach((chunk, i) => {
-        const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
-        const docName = chunk.documentId?.originalName || chunk.documentId?.filename || 'Document';
-        contextText += `--- Source Reference ${i+1} — ${docName} [${pageLabel}] ---\n${chunk.content}\n\n`;
-      });
-    } else {
-      similarChunks.forEach((chunk, i) => {
-        const pageLabel = chunk.pageNumber ? `Page ${chunk.pageNumber}` : 'Page N/A';
-        const docName = chunk.documentId?.originalName || chunk.documentId?.filename || 'Document';
-        contextText += `--- Source Reference ${i+1} — ${docName} [${pageLabel}] ---\n${chunk.content}\n\n`;
-      });
+    rawChunks = await ragService.searchSimilar(searchQuery, 8, {
+      reqContext,
+      filters: ragFilters
+    });
+  } catch (ragErr) {
+    console.warn('[Report Generation] RAG search error:', ragErr.message);
+    if (ragErr.code === 'AI_CONTEXT_LIMIT' || ragErr.code === 'AI_RATE_LIMIT') {
+      throw ragErr;
     }
+    rawChunks = [];
+  }
 
-    // INJECT MINING INTELLIGENCE
-    try {
-      const { summaryText, evidenceText } = await miningIntelligenceService.analyzeDataAndFindAnomalies(reqContext);
-      contextText += '\n\n=== MINING INTELLIGENCE (ANOMALIES & EVIDENCE) ===\n';
-      contextText += summaryText + '\n' + evidenceText + '\n';
-    } catch (err) {
-      console.warn('Failed to inject mining intelligence into report context:', err.message);
+  // Deduplicate chunks by chunkId and content similarity
+  const seenChunkIds = new Set();
+  const seenSnippets = new Set();
+  const similarChunks = [];
+
+  for (const chunk of rawChunks) {
+    const chunkId = chunk.chunkId ? chunk.chunkId.toString() : (chunk._id ? chunk._id.toString() : null);
+    const snippetKey = (chunk.content || '').replace(/\s+/g, ' ').substring(0, 80).toLowerCase();
+
+    if (chunkId && seenChunkIds.has(chunkId)) continue;
+    if (snippetKey && seenSnippets.has(snippetKey)) continue;
+
+    if (chunkId) seenChunkIds.add(chunkId);
+    if (snippetKey) seenSnippets.add(snippetKey);
+    similarChunks.push(chunk);
+    if (similarChunks.length >= 8) break;
+  }
+
+  // Build bounded evidence context
+  let contextText = '';
+  let totalChars = 0;
+  const MAX_RAG_CHARS = 10000;
+
+  for (let i = 0; i < similarChunks.length; i++) {
+    const chunk = similarChunks[i];
+    const pageLabel = chunk.pageNumber != null ? `Page ${chunk.pageNumber}` : 'Page N/A';
+    const docName = chunk.documentId?.originalName || chunk.documentId?.filename || chunk.documentName || 'Mining Document';
+    // Bound each chunk excerpt to max 850 characters
+    const boundedChunkContent = (chunk.content || '').trim().substring(0, 850);
+    const chunkEntry = `--- Source Reference ${i + 1} — ${docName} [${pageLabel}] ---\n${boundedChunkContent}\n\n`;
+
+    if (totalChars + chunkEntry.length > MAX_RAG_CHARS) {
+      console.log(`[Report Context] Bounded RAG chunks to ${i} items (${totalChars} chars) to protect API limits.`);
+      break;
     }
+    contextText += chunkEntry;
+    totalChars += chunkEntry.length;
+  }
 
-    const systemPrompt = `You are an expert mining operations analyst for MineIntel. Generate a highly professional '${type}' report based ONLY on the provided context.
-    
-    Do NOT hallucinate numbers. Preserve units and financial-year labels. Show calculations clearly. Reference the source document/page when available.
-    
-    CRITICAL CITATION RULES:
-    - NEVER guess or infer a page number.
-    - If a source says [Page N/A] or does not have a page number, you MUST NOT write "Page 1". Simply cite the document name or reference number.
-    - Only cite the page number if it is explicitly provided in the bracketed source reference (e.g., [Page 2]).
-    
-    Output the report in Markdown format with the following sections (if applicable to the type):
-    1. Executive Summary
-    2. Production Performance
-    3. Dispatch Performance
-    4. Target Achievement
-    5. Production-Dispatch Gap
-    6. Key Operational Risks
-    7. Evidence / Source References
-    8. AI Insights
-    9. Recommendations
-    
-    At the end, add a section called "## Evidence Appendix" that lists every source reference used, with the document name, page number, and a brief excerpt of the cited text.
-    
-    Additional Instructions from User: ${instructions || 'None'}
-    
-    Context:
-    ${contextText}`;
-
-    let reportContent;
-    try {
-      if (process.env.LLM_API_KEY === 'mock-key-for-testing') {
-        reportContent = `# ${type} Mining Report\n\n## Executive Summary\nProduction operations summary based on available mining records.\n\n## Production Performance\nProduction achieved target specifications.\n\n## Evidence Appendix\nAll data grounded in verified operational logs.`;
-      } else {
-        reportContent = await llmService.callLLM(systemPrompt, 'Generate the report.', { reqContext });
-      }
-    } catch (err) {
-      console.warn('LLM call throttled or unavailable, generating structured deterministic report content:', err.message);
-      reportContent = `# ${type} Mining Operations Report\n\n## 1. Executive Summary\nThis report presents operational metrics, extraction performance, dispatch figures, and target variance analysis derived from verified mining records.\n\n## 2. Production Performance\nOperational production records have been verified across the reported periods.\n\n## 3. Evidence Appendix\nSources and extracted records have been cross-referenced against original document evidence.\n`;
-    }
-
-    // Compute evidence coverage
-    const citedSources = similarChunks.filter(c => (c.similarityScore || 0) > 0.3);
-    const evidenceCoverage = {
-      total: similarChunks.length,
-      cited: citedSources.length,
-      percentage: similarChunks.length > 0 ? Math.round((citedSources.length / similarChunks.length) * 100) : 0
-    };
-
-    // Compute confidence score from avg similarity
-    const avgSimilarity = similarChunks.length > 0
-      ? similarChunks.reduce((sum, c) => sum + (c.similarityScore || 0), 0) / similarChunks.length
-      : 0.85;
-    const confidenceScore = Math.max(0.75, Math.round(avgSimilarity * 100) / 100);
-
-    const reportTitle = `${type} Report - ${new Date().toLocaleDateString('en-GB')}`;
-    
-    const report = new Report({
-      title: reportTitle,
-      type: type,
-      content: {
-        markdown: reportContent,
-        sources: similarChunks.map(c => ({
-          documentId: c.documentId?._id || c.documentId,
-          documentName: c.documentId?.originalName || c.documentId?.filename || 'Mining Report Document',
-          pageNumber: c.pageNumber != null ? c.pageNumber : null,
-          similarity: c.similarityScore || 0.85,
-          excerpt: (c.content || '').substring(0, 180)
-        }))
-      },
-      status: 'draft',
-      version: 1,
-      previousVersions: [],
-      generatedBy: userId,
-      confidenceScore,
-      evidenceCoverage
+  // 2. Inject Deterministic Calculations and Anomaly Findings
+  let deterministicContext = '';
+  try {
+    const intelligenceResult = await miningIntelligenceService.analyzeDataAndFindAnomalies({
+      reqContext,
+      filters: ragFilters,
+      documentId,
+      mineName,
+      period,
+      subsidiary
     });
 
-    await report.save();
-    
-    try {
-      await auditService.logAudit({
-        user: userId,
-        action: 'GENERATE_REPORT',
-        resource: 'Report',
-        resourceId: report._id,
-        details: { type, documentId, confidenceScore, evidenceCoverage }
-      });
-    } catch (auditErr) {
-      console.warn('Audit log write failed:', auditErr.message);
+    if (intelligenceResult) {
+      const { summaryText, evidenceText } = intelligenceResult;
+      deterministicContext += '\n=== VERIFIED DETERMINISTIC METRICS & ANOMALIES ===\n';
+      if (summaryText) deterministicContext += summaryText + '\n';
+      if (evidenceText) deterministicContext += evidenceText + '\n';
     }
-
-    return report;
-  } catch (error) {
-    throw new Error('Error generating report: ' + error.message);
+  } catch (intelErr) {
+    console.warn('[Report Generation] Mining intelligence injection skipped:', intelErr.message);
   }
+
+  // Total context boundary
+  const fullContext = contextText + '\n' + deterministicContext;
+  const boundedFullContext = fullContext.length > 16000
+    ? fullContext.substring(0, 16000) + '\n\n[... Remaining data bounded to protect API limits]'
+    : fullContext;
+
+  // 3. Evidence-First Prompt Construction
+  const systemPrompt = `You are an expert mining operations analyst for MineIntel. Generate a highly professional '${type}' report based ONLY on the provided context and verified metrics.
+
+CRITICAL GUIDELINES:
+1. Ground every claim, figure, and variance directly in the provided evidence.
+2. Use the deterministic calculation metrics in the context as verified ground truth. Do NOT invent conflicting numbers.
+3. CITATION RULES:
+   - If a source reference has a bracketed page number (e.g., [Page 3]), cite it accurately.
+   - If a source says [Page N/A] or does not specify a page, cite only the document title or reference number. NEVER guess or infer page numbers.
+4. Professional Structure:
+   - Executive Summary
+   - Production Performance
+   - Dispatch Performance
+   - Target Achievement & Variance Analysis
+   - Production-Dispatch Gap
+   - Key Operational Risks & Constraints
+   - Strategic Recommendations
+5. Include a concluding "## Evidence Appendix" section listing the exact sources used, their document names, page numbers, and key excerpts.
+
+Additional Instructions: ${instructions || 'None'}
+
+Evidence Context:
+${boundedFullContext}`;
+
+  // 4. Gemini Generation with Safe Error Handling
+  let reportContent = '';
+  try {
+    if (process.env.LLM_API_KEY === 'mock-key-for-testing') {
+      reportContent = `# ${type} Mining Report\n\n## Executive Summary\nProduction operations summary based on available mining records.\n\n## Production Performance\nProduction achieved target specifications.\n\n## Evidence Appendix\nAll data grounded in verified operational logs.`;
+    } else {
+      reportContent = await llmService.callLLM(systemPrompt, 'Generate the complete professional report using the verified evidence.', {
+        reqContext,
+        throwOnLimit: true
+      });
+    }
+  } catch (err) {
+    console.error('[Report Generation Service Error]', err.message);
+    const apiError = new Error(err.message || 'Report generation failed due to an AI service error.');
+    apiError.code = err.code || (err.status === 429 ? 'AI_RATE_LIMIT' : 'AI_CONTEXT_LIMIT');
+    apiError.statusCode = err.statusCode || (err.code === 'AI_RATE_LIMIT' ? 429 : 422);
+    apiError.retryable = err.retryable !== undefined ? err.retryable : true;
+    throw apiError;
+  }
+
+  // 5. Strict Verification: NEVER persist or accept error messages as report text!
+  if (
+    !reportContent ||
+    typeof reportContent !== 'string' ||
+    reportContent.trim().length < 50 ||
+    reportContent.includes('reached the maximum API limits') ||
+    reportContent.includes('The task is very complex and reached the maximum')
+  ) {
+    const limitError = new Error('Report generation could not be completed because the AI request exceeded the available context limit or call quota.');
+    limitError.code = 'AI_CONTEXT_LIMIT';
+    limitError.statusCode = 422;
+    limitError.retryable = true;
+    throw limitError;
+  }
+
+  // 6. Compute evidence coverage
+  const citedSources = similarChunks.filter(c => (c.similarityScore || 0) > 0.25);
+  const evidenceCoverage = {
+    total: similarChunks.length,
+    cited: citedSources.length,
+    percentage: similarChunks.length > 0 ? Math.round((citedSources.length / similarChunks.length) * 100) : 0
+  };
+
+  // 7. Compute confidence score from avg similarity
+  const avgSimilarity = similarChunks.length > 0
+    ? similarChunks.reduce((sum, c) => sum + (c.similarityScore || 0), 0) / similarChunks.length
+    : 0.85;
+  const confidenceScore = Math.min(0.98, Math.max(0.75, Math.round(avgSimilarity * 100) / 100));
+
+  const reportTitle = `${type} Report - ${new Date().toLocaleDateString('en-GB')}`;
+
+  // 8. Persist genuine report to MongoDB ONLY upon successful generation
+  const report = new Report({
+    title: reportTitle,
+    type: type,
+    content: {
+      markdown: reportContent,
+      sources: similarChunks.map(c => ({
+        documentId: c.documentId?._id || c.documentId,
+        documentName: c.documentId?.originalName || c.documentId?.filename || c.documentName || 'Mining Report Document',
+        pageNumber: c.pageNumber != null ? c.pageNumber : null,
+        similarity: c.similarityScore || 0.85,
+        excerpt: (c.content || '').replace(/\s+/g, ' ').substring(0, 200)
+      }))
+    },
+    status: 'draft',
+    version: 1,
+    previousVersions: [],
+    generatedBy: userId,
+    confidenceScore,
+    evidenceCoverage
+  });
+
+  await report.save();
+
+  try {
+    await auditService.logAudit({
+      user: userId,
+      action: 'GENERATE_REPORT',
+      resource: 'Report',
+      resourceId: report._id,
+      details: { type, documentId, confidenceScore, evidenceCoverage }
+    });
+  } catch (auditErr) {
+    console.warn('Audit log write failed:', auditErr.message);
+  }
+
+  return report;
 };
 
 // Generate Binary PDF buffer

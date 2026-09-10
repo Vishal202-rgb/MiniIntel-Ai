@@ -23,8 +23,27 @@ exports.getReports = async (req, res, next) => {
   }
 };
 
+// Concurrent request deduplication map (userId -> { startedAt, active })
+const inFlightReportRequests = new Map();
+
 // 2. Generate a new report
 exports.generateReport = async (req, res, next) => {
+  const userIdStr = req.user._id.toString();
+  const now = Date.now();
+
+  // Prevent duplicate concurrent requests while a generation is actively running
+  const existing = inFlightReportRequests.get(userIdStr);
+  if (existing && existing.active && (now - existing.startedAt < 120000)) {
+    return res.status(429).json({
+      success: false,
+      errorCode: 'DUPLICATE_REQUEST_IN_FLIGHT',
+      message: 'A report generation request is already in progress. Please wait a moment.',
+      retryAfterSeconds: 3,
+      retryable: false
+    });
+  }
+  inFlightReportRequests.set(userIdStr, { startedAt: now, active: true });
+
   try {
     const { data, type } = req.body;
     if (!type) {
@@ -46,18 +65,38 @@ exports.generateReport = async (req, res, next) => {
     return sendSuccess(res, report, 'Report generated successfully', 201);
   } catch (error) {
     console.error('[Report Controller Error]:', error.message);
-    const isContextOrLimit = error.code === 'AI_CONTEXT_LIMIT' || error.code === 'AI_RATE_LIMIT' || error.code === 'MAX_CALLS_EXCEEDED';
-    const statusCode = error.statusCode || (isContextOrLimit ? 422 : 500);
-    const errorCode = error.code || 'REPORT_GENERATION_FAILED';
-    const retryable = error.retryable !== undefined ? error.retryable : true;
+    const is503 = error.code === 'AI_SERVICE_UNAVAILABLE' || error.statusCode === 503 || error.status === 503 || (error.message && (
+      error.message.includes('503') || error.message.toLowerCase().includes('high demand') || error.message.includes('UNAVAILABLE')
+    ));
+    const isRateLimit = error.code === 'AI_RATE_LIMIT' || error.statusCode === 429 || error.status === 429 || error.code === 'DUPLICATE_REQUEST_IN_FLIGHT';
+    const isContextOrLimit = error.code === 'AI_CONTEXT_LIMIT' || error.code === 'MAX_CALLS_EXCEEDED';
+
+    const statusCode = error.statusCode || (is503 ? 503 : (isRateLimit ? 429 : (isContextOrLimit ? 422 : 500)));
+    const errorCode = is503 ? 'AI_SERVICE_UNAVAILABLE' : (isRateLimit ? (error.code || 'AI_RATE_LIMIT') : (error.code || 'REPORT_GENERATION_FAILED'));
+    const retryable = error.retryable !== undefined ? error.retryable : (is503 || isRateLimit);
+    const retryAfterSeconds = error.retryAfterSeconds || (is503 || isRateLimit ? 30 : undefined);
+
+    let displayMessage = error.message;
+    if (is503) {
+      displayMessage = 'AI service is temporarily unavailable. Please try again shortly.';
+    } else if (isRateLimit && (!displayMessage || displayMessage.includes('GoogleGenerativeAIError') || displayMessage.startsWith('429'))) {
+      displayMessage = 'AI service rate limit reached. Please try again shortly.';
+    } else if (!displayMessage) {
+      displayMessage = 'Report generation could not be completed.';
+    }
 
     return res.status(statusCode).json({
       success: false,
-      message: error.message || 'Report generation could not be completed because the AI request exceeded the available context limit.',
       errorCode: errorCode,
-      error: errorCode,
+      message: displayMessage,
+      retryAfterSeconds: retryAfterSeconds,
       retryable: retryable
     });
+  } finally {
+    // Release in-flight lock
+    setTimeout(() => {
+      inFlightReportRequests.delete(userIdStr);
+    }, 1500);
   }
 };
 

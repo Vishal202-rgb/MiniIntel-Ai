@@ -23,8 +23,11 @@ const ReportGenerator = () => {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
   const stepTimerRef = useRef(null);
+  const cooldownTimerRef = useRef(null);
+  const isGeneratingRef = useRef(false);
 
   const fetchDocs = async () => {
     try {
@@ -94,6 +97,7 @@ const ReportGenerator = () => {
 
     return () => {
       if (stepTimerRef.current) clearInterval(stepTimerRef.current);
+      if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
     };
   }, []);
 
@@ -109,8 +113,9 @@ const ReportGenerator = () => {
   };
 
   const handleGenerate = async () => {
-    if (generating) return;
+    if (isGeneratingRef.current || generating || cooldownSeconds > 0) return;
 
+    isGeneratingRef.current = true;
     setGenerating(true);
     setGenStep(0);
     setError(null);
@@ -148,16 +153,52 @@ const ReportGenerator = () => {
     } catch (err) {
       console.error('Report generation error:', err);
       const errData = err.response?.data;
+      const status = err.response?.status;
+      const is503 = errData?.errorCode === 'AI_SERVICE_UNAVAILABLE' || status === 503;
+      const isRateLimit = errData?.errorCode === 'AI_RATE_LIMIT' || errData?.errorCode === 'DUPLICATE_REQUEST_IN_FLIGHT' || status === 429;
+      const isCooldown = is503 || isRateLimit;
+      const waitTime = errData?.retryAfterSeconds || 30;
+
+      if (isCooldown) {
+        setCooldownSeconds(waitTime);
+        if (cooldownTimerRef.current) clearInterval(cooldownTimerRef.current);
+        cooldownTimerRef.current = setInterval(() => {
+          setCooldownSeconds((prev) => {
+            if (prev <= 1) {
+              clearInterval(cooldownTimerRef.current);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+
+      const userTitle = is503
+        ? 'AI Service Temporarily Unavailable'
+        : (isRateLimit ? 'Report generation temporarily unavailable' : 'Report Generation Failed');
+
+      const userReason = is503
+        ? 'AI service is temporarily unavailable. Please try again shortly.'
+        : (isRateLimit
+            ? `AI service is currently busy. Please try again in ${waitTime} seconds.`
+            : (errData?.message || err.formattedMessage || 'The requested evidence set could not be processed.'));
+
       setError({
-        title: 'Report Generation Failed',
-        reason: errData?.message || err.formattedMessage || 'The requested evidence set could not be processed.',
-        suggestedAction: 'Narrow the source document, reporting period, mine, or topic and try again.',
-        errorCode: errData?.errorCode || 'AI_CONTEXT_LIMIT',
-        retryable: errData?.retryable !== undefined ? errData.retryable : true
+        title: userTitle,
+        reason: userReason,
+        suggestedAction: isCooldown
+          ? 'Please wait for the cooldown countdown to finish before retrying.'
+          : 'Narrow the source document, reporting period, mine, or topic and try again.',
+        errorCode: errData?.errorCode || (is503 ? 'AI_SERVICE_UNAVAILABLE' : (isRateLimit ? 'AI_RATE_LIMIT' : 'AI_CONTEXT_LIMIT')),
+        retryable: errData?.retryable !== undefined ? errData.retryable : true,
+        retryAfterSeconds: waitTime,
+        isRateLimit: isRateLimit || is503,
+        is503
       });
     } finally {
       if (stepTimerRef.current) clearInterval(stepTimerRef.current);
       setGenerating(false);
+      isGeneratingRef.current = false;
     }
   };
 
@@ -452,35 +493,73 @@ const ReportGenerator = () => {
 
             <button 
               onClick={handleGenerate}
-              disabled={generating}
+              disabled={generating || cooldownSeconds > 0}
               className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-xs shadow-amber-500/20"
             >
-              {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-              {generating ? 'Processing Request...' : 'Generate Report'}
+              {generating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : cooldownSeconds > 0 ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileText className="w-3.5 h-3.5" />
+              )}
+              {generating 
+                ? 'Processing Request...' 
+                : cooldownSeconds > 0 
+                  ? `Cooldown Active (${cooldownSeconds}s)` 
+                  : 'Generate Report'}
             </button>
             
             {/* Structured Error Alert Card */}
             {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-lg space-y-2 text-xs">
-                <div className="flex items-center gap-1.5 font-bold text-red-800 dark:text-red-200 text-xs">
-                  <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                  <span>{error.title || 'Report Generation Failed'}</span>
+              <div className={`p-3 border rounded-lg space-y-2 text-xs ${
+                error.isRateLimit 
+                  ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/50 text-amber-800 dark:text-amber-300' 
+                  : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300'
+              }`}>
+                <div className="flex items-center justify-between font-bold text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${error.isRateLimit ? 'text-amber-600 dark:text-amber-400' : 'text-red-500'}`} />
+                    <span>{error.title || 'Report Generation Failed'}</span>
+                  </div>
+                  {cooldownSeconds > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 font-mono text-[10px] font-bold animate-pulse">
+                      {cooldownSeconds}s wait
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-800 dark:text-slate-200">Reason: </span>
-                  <span className="text-[11px] leading-relaxed">{error.reason}</span>
+                  <span className="font-semibold">Reason: </span>
+                  <span className="text-[11px] leading-relaxed">
+                    {cooldownSeconds > 0 
+                      ? (error.is503
+                          ? `AI service is temporarily unavailable. Please try again in ${cooldownSeconds} seconds.`
+                          : `AI service is currently busy. Please try again in ${cooldownSeconds} seconds.`) 
+                      : error.reason}
+                  </span>
                 </div>
-                <div className="text-[11px] text-gray-600 dark:text-slate-400 bg-red-100/50 dark:bg-red-900/20 p-2 rounded border border-red-200/60 dark:border-red-800/40 leading-relaxed">
-                  <span className="font-semibold text-gray-700 dark:text-slate-300">Suggested action: </span>
+                <div className={`text-[11px] p-2 rounded border leading-relaxed ${
+                  error.isRateLimit
+                    ? 'bg-amber-100/60 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-200'
+                    : 'bg-red-100/50 dark:bg-red-900/20 border-red-200/60 dark:border-red-800/40 text-gray-600 dark:text-slate-400'
+                }`}>
+                  <span className="font-semibold">Suggested action: </span>
                   <span>{error.suggestedAction}</span>
                 </div>
                 {error.retryable && (
                   <button
                     onClick={handleGenerate}
-                    disabled={generating}
-                    className="mt-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-[11px] font-semibold transition-colors flex items-center gap-1"
+                    disabled={generating || cooldownSeconds > 0}
+                    className={`mt-1 px-3 py-1.5 rounded text-[11px] font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      error.isRateLimit
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                        : 'bg-red-600 hover:bg-red-700 text-white shadow-xs'
+                    }`}
                   >
-                    <RefreshCw className="w-3 h-3" /> Retry Generation
+                    <RefreshCw className={`w-3 h-3 ${cooldownSeconds > 0 ? 'animate-spin' : ''}`} />
+                    <span>
+                      {cooldownSeconds > 0 ? `Retry in ${cooldownSeconds}s` : 'Retry Generation'}
+                    </span>
                   </button>
                 )}
               </div>

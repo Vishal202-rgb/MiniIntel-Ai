@@ -31,10 +31,10 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
   if (subsidiary) ragFilters.subsidiary = subsidiary;
   if (subject) ragFilters.subject = subject;
 
-  // 1. Retrieve bounded, scoped chunks (bounded topK = 8)
+  // 1. Retrieve bounded, scoped chunks (bounded topK = 5)
   let rawChunks = [];
   try {
-    rawChunks = await ragService.searchSimilar(searchQuery, 8, {
+    rawChunks = await ragService.searchSimilar(searchQuery, 5, {
       reqContext,
       filters: ragFilters
     });
@@ -53,7 +53,7 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
 
   for (const chunk of rawChunks) {
     const chunkId = chunk.chunkId ? chunk.chunkId.toString() : (chunk._id ? chunk._id.toString() : null);
-    const snippetKey = (chunk.content || '').replace(/\s+/g, ' ').substring(0, 80).toLowerCase();
+    const snippetKey = (chunk.content || '').replace(/\s+/g, ' ').substring(0, 60).toLowerCase();
 
     if (chunkId && seenChunkIds.has(chunkId)) continue;
     if (snippetKey && seenSnippets.has(snippetKey)) continue;
@@ -61,20 +61,20 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     if (chunkId) seenChunkIds.add(chunkId);
     if (snippetKey) seenSnippets.add(snippetKey);
     similarChunks.push(chunk);
-    if (similarChunks.length >= 8) break;
+    if (similarChunks.length >= 5) break;
   }
 
-  // Build bounded evidence context
+  // Build bounded evidence context (concise excerpts)
   let contextText = '';
   let totalChars = 0;
-  const MAX_RAG_CHARS = 10000;
+  const MAX_RAG_CHARS = 3500;
 
   for (let i = 0; i < similarChunks.length; i++) {
     const chunk = similarChunks[i];
     const pageLabel = chunk.pageNumber != null ? `Page ${chunk.pageNumber}` : 'Page N/A';
     const docName = chunk.documentId?.originalName || chunk.documentId?.filename || chunk.documentName || 'Mining Document';
-    // Bound each chunk excerpt to max 850 characters
-    const boundedChunkContent = (chunk.content || '').trim().substring(0, 850);
+    // Bound each chunk excerpt to max 450 characters
+    const boundedChunkContent = (chunk.content || '').trim().substring(0, 450);
     const chunkEntry = `--- Source Reference ${i + 1} — ${docName} [${pageLabel}] ---\n${boundedChunkContent}\n\n`;
 
     if (totalChars + chunkEntry.length > MAX_RAG_CHARS) {
@@ -100,17 +100,17 @@ const generateReport = async (data, type, userId, reqContext = {}) => {
     if (intelligenceResult) {
       const { summaryText, evidenceText } = intelligenceResult;
       deterministicContext += '\n=== VERIFIED DETERMINISTIC METRICS & ANOMALIES ===\n';
-      if (summaryText) deterministicContext += summaryText + '\n';
-      if (evidenceText) deterministicContext += evidenceText + '\n';
+      if (summaryText) deterministicContext += summaryText.substring(0, 2500) + '\n';
+      if (evidenceText) deterministicContext += evidenceText.substring(0, 1000) + '\n';
     }
   } catch (intelErr) {
     console.warn('[Report Generation] Mining intelligence injection skipped:', intelErr.message);
   }
 
-  // Total context boundary
+  // Total context boundary (bounded strictly to 6000 chars to avoid TPM/RPM rate limits)
   const fullContext = contextText + '\n' + deterministicContext;
-  const boundedFullContext = fullContext.length > 16000
-    ? fullContext.substring(0, 16000) + '\n\n[... Remaining data bounded to protect API limits]'
+  const boundedFullContext = fullContext.length > 6000
+    ? fullContext.substring(0, 6000) + '\n\n[... Remaining data bounded to protect API limits]'
     : fullContext;
 
   // 3. Evidence-First Prompt Construction
@@ -150,10 +150,21 @@ ${boundedFullContext}`;
     }
   } catch (err) {
     console.error('[Report Generation Service Error]', err.message);
-    const apiError = new Error(err.message || 'Report generation failed due to an AI service error.');
-    apiError.code = err.code || (err.status === 429 ? 'AI_RATE_LIMIT' : 'AI_CONTEXT_LIMIT');
-    apiError.statusCode = err.statusCode || (err.code === 'AI_RATE_LIMIT' ? 429 : 422);
-    apiError.retryable = err.retryable !== undefined ? err.retryable : true;
+    const is503 = err.code === 'AI_SERVICE_UNAVAILABLE' || err.statusCode === 503 || err.status === 503 || (err.message && (
+      err.message.includes('503') || err.message.toLowerCase().includes('high demand') || err.message.includes('UNAVAILABLE')
+    ));
+    const is429 = err.code === 'AI_RATE_LIMIT' || err.statusCode === 429 || err.status === 429;
+    const isContext = err.code === 'AI_CONTEXT_LIMIT' || err.code === 'MAX_CALLS_EXCEEDED';
+
+    const apiError = new Error(
+      is503 ? 'AI service is temporarily unavailable. Please try again shortly.' :
+      is429 ? (err.message || 'Gemini Rate Limit Exceeded. Please retry shortly.') :
+      (err.message || 'Report generation failed due to an AI service error.')
+    );
+    apiError.code = is503 ? 'AI_SERVICE_UNAVAILABLE' : (is429 ? 'AI_RATE_LIMIT' : (isContext ? 'AI_CONTEXT_LIMIT' : 'REPORT_GENERATION_FAILED'));
+    apiError.statusCode = is503 ? 503 : (is429 ? 429 : (isContext ? 422 : 500));
+    apiError.retryAfterSeconds = err.retryAfterSeconds || (is503 || is429 ? 30 : undefined);
+    apiError.retryable = err.retryable !== undefined ? err.retryable : (is503 || is429);
     throw apiError;
   }
 
@@ -163,9 +174,13 @@ ${boundedFullContext}`;
     typeof reportContent !== 'string' ||
     reportContent.trim().length < 50 ||
     reportContent.includes('reached the maximum API limits') ||
-    reportContent.includes('The task is very complex and reached the maximum')
+    reportContent.includes('The task is very complex and reached the maximum') ||
+    reportContent.includes('AI_RATE_LIMIT') ||
+    reportContent.includes('Rate Limit Exceeded') ||
+    reportContent.includes('temporarily unavailable') ||
+    reportContent.includes('high demand')
   ) {
-    const limitError = new Error('Report generation could not be completed because the AI request exceeded the available context limit or call quota.');
+    const limitError = new Error('Report generation could not be completed because the AI request exceeded the available context limit or service capacity.');
     limitError.code = 'AI_CONTEXT_LIMIT';
     limitError.statusCode = 422;
     limitError.retryable = true;

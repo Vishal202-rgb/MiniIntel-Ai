@@ -27,7 +27,7 @@ const Login = () => {
       } else {
         userData = await login(username, password);
       }
-      const fallback = userData?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard';
+      const fallback = userData?.role === 'admin' ? '/admin-dashboard' : '/dashboard';
       const target = location.state?.from?.pathname || fallback;
       navigate(target, { replace: true });
     } catch (err) {

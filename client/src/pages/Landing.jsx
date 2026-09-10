@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, FileText, Brain, BarChart2, CheckCircle2, 
@@ -7,10 +7,13 @@ import {
   FileCheck, ChevronRight, Compass, ArrowUpRight
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useContext(AuthContext);
+  const dashboardUrl = user?.role === 'admin' ? '/admin-dashboard' : '/dashboard';
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
@@ -169,20 +172,39 @@ const Landing = () => {
               Explore Platform
             </button>
 
-            <button
-              onClick={() => navigate('/admin/login')}
-              className="hidden sm:inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-[#262D3A] hover:bg-slate-100 dark:hover:bg-[#161A22] text-slate-700 dark:text-[#E2E8F0] transition-colors"
-            >
-              Admin Portal
-            </button>
-
-            <button
-              onClick={() => navigate('/login')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors"
-            >
-              <span>Sign In</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(dashboardUrl)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors"
+                >
+                  <span>Go to Dashboard</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => logout()}
+                  className="hidden sm:inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-[#262D3A] hover:bg-slate-100 dark:hover:bg-[#161A22] text-slate-700 dark:text-[#E2E8F0] transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate('/admin/login')}
+                  className="hidden sm:inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-[#262D3A] hover:bg-slate-100 dark:hover:bg-[#161A22] text-slate-700 dark:text-[#E2E8F0] transition-colors"
+                >
+                  Admin Portal
+                </button>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors"
+                >
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
 
         </div>
@@ -212,10 +234,10 @@ const Landing = () => {
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 mb-10">
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate(user ? dashboardUrl : '/login')}
                 className="px-5 py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
               >
-                <span>Sign In to Console</span>
+                <span>{user ? 'Enter Console' : 'Sign In to Console'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -227,12 +249,14 @@ const Landing = () => {
                 <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
 
-              <button
-                onClick={() => navigate('/admin/login')}
-                className="px-4 py-3 rounded-lg border border-transparent hover:border-slate-300 dark:border-[#262D3A] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white text-xs sm:text-sm font-medium transition-colors"
-              >
-                <span>Admin Authority Portal &rarr;</span>
-              </button>
+              {!user && (
+                <button
+                  onClick={() => navigate('/admin/login')}
+                  className="px-4 py-3 rounded-lg border border-transparent hover:border-slate-300 dark:border-[#262D3A] text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-white text-xs sm:text-sm font-medium transition-colors"
+                >
+                  <span>Admin Authority Portal &rarr;</span>
+                </button>
+              )}
             </div>
 
             {/* Operational Guarantee Badges */}
@@ -446,18 +470,20 @@ const Landing = () => {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(user ? dashboardUrl : '/login')}
               className="px-6 py-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
             >
-              <span>Officer Sign In</span>
+              <span>{user ? 'Enter Console' : 'Officer Sign In'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => navigate('/admin/login')}
-              className="px-6 py-3 rounded-lg border border-slate-300 dark:border-[#262D3A] hover:bg-slate-100 dark:hover:bg-[#161A22] text-slate-800 dark:text-[#F1F5F9] text-xs sm:text-sm font-semibold transition-colors"
-            >
-              Admin Portal
-            </button>
+            {!user && (
+              <button
+                onClick={() => navigate('/admin/login')}
+                className="px-6 py-3 rounded-lg border border-slate-300 dark:border-[#262D3A] hover:bg-slate-100 dark:hover:bg-[#161A22] text-slate-800 dark:text-[#F1F5F9] text-xs sm:text-sm font-semibold transition-colors"
+              >
+                Admin Portal
+              </button>
+            )}
           </div>
         </div>
       </section>

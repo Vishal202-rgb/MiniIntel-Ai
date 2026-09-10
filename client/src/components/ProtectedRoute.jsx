@@ -8,7 +8,7 @@ const ProtectedRoute = ({ adminOnly = false, children }) => {
 
   if (loading) return <div className="p-5 text-center text-gray-500">Loading...</div>;
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
+  if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return children ? children : <Outlet />;
 };

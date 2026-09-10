@@ -13,7 +13,7 @@ const navGroups = [
   {
     title: 'DATA & WORKFLOW',
     items: [
-      { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+      { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/command-center', icon: Monitor, label: 'Command Center' },
       { to: '/extraction', icon: Brain, label: 'Data Extraction' },
       { to: '/validation', icon: ShieldCheck, label: 'Validation' }
@@ -89,8 +89,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
                 )}
                 <div className="space-y-0.5">
                   {visibleItems.map((item) => {
-                    const targetTo = item.to === '/' ? (user?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard') : item.to;
-                    const isItemActive = location.pathname === targetTo || (item.to === '/' && (location.pathname === '/user-dashboard' || location.pathname === '/admin-dashboard'));
+                    const targetTo = item.to === '/dashboard' ? (user?.role === 'admin' ? '/admin-dashboard' : '/dashboard') : item.to;
+                    const isItemActive = location.pathname === targetTo || (item.to === '/dashboard' && (location.pathname === '/dashboard' || location.pathname === '/user-dashboard' || location.pathname === '/admin-dashboard'));
                     
                     return (
                       <NavLink

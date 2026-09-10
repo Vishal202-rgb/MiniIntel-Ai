@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider, AuthContext } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -28,23 +28,6 @@ import { LanguageProvider } from './context/LanguageContext';
 
 import Landing from './pages/Landing';
 
-const HomeRoute = () => {
-  const { user, loading } = useContext(AuthContext);
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0E1117] text-slate-500 font-medium">
-        Initializing MineIntel AI Platform...
-      </div>
-    );
-  }
-  if (user) {
-    return user.role === 'admin' 
-      ? <Navigate to="/admin-dashboard" replace /> 
-      : <Navigate to="/user-dashboard" replace />;
-  }
-  return <Landing />;
-};
-
 function App() {
   return (
     <ThemeProvider>
@@ -54,7 +37,7 @@ function App() {
             <BrowserRouter>
               <Routes>
                 {/* Public Landing & Auth Routes */}
-                <Route path="/" element={<HomeRoute />} />
+                <Route path="/" element={<Landing />} />
                 <Route path="/welcome" element={<Landing />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -62,7 +45,8 @@ function App() {
                 {/* Protected Application Workflows */}
                 <Route element={<ProtectedRoute />}>
                   <Route element={<Layout />}>
-                    <Route path="user-dashboard" element={<Dashboard />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="user-dashboard" element={<Navigate to="/dashboard" replace />} />
                     <Route path="admin-dashboard" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
                     <Route path="command-center" element={<CommandCenter />} />
                     <Route path="extraction" element={<ExtractionReview />} />

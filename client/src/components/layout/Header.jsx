@@ -10,6 +10,7 @@ import { AuthContext } from '../../context/AuthContext';
 import notificationApi from '../../api/notificationApi';
 
 const PAGE_TITLES = {
+  '/dashboard': 'Executive Dashboard',
   '/user-dashboard': 'Executive Dashboard',
   '/admin-dashboard': 'Admin Command & Ingestion',
   '/command-center': 'Command Center Operations',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Download, Copy, RefreshCw, Loader2, Check, ChevronDown, ChevronRight, Shield, AlertTriangle } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { FileText, Download, Copy, RefreshCw, Loader2, Check, ChevronDown, ChevronRight, Shield, AlertTriangle, Plus, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -7,13 +8,16 @@ import rehypeKatex from 'rehype-katex';
 import api from '../services/api';
 
 const ReportGenerator = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [documents, setDocuments] = useState([]);
+  const [recentReports, setRecentReports] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState('');
   const [reportType, setReportType] = useState('Executive Summary');
   const [period, setPeriod] = useState('');
   const [mineName, setMineName] = useState('');
   const [instructions, setInstructions] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [genStep, setGenStep] = useState(0); // 0: Preparing evidence, 1: Generating report, 2: Validating report
   const [report, setReport] = useState(null);
   const [error, setError] = useState(null);
@@ -22,39 +26,104 @@ const ReportGenerator = () => {
 
   const stepTimerRef = useRef(null);
 
+  const fetchDocs = async () => {
+    try {
+      const res = await api.get('/documents');
+      setDocuments(res.data?.data?.filter(d => d.status === 'completed') || []);
+    } catch (err) {
+      console.error('Failed to load documents', err);
+    }
+  };
+
+  const fetchRecentReports = async () => {
+    try {
+      const res = await api.get('/reports');
+      const list = res.data?.data || res.data || [];
+      const safeList = Array.isArray(list) ? list : [];
+      setRecentReports(safeList);
+      return safeList;
+    } catch (err) {
+      console.warn('Failed to load recent reports:', err);
+      return [];
+    }
+  };
+
+  const loadReportById = async (id, fallbackList = []) => {
+    if (!id) return;
+    setLoadingReport(true);
+    try {
+      const res = await api.get(`/reports/${id}`);
+      const loadedReport = res.data?.data || res.data;
+      if (loadedReport) {
+        setReport(loadedReport);
+        localStorage.setItem('mineintel_active_report_id', loadedReport._id);
+        setSearchParams({ id: loadedReport._id }, { replace: true });
+
+        // Restore generation inputs from report content parameters if available
+        const params = loadedReport.content?.parameters || {};
+        if (params.documentId) setSelectedDoc(params.documentId);
+        if (loadedReport.type) setReportType(loadedReport.type);
+        if (params.period) setPeriod(params.period);
+        if (params.mineName) setMineName(params.mineName);
+        if (params.instructions) setInstructions(params.instructions);
+      }
+    } catch (err) {
+      console.warn(`Could not load report ${id}:`, err.message);
+      localStorage.removeItem('mineintel_active_report_id');
+      // Fallback to first available report if list exists
+      if (fallbackList.length > 0 && fallbackList[0]._id !== id) {
+        setReport(fallbackList[0]);
+      }
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDocs = async () => {
-      try {
-        const res = await api.get('/documents');
-        setDocuments(res.data?.data?.filter(d => d.status === 'completed') || []);
-      } catch (err) {
-        console.error('Failed to load documents', err);
+    const init = async () => {
+      fetchDocs();
+      const list = await fetchRecentReports();
+      const urlId = searchParams.get('id');
+      const savedId = localStorage.getItem('mineintel_active_report_id');
+      const targetId = urlId || savedId || (list.length > 0 ? list[0]._id : null);
+      if (targetId) {
+        await loadReportById(targetId, list);
       }
     };
-    fetchDocs();
+    init();
 
     return () => {
       if (stepTimerRef.current) clearInterval(stepTimerRef.current);
     };
   }, []);
 
+  const handleNewReport = () => {
+    setReport(null);
+    setSelectedDoc('');
+    setPeriod('');
+    setMineName('');
+    setInstructions('');
+    setError(null);
+    localStorage.removeItem('mineintel_active_report_id');
+    setSearchParams({}, { replace: true });
+  };
+
   const handleGenerate = async () => {
-    if (generating) return; // Prevent duplicate clicks
+    if (generating) return;
 
     setGenerating(true);
     setGenStep(0);
     setError(null);
 
-    // Multi-stage pipeline feedback
     const startTime = Date.now();
     stepTimerRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
       if (elapsed > 12000) {
-        setGenStep(2); // Validating report
+        setGenStep(2);
       } else if (elapsed > 3500) {
-        setGenStep(1); // Generating report
+        setGenStep(1);
       } else {
-        setGenStep(0); // Preparing evidence
+        setGenStep(0);
       }
     }, 1000);
 
@@ -69,7 +138,12 @@ const ReportGenerator = () => {
         }
       });
       const generatedReport = res.data?.data || res.data;
+      
+      // Immediate in-memory and database persistence
       setReport(generatedReport);
+      localStorage.setItem('mineintel_active_report_id', generatedReport._id);
+      setSearchParams({ id: generatedReport._id }, { replace: true });
+      fetchRecentReports();
       setError(null);
     } catch (err) {
       console.error('Report generation error:', err);
@@ -213,15 +287,50 @@ const ReportGenerator = () => {
   return (
     <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-4 py-3 overflow-x-hidden text-gray-800 dark:text-[#94a3b8]">
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-3 mb-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 rounded-lg">
-            <FileText className="w-4 h-4 text-amber-500" />
+          <div className="p-1.5 bg-slate-100 dark:bg-[#1c1f26] border border-slate-200 dark:border-[#2d3139] rounded-lg">
+            <FileText className="w-4 h-4 text-copper-500" />
           </div>
           <div>
             <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-tight">Report Generator</h1>
             <p className="text-[11px] text-gray-500 dark:text-slate-400">Generate verified, evidence-grounded mining intelligence reports.</p>
           </div>
+        </div>
+
+        {/* Saved / Recent Reports Selector & New Report Button */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {recentReports.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Saved:</span>
+              <select
+                value={report?._id || ''}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    loadReportById(e.target.value, recentReports);
+                  }
+                }}
+                disabled={generating || loadingReport}
+                className="bg-white dark:bg-[#1c1f26] border border-slate-200 dark:border-[#2d3139] rounded px-2 py-1 text-xs text-gray-800 dark:text-white focus:outline-none focus:border-amber-500 max-w-[220px] truncate"
+              >
+                <option value="" disabled>Select a saved report...</option>
+                {recentReports.map(r => (
+                  <option key={r._id} value={r._id}>
+                    {r.title || 'Untitled Report'} ({r.status || 'draft'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <button
+            onClick={handleNewReport}
+            disabled={generating}
+            className="px-2.5 py-1 bg-white dark:bg-[#1c1f26] hover:bg-slate-100 dark:hover:bg-[#2d3139] border border-slate-200 dark:border-[#2d3139] text-gray-800 dark:text-[#f1f5f9] rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5 text-amber-500" />
+            <span>New Report</span>
+          </button>
         </div>
       </div>
 
@@ -407,15 +516,58 @@ const ReportGenerator = () => {
                       onClick={async () => {
                         try {
                           const res = await api.put(`/reports/${report._id}/submit`);
-                          setReport(res.data.data);
+                          const updated = res.data?.data || res.data;
+                          setReport(updated);
+                          fetchRecentReports();
                         } catch (e) { alert(e.message); }
                       }}
-                      className="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-semibold rounded transition-colors whitespace-nowrap shrink-0"
+                      className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold rounded transition-colors whitespace-nowrap shrink-0 shadow-xs"
                     >
                       Submit for Review
                     </button>
                   )}
                 </div>
+
+                {/* Status Detail Banners */}
+                {report.status === 'approved' && (
+                  <div className="mb-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded flex items-start gap-2 text-xs text-emerald-800 dark:text-emerald-300">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Report Approved by Administration</span>
+                      {report.approvedAt && (
+                        <span className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 ml-2 font-mono">
+                          ({new Date(report.approvedAt).toLocaleDateString()})
+                        </span>
+                      )}
+                      {report.reviewerComments && (
+                        <p className="text-[11px] mt-0.5 text-emerald-700 dark:text-emerald-300">
+                          Comments: {report.reviewerComments}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {report.status === 'rejected' && (
+                  <div className="mb-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 rounded flex items-start gap-2 text-xs text-red-800 dark:text-red-300">
+                    <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold">Report Rejected by Reviewer</span>
+                      {report.reviewerComments && (
+                        <p className="text-[11px] mt-0.5 text-red-700 dark:text-red-300 font-medium">
+                          Rejection Reason: {report.reviewerComments}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {report.status === 'review' && (
+                  <div className="mb-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300">
+                    <Loader2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-spin shrink-0" />
+                    <span>Submitted for Administrative Review • Awaiting Approval</span>
+                  </div>
+                )}
 
                 {/* Metrics & Export Controls Row */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-[#2d3139]/50">

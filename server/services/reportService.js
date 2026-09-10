@@ -194,6 +194,15 @@ ${boundedFullContext}`;
     type: type,
     content: {
       markdown: reportContent,
+      parameters: {
+        documentId: documentId || null,
+        instructions: instructions || '',
+        template: template || '',
+        period: period || '',
+        mineName: mineName || '',
+        subsidiary: subsidiary || '',
+        subject: subject || ''
+      },
       sources: similarChunks.map(c => ({
         documentId: c.documentId?._id || c.documentId,
         documentName: c.documentId?.originalName || c.documentId?.filename || c.documentName || 'Mining Report Document',

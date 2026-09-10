@@ -16,6 +16,7 @@ import dashboardApi from './dashboardApi';
 import commandCentreApi from './commandCentreApi';
 import settingsApi from './settingsApi';
 import helpApi from './helpApi';
+import notificationApi from './notificationApi';
 
 export {
   apiClient,
@@ -38,6 +39,7 @@ export {
   commandCentreApi,
   settingsApi,
   helpApi,
+  notificationApi,
 };
 
 export default {
@@ -61,4 +63,5 @@ export default {
   commandCentre: commandCentreApi,
   settings: settingsApi,
   help: helpApi,
+  notifications: notificationApi,
 };

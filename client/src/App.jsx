@@ -26,12 +26,23 @@ import HelpSupport from './pages/HelpSupport';
 
 import { LanguageProvider } from './context/LanguageContext';
 
-const DashboardRouter = () => {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-  if (userInfo.role === 'admin') {
-    return <Navigate to="/admin-dashboard" replace />;
+import Landing from './pages/Landing';
+
+const HomeRoute = () => {
+  const { user, loading } = useContext(AuthContext);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0E1117] text-slate-500 font-medium">
+        Initializing MineIntel AI Platform...
+      </div>
+    );
   }
-  return <Navigate to="/user-dashboard" replace />;
+  if (user) {
+    return user.role === 'admin' 
+      ? <Navigate to="/admin-dashboard" replace /> 
+      : <Navigate to="/user-dashboard" replace />;
+  }
+  return <Landing />;
 };
 
 function App() {
@@ -41,39 +52,42 @@ function App() {
         <AuthProvider>
           <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-200">
             <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              
-              <Route path="/" element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
-                <Route index element={<DashboardRouter />} />
-                <Route path="user-dashboard" element={<Dashboard />} />
-                <Route path="admin-dashboard" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
-                <Route path="command-center" element={<CommandCenter />} />
-                <Route path="extraction" element={<ExtractionReview />} />
-                <Route path="validation" element={<ValidationDashboard />} />
-                <Route path="knowledge-base" element={<KnowledgeBase />} />
-                <Route path="ai-assistant" element={<AIAssistant />} />
-                <Route path="reports" element={<ReportGenerator />} />
-                <Route path="analytics" element={<AnalyticsDashboard />} />
-                <Route path="intelligence" element={<IntelligenceDashboard />} />
-                <Route path="topics" element={<TopicsExplorer />} />
-                <Route path="audit" element={<AuditTrail />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="help" element={<HelpSupport />} />
+              <Routes>
+                {/* Public Landing & Auth Routes */}
+                <Route path="/" element={<HomeRoute />} />
+                <Route path="/welcome" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
                 
-                {/* Admin Specific Screens can be added here if needed */}
-                <Route element={<ProtectedRoute adminOnly={true} />}>
-                  <Route path="admin/users" element={<AdminUsers />} />
-                  <Route path="admin/system-health" element={<SystemHealth />} />
-                  <Route path="admin/pending-reviews" element={<AdminPendingReviews />} />
+                {/* Protected Application Workflows */}
+                <Route element={<ProtectedRoute />}>
+                  <Route element={<Layout />}>
+                    <Route path="user-dashboard" element={<Dashboard />} />
+                    <Route path="admin-dashboard" element={<ProtectedRoute adminOnly={true}><AdminDashboard /></ProtectedRoute>} />
+                    <Route path="command-center" element={<CommandCenter />} />
+                    <Route path="extraction" element={<ExtractionReview />} />
+                    <Route path="validation" element={<ValidationDashboard />} />
+                    <Route path="knowledge-base" element={<KnowledgeBase />} />
+                    <Route path="ai-assistant" element={<AIAssistant />} />
+                    <Route path="reports" element={<ReportGenerator />} />
+                    <Route path="analytics" element={<AnalyticsDashboard />} />
+                    <Route path="intelligence" element={<IntelligenceDashboard />} />
+                    <Route path="topics" element={<TopicsExplorer />} />
+                    <Route path="audit" element={<AuditTrail />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="help" element={<HelpSupport />} />
+                    
+                    {/* Admin Specific Screens */}
+                    <Route element={<ProtectedRoute adminOnly={true} />}>
+                      <Route path="admin/users" element={<AdminUsers />} />
+                      <Route path="admin/system-health" element={<SystemHealth />} />
+                      <Route path="admin/pending-reviews" element={<AdminPendingReviews />} />
+                    </Route>
+                  </Route>
                 </Route>
-              </Route>
-            </Route>
-          </Routes>
-        </BrowserRouter>
-        </div>
+              </Routes>
+            </BrowserRouter>
+          </div>
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>

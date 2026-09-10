@@ -4,10 +4,11 @@ exports.getNotifications = async (req, res, next) => {
   try {
     const query = {};
     // Users see only their notifications; admins see all
-    if (req.user) {
+    if (req.user && req.user.role !== 'admin') {
       query.$or = [
         { userId: req.user._id },
-        { userId: { $exists: false } }  // System-wide notifications
+        { userId: { $exists: false } },
+        { userId: null }
       ];
     }
     if (req.query.unread === 'true') query.read = false;

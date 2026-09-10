@@ -75,7 +75,7 @@ const ValidationDashboard = () => {
       case 'high':
       case 'error': return <AlertCircle className="w-4 h-4 text-red-500" />;
       case 'medium':
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
       default: return <ShieldAlert className="w-4 h-4 text-amber-500" />;
     }
   };

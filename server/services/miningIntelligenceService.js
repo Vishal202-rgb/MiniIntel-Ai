@@ -9,12 +9,13 @@ function parseNumeric(val) {
 }
 
 exports.analyzeDataAndFindAnomalies = async (options = {}) => {
-  const reqContext = options.reqContext || (options.isComplex !== undefined ? options : null);
-  const filters = options.filters || {};
-  const documentId = options.documentId || filters.documentId || filters.document;
-  const mineName = options.mineName || filters.mine || filters.mineName;
-  const period = options.period || filters.period;
-  const subsidiary = options.subsidiary || filters.subsidiary;
+  const opts = options || {};
+  const reqContext = opts.reqContext || (opts.isComplex !== undefined ? opts : null);
+  const filters = opts.filters || {};
+  const documentId = opts.documentId || filters.documentId || filters.document;
+  const mineName = opts.mineName || filters.mine || filters.mineName;
+  const period = opts.period || filters.period;
+  const subsidiary = opts.subsidiary || filters.subsidiary;
 
   // 1. Fetch scoped structured data
   const recordQuery = {};

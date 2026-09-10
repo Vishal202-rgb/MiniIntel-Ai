@@ -128,7 +128,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard 
           icon={FileText} label="Total Documents" value={totalDocs} 
-          trend="+12% this week" trendUp={true} colorClass="bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400" 
+          trend="+12% this week" trendUp={true} colorClass="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" 
         />
         <StatCard 
           icon={CheckCircle} label="Processed" value={processedDocs} 
@@ -136,7 +136,7 @@ const Dashboard = () => {
         />
         <StatCard 
           icon={Clock} label="Pending / Processing" value={pendingDocs} 
-          colorClass="bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400" 
+          colorClass="bg-amber-50 text-copper-600 dark:bg-amber-900/20 dark:text-copper-400" 
         />
         <StatCard 
           icon={XCircle} label="Failed Extractions" value={failedDocs} 
@@ -230,41 +230,41 @@ const Dashboard = () => {
         {/* Right Column (Side Panels) */}
         <div className="lg:col-span-3 space-y-4">
           {/* AI Insights Panel */}
-          <div className="bg-gradient-to-br from-amber-700 to-amber-900 rounded-lg p-5 shadow-sm text-white border border-amber-600/50">
+          <div className="bg-white dark:bg-[#161B26] rounded-lg p-5 shadow-xs text-slate-900 dark:text-white border border-slate-200 dark:border-[#2B3245]">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-amber-200" />
-                <h2 className="text-base font-semibold">AI Insights</h2>
+                <Brain className="w-4 h-4 text-copper-500" />
+                <h2 className="text-sm font-bold tracking-tight">Operational Insights</h2>
               </div>
               <span className="flex h-1.5 w-1.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-copper-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-copper-500"></span>
               </span>
             </div>
             
-            <div className="space-y-3">
-              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+            <div className="space-y-2.5">
+              <div className="bg-slate-50 dark:bg-[#0B0E14] rounded-lg p-3 border border-slate-200 dark:border-[#2B3245]">
                 <div className="flex gap-2.5 items-start">
-                  <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-copper-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-white">Production Anomaly</p>
-                    <p className="text-[11px] text-amber-100 mt-1 leading-relaxed">Coal extraction at Mine Alpha is 15% below quarterly target based on recent reports.</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">Production Anomaly</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Coal extraction at Mine Alpha is 15% below quarterly target based on recent reports.</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+              <div className="bg-slate-50 dark:bg-[#0B0E14] rounded-lg p-3 border border-slate-200 dark:border-[#2B3245]">
                 <div className="flex gap-2.5 items-start">
-                  <CheckCircle className="w-4 h-4 text-green-300 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-white">Validation Clean</p>
-                    <p className="text-[11px] text-amber-100 mt-1 leading-relaxed">Last 5 documents parsed with 100% data integrity. No manual review needed.</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">Validation Clean</p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">Last 5 documents parsed with 100% data integrity. No manual review needed.</p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-white/10">
-              <Link to="/ai-assistant" className="text-[11px] text-amber-200 hover:text-white font-medium flex items-center justify-center gap-1 transition-colors">
-                Ask AI Assistant <TrendingUp className="w-3.5 h-3.5 rotate-45" />
+            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-[#2B3245]">
+              <Link to="/ai-assistant" className="text-xs text-copper-600 dark:text-copper-400 hover:underline font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                Open AI Operations Assistant <TrendingUp className="w-3.5 h-3.5 rotate-45" />
               </Link>
             </div>
           </div>

@@ -2,12 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, FileText, ShieldAlert, Activity, Database, Server, Clock, 
   AlertCircle, FileOutput, Search, RefreshCw, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Trash2, Loader2, Eye, Check, X
+  ChevronDown, ChevronUp, Trash2, Loader2, Eye, Check, X, FileUp, Upload, Layers, ShieldCheck
 } from 'lucide-react';
 import { userApi, documentApi, auditApi } from '../api';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import DropZone from '../components/upload/DropZone';
+import UploadProgress from '../components/upload/UploadProgress';
 
 // ... (StatCard, RoleBadge, StatusBadge, HealthDot, SectionHeader, formatDate unchanged)
 const StatCard = ({ icon: Icon, label, value, colorClass, loading }) => (
@@ -29,7 +31,7 @@ const RoleBadge = ({ role }) => (
   <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider ${
     role === 'admin' 
       ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
-      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
   }`}>
     {role}
   </span>
@@ -42,8 +44,8 @@ const StatusBadge = ({ status }) => {
     suspended: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     inactive: 'bg-slate-100 text-gray-600 dark:bg-neutral-700/50 dark:text-slate-400',
     completed: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    processing: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-    pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+    processing: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     resolved: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   };
@@ -103,6 +105,49 @@ const AdminDashboard = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [userSort, setUserSort] = useState({ key: 'createdAt', dir: 'desc' });
   const [deletingUser, setDeletingUser] = useState(null);
+
+  // Document Upload state
+  const [showUploadZone, setShowUploadZone] = useState(false);
+  const [uploads, setUploads] = useState([]);
+
+  const handleUpload = async (file) => {
+    const uploadId = Date.now().toString();
+    setUploads((prev) => [
+      ...prev,
+      { id: uploadId, name: file.name, progress: 0, status: 'uploading' }
+    ]);
+
+    try {
+      await documentApi.uploadDocument(file, (progress) => {
+        setUploads((prev) =>
+          prev.map((u) => (u.id === uploadId ? { ...u, progress } : u))
+        );
+      });
+      
+      setUploads((prev) =>
+        prev.map((u) => (u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u))
+      );
+      fetchAll();
+      setSuccessMessage(`Document "${file.name}" uploaded successfully. Automated ingestion, extraction & indexing initiated.`);
+      
+      setTimeout(() => {
+        setUploads((prev) => prev.filter((u) => u.id !== uploadId));
+      }, 4000);
+    } catch (error) {
+      const errMsg = error.response?.data?.error || error.response?.data?.message || error.formattedMessage || error.message || 'Upload failed';
+      setUploads((prev) =>
+        prev.map((u) =>
+          u.id === uploadId
+            ? { ...u, status: 'error', error: errMsg }
+            : u
+        )
+      );
+    }
+  };
+
+  const handleDismissUpload = (id) => {
+    setUploads((prev) => prev.filter((u) => u.id !== id));
+  };
 
   useEffect(() => {
     fetchAll();
@@ -228,17 +273,67 @@ const AdminDashboard = () => {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">Admin Dashboard</h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">System overview, user management, and health monitoring.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">Admin Dashboard</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-xs sm:text-sm mt-1">System authority, statutory document ingestion, user management, and health telemetry.</p>
         </div>
-        <button
-          onClick={fetchAll}
-          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-dark-card text-neutral-700 dark:text-neutral-300 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh Data
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={() => setShowUploadZone(!showUploadZone)}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs sm:text-sm font-semibold transition-colors shadow-sm"
+          >
+            <FileUp className="w-4 h-4" />
+            <span>{showUploadZone ? 'Close Ingestion Zone' : 'Upload Document'}</span>
+          </button>
+          <button
+            onClick={fetchAll}
+            className="flex items-center gap-2 px-3.5 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-dark-card text-neutral-700 dark:text-neutral-300 rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh Data</span>
+          </button>
+        </div>
       </div>
+
+      {/* ── Document Ingestion Capability ── */}
+      {showUploadZone && (
+        <div className="bg-white dark:bg-[#161A22] border border-amber-500/30 dark:border-amber-500/30 rounded-lg p-5 shadow-md space-y-4 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-[#262D3A] pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <FileUp className="w-5 h-5 text-amber-500" />
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                  Statutory Document Ingestion &amp; Automated Pipeline
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-[#94A3B8] mt-0.5">
+                Upload operational circulars, DGMS notices, borehole logs, or production spreadsheets (PDF, DOCX, XLSX, PPTX, CSV, JPG, PNG).
+              </p>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold uppercase">
+              Full Pipeline Ingestion
+            </span>
+          </div>
+
+          {/* Pipeline Flow Stages Indicator */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+            <div className="p-2 rounded bg-slate-50 dark:bg-[#12151C] border border-slate-200 dark:border-[#262D3A] text-slate-700 dark:text-[#CBD5E1]">
+              <span className="font-bold text-amber-600 dark:text-amber-400">1. Ingestion:</span> SHA-256 Checksum &amp; Storage
+            </div>
+            <div className="p-2 rounded bg-slate-50 dark:bg-[#12151C] border border-slate-200 dark:border-[#262D3A] text-slate-700 dark:text-[#CBD5E1]">
+              <span className="font-bold text-amber-600 dark:text-amber-400">2. Extraction:</span> Multi-Modal OCR &amp; Tables
+            </div>
+            <div className="p-2 rounded bg-slate-50 dark:bg-[#12151C] border border-slate-200 dark:border-[#262D3A] text-slate-700 dark:text-[#CBD5E1]">
+              <span className="font-bold text-amber-600 dark:text-amber-400">3. Validation:</span> Statutory Rule Verification
+            </div>
+            <div className="p-2 rounded bg-slate-50 dark:bg-[#12151C] border border-slate-200 dark:border-[#262D3A] text-slate-700 dark:text-[#CBD5E1]">
+              <span className="font-bold text-amber-600 dark:text-amber-400">4. Indexing:</span> RAG Vector Knowledge Base
+            </div>
+          </div>
+
+          <DropZone onUpload={handleUpload} />
+          <UploadProgress uploads={uploads} onDismiss={handleDismissUpload} />
+        </div>
+      )}
 
       {/* ── Error & Success Messages ── */}
       {error && (
@@ -271,7 +366,7 @@ const AdminDashboard = () => {
       <div className="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 dark:bg-white/[0.02]">
           <h2 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-500" />
+            <Users className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             User Management <span className="text-slate-400 dark:text-slate-400 font-normal ml-1">({users.length})</span>
           </h2>
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -368,7 +463,18 @@ const AdminDashboard = () => {
 
         {/* ── Document Management (2 cols) ── */}
         <div className="lg:col-span-2 bg-white dark:bg-dark-card rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <SectionHeader icon={FileText} title={`Documents (${documents.length})`} iconColor="text-amber-500" />
+          <SectionHeader icon={FileText} title={`Documents (${documents.length})`} iconColor="text-slate-500 dark:text-slate-400">
+            <button
+              onClick={() => {
+                setShowUploadZone(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload Document
+            </button>
+          </SectionHeader>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50/80 dark:bg-dark-card/40 text-gray-500 dark:text-slate-400 uppercase text-xs tracking-wider">
@@ -421,12 +527,12 @@ const AdminDashboard = () => {
 
           {/* Recent Activity / Audit */}
           <div className="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <SectionHeader icon={Clock} title="Recent Activity" iconColor="text-amber-500" />
+            <SectionHeader icon={Clock} title="Recent Activity" iconColor="text-slate-500 dark:text-slate-400" />
             <div className="p-5 space-y-4">
               {auditLogs.slice(0, 6).map((log, i) => (
                 <div key={log._id || i} className="flex gap-3 items-start">
                   <div className="mt-1.5 shrink-0">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 ring-4 ring-amber-50 dark:ring-amber-900/20" />
+                    <div className="w-2 h-2 rounded-full bg-copper-500 ring-4 ring-copper-50 dark:ring-copper-900/20" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-neutral-900 dark:text-neutral-200 truncate">{log.action}</p>
@@ -443,7 +549,7 @@ const AdminDashboard = () => {
             </div>
             {auditLogs.length > 0 && (
               <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 text-center bg-slate-50/50 dark:bg-white/[0.01]">
-                <Link to="/audit" className="text-xs text-amber-600 dark:text-amber-400 font-medium hover:underline">View Full Audit Trail →</Link>
+                <Link to="/audit" className="text-xs text-copper-600 dark:text-copper-400 font-semibold hover:underline">View Full Audit Trail →</Link>
               </div>
             )}
           </div>

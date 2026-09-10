@@ -12,13 +12,13 @@ body {
 
 @layer utilities {
   .hover-lift {
-    @apply transition-all duration-200 ease-in-out cursor-pointer hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-[0_4px_20px_-4px_rgba(245,158,11,0.2)];
+    @apply transition-all duration-200 ease-in-out cursor-pointer hover:-translate-y-0.5 hover:border-copper-600/50 hover:shadow-md;
   }
   .hover-lift:hover .hover-lift-arrow {
-    @apply translate-x-1 text-amber-400 transition-transform duration-200;
+    @apply translate-x-1 text-copper-500 transition-transform duration-200;
   }
   .hover-lift:hover .hover-lift-icon {
-    @apply text-amber-400 transition-colors duration-200;
+    @apply text-copper-500 transition-colors duration-200;
   }
 }
 

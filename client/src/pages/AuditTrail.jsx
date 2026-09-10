@@ -107,7 +107,7 @@ const AuditTrail = () => {
                       ) : log.status === 'FAILED' ? (
                         <span className="flex items-center gap-1 text-red-400 text-xs font-medium"><XCircle className="w-4 h-4"/> Failed</span>
                       ) : (
-                        <span className="flex items-center gap-1 text-yellow-400 text-xs font-medium"><Clock className="w-4 h-4"/> Processing</span>
+                        <span className="flex items-center gap-1 text-amber-400 text-xs font-medium"><Clock className="w-4 h-4"/> Processing</span>
                       )}
                     </td>
                     <td className="px-6 py-4 max-w-xs truncate text-gray-500 dark:text-slate-400" title={JSON.stringify(log.details)}>

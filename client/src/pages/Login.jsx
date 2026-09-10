@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Loader2, Lock, User, Mail, UserCircle, ArrowLeft, AlertCircle } from 'lucide-react';
 import authApi from '../api/authApi';
@@ -13,19 +13,23 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
+      let userData;
       if (isRegistering) {
         await authApi.register(username, email, password);
-        await login(username, password);
+        userData = await login(username, password);
       } else {
-        await login(username, password);
+        userData = await login(username, password);
       }
-      navigate('/');
+      const fallback = userData?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard';
+      const target = location.state?.from?.pathname || fallback;
+      navigate(target, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Authentication failed');
     } finally {
@@ -40,14 +44,23 @@ const Login = () => {
         {/* Decorative Top Accent — Blue for user identity */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 to-amber-500"></div>
 
-        {/* Back button (visible when registering, navigates back to sign-in) */}
-        {isRegistering && (
+        {/* Back button */}
+        {isRegistering ? (
           <button 
             onClick={() => setIsRegistering(false)}
             className="absolute top-6 left-6 text-slate-400 hover:text-neutral-300 transition-colors"
             aria-label="Back to Sign In"
           >
             <ArrowLeft className="w-5 h-5" />
+          </button>
+        ) : (
+          <button 
+            onClick={() => navigate('/')}
+            className="absolute top-6 left-6 text-slate-400 hover:text-neutral-300 transition-colors flex items-center gap-1.5 text-xs tracking-wide"
+            aria-label="Back to Platform Overview"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Overview</span>
           </button>
         )}
 

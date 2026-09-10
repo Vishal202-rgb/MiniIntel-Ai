@@ -37,15 +37,20 @@ export const aiAssistantApi = {
    * @param {string} [conversationId]
    */
   askQuestion: async (question, conversationId) => {
-    const response = await apiClient.post('/agents/orchestrate', {
-      task: question,
-      context: { conversationId, source: 'ai-assistant' },
+    const response = await apiClient.post('/ai-assistant/query', {
+      query: question,
+      conversationId: conversationId || undefined,
     });
-    const result = response.data;
+    const result = response.data?.data || response.data;
     return {
-      answer: result.data?.message || result.message || 'Task completed successfully.',
-      sources: result.data?.sources || [],
-      conversationId: conversationId,
+      answer: result.answer || result.message || 'No answer available.',
+      confidence: result.confidence !== undefined ? result.confidence : 0.85,
+      citations: result.citations || [],
+      evidence: result.evidence || [],
+      calculation: result.calculation && Object.keys(result.calculation).length > 0 ? result.calculation : null,
+      insufficientEvidence: Boolean(result.insufficientEvidence),
+      sources: result.citations && result.citations.length > 0 ? result.citations : (result.sources || []),
+      conversationId: result.conversationId || conversationId,
     };
   },
 

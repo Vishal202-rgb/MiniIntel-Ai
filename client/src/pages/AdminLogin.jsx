@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Loader2, Lock, User, ShieldAlert, ArrowLeft } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const { login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +20,8 @@ const AdminLogin = () => {
     try {
       // Pass requireAdmin = true to strictly reject non-admin users
       await login(username, password, true);
-      navigate('/admin-dashboard');
+      const target = location.state?.from?.pathname || '/admin-dashboard';
+      navigate(target, { replace: true });
     } catch (err) {
       logout(); // Instantly revoke token if any failure occurs
       setError(err.message || err.response?.data?.message || 'Admin authentication failed');

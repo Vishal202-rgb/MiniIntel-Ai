@@ -4,10 +4,11 @@ import {
   LayoutDashboard, Brain, ShieldCheck, Database, MessageSquare, 
   BarChart2, Hash, FileOutput, Monitor, ScrollText, ChevronLeft, 
   ChevronRight, LogOut, Users, Activity, Sparkles, FileCheck, Settings,
-  Shield, HelpCircle
+  HelpCircle
 } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { MineIntelLogo, MineIntelIcon } from '../common/MineIntelLogo';
 
 const navGroups = [
   {
@@ -56,18 +57,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, closeMobileMenu }) 
         
         {/* Brand Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-4 border-b border-[#2d3139] shrink-0 relative">
-          <div className={`flex items-center gap-2.5 transition-opacity duration-200 ${isCollapsed ? 'md:hidden' : ''}`}>
-            <Shield className="w-7 h-7 text-copper-500 shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-[#f1f5f9] font-bold text-base tracking-tight leading-tight">MineIntel AI</span>
-              <span className="text-[#94a3b8] text-[9px] uppercase tracking-wider font-semibold mt-0.5">Mining Intelligence</span>
-            </div>
+          <div className={`flex items-center transition-opacity duration-200 ${isCollapsed ? 'md:hidden' : ''}`}>
+            <MineIntelLogo size={32} />
           </div>
           
           {/* Logo only when collapsed */}
           {isCollapsed && (
             <div className="hidden md:flex w-full justify-center">
-              <Shield className="w-6 h-6 text-copper-500 shrink-0" />
+              <MineIntelIcon size={28} />
             </div>
           )}
         </div>

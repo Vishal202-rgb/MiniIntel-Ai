@@ -10,6 +10,8 @@ import api from '../services/api';
 const ReportGenerator = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [documents, setDocuments] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [docsError, setDocsError] = useState(null);
   const [recentReports, setRecentReports] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState('');
   const [reportType, setReportType] = useState('Executive Summary');
@@ -30,11 +32,34 @@ const ReportGenerator = () => {
   const isGeneratingRef = useRef(false);
 
   const fetchDocs = async () => {
+    setLoadingDocs(true);
+    setDocsError(null);
     try {
-      const res = await api.get('/documents');
-      setDocuments(res.data?.data?.filter(d => d.status === 'completed') || []);
+      const res = await api.get('/documents', { params: { limit: 100 } });
+      const rawList = res.data?.data || res.data || [];
+      const safeList = Array.isArray(rawList) ? rawList : [];
+
+      // Filter for successfully extracted or indexed documents, excluding failed or pending
+      const eligible = safeList.filter(d => {
+        if (!d) return false;
+        if (d.status === 'failed' || d.status === 'pending' || d.status === 'processing') return false;
+        return (
+          d.status === 'completed' ||
+          d.status === 'extracted' ||
+          d.status === 'indexed' ||
+          Boolean(d.isIndexed) ||
+          Boolean(d.extractedText)
+        );
+      });
+
+      // Sort with latest uploaded/created first
+      eligible.sort((a, b) => new Date(b.uploadedAt || b.createdAt || 0) - new Date(a.uploadedAt || a.createdAt || 0));
+      setDocuments(eligible);
     } catch (err) {
       console.error('Failed to load documents', err);
+      setDocsError(err.response?.data?.message || err.formattedMessage || err.message || 'Failed to load documents');
+    } finally {
+      setLoadingDocs(false);
     }
   };
 
@@ -87,6 +112,10 @@ const ReportGenerator = () => {
       fetchDocs();
       const list = await fetchRecentReports();
       const urlId = searchParams.get('id');
+      const urlDocId = searchParams.get('docId') || searchParams.get('documentId');
+      if (urlDocId) {
+        setSelectedDoc(urlDocId);
+      }
       const savedId = localStorage.getItem('mineintel_active_report_id');
       const targetId = urlId || savedId || (list.length > 0 ? list[0]._id : null);
       if (targetId) {
@@ -381,19 +410,70 @@ const ReportGenerator = () => {
         <div className="w-full lg:w-[35%] shrink-0">
           <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-lg p-3.5 space-y-3 shadow-xs">
             <div>
-              <label className={labelClass}>Source Document</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelClass + " mb-0"}>Source Document</label>
+                <div className="flex items-center gap-1.5">
+                  {loadingDocs && (
+                    <span className="flex items-center gap-1 text-[10px] text-amber-500 font-medium">
+                      <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      <span>Loading...</span>
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={fetchDocs}
+                    disabled={generating || loadingDocs}
+                    title="Refresh document list"
+                    className="text-gray-400 hover:text-amber-500 disabled:opacity-40 transition-colors p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${loadingDocs ? 'animate-spin' : ''}`} />
+                  </button>
+                </div>
+              </div>
+
               <select 
+                id="source-document-select"
                 value={selectedDoc} 
                 onChange={e => setSelectedDoc(e.target.value)}
-                disabled={generating}
+                disabled={generating || loadingDocs}
                 className={inputClass}
               >
                 <option value="">All Indexed Documents</option>
+                {loadingDocs && documents.length === 0 && (
+                  <option value="" disabled>Loading documents...</option>
+                )}
+                {!loadingDocs && documents.length === 0 && !docsError && (
+                  <option value="" disabled>No extracted or indexed documents available</option>
+                )}
+                {docsError && documents.length === 0 && (
+                  <option value="" disabled>Error loading documents (click retry below)</option>
+                )}
                 {documents.map(d => (
                   <option key={d._id} value={d._id}>{d.originalName || d.filename || d.title}</option>
                 ))}
               </select>
-              <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Optional. Scopes RAG retrieval to one document.</p>
+
+              {docsError ? (
+                <div className="flex items-center justify-between mt-1 text-[10px] text-red-500 dark:text-red-400">
+                  <span className="flex items-center gap-1 truncate">
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    <span>Failed to load documents</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={fetchDocs}
+                    className="underline hover:text-red-600 font-medium shrink-0 ml-1 cursor-pointer"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">
+                  {documents.length > 0 
+                    ? `Optional. Scopes RAG retrieval to one document (${documents.length} available).`
+                    : 'Optional. Scopes RAG retrieval to one document.'}
+                </p>
+              )}
             </div>
 
             <div>

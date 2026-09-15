@@ -12,6 +12,8 @@
     "test": "node --test tests/*.test.js",
     "test:integration": "node --test \"tests/integration/*.test.js\"",
     "test:persistence": "node --test \"tests/persistence/*.test.js\""
+    "test:integration": "node --test tests/integration",
+    "test:persistence": "node --test tests/persistence"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
